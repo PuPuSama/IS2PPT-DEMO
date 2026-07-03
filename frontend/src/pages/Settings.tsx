@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, HelpCircle, Link2, ChevronDown, Volume2, Info, RefreshCw, CheckCircle } from 'lucide-react';
+import { Home, Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, HelpCircle, Link2, ChevronDown, Info, RefreshCw, CheckCircle } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { appVersion } from '@/utils/appVersion';
 
@@ -20,7 +20,6 @@ const settingsI18n = {
         baiduOcr: "百度配置", serviceTest: "服务测试", lazyllmConfig: "LazyLLM 厂商配置",
         vendorApiKeys: "厂商 API Key 配置",
         advancedSettings: "高级设置",
-        elevenlabs: "ElevenLabs 语音合成",
         about: "关于"
       },
       about: {
@@ -96,10 +95,6 @@ const settingsI18n = {
         imageThinkingBudget: "图像思考负载", imageThinkingBudgetDesc: "图像推理的思考 token 预算 (1-8192)，数值越大推理越深入",
         baiduOcrApiKey: "百度 API Key", baiduOcrApiKeyPlaceholder: "输入百度 API Key",
         baiduOcrApiKeyDesc: "用于可编辑 PPTX 导出时的文字识别功能，留空则保持当前设置不变",
-        elevenLabsEnabled: "启用 ElevenLabs 语音合成",
-        elevenLabsEnabledDesc: "开启后，视频导出将使用 ElevenLabs 代替 edge-tts 生成旁白音频，音质更自然",
-        elevenLabsApiKey: "ElevenLabs API Key", elevenLabsApiKeyPlaceholder: "输入 ElevenLabs API Key",
-        elevenLabsApiKeyDesc: "留空则保持当前设置不变，API Key 可在 ElevenLabs 控制台获取",
         applyLink: "，请点击此处申请",
         textModelSource: "文本模型提供商格式", textModelSourceDesc: "选择文本生成使用的提供商格式", textModelSourcePlaceholder: "-- 请选择 --",
         imageModelSource: "图片模型提供商格式", imageModelSourceDesc: "选择图片生成使用的提供商格式", imageModelSourcePlaceholder: "-- 请选择 --",
@@ -171,7 +166,6 @@ const settingsI18n = {
         baiduOcr: "Baidu Configuration", serviceTest: "Service Test", lazyllmConfig: "LazyLLM Provider Configuration",
         vendorApiKeys: "Vendor API Key Configuration",
         advancedSettings: "Advanced Settings",
-        elevenlabs: "ElevenLabs Text-to-Speech",
         about: "About"
       },
       about: {
@@ -247,10 +241,6 @@ const settingsI18n = {
         imageThinkingBudget: "Image Thinking Budget", imageThinkingBudgetDesc: "Token budget for image reasoning (1-8192), higher values enable deeper reasoning",
         baiduOcrApiKey: "Baidu API Key", baiduOcrApiKeyPlaceholder: "Enter Baidu API Key",
         baiduOcrApiKeyDesc: "For text recognition in editable PPTX export, leave empty to keep current setting",
-        elevenLabsEnabled: "Enable ElevenLabs Text-to-Speech",
-        elevenLabsEnabledDesc: "When enabled, video export uses ElevenLabs instead of edge-tts for narration audio, providing more natural voice quality",
-        elevenLabsApiKey: "ElevenLabs API Key", elevenLabsApiKeyPlaceholder: "Enter ElevenLabs API Key",
-        elevenLabsApiKeyDesc: "Leave empty to keep current setting. Get your API key from the ElevenLabs dashboard",
         applyLink: ", click here to apply",
         textModelSource: "Text Model Provider Format", textModelSourceDesc: "Select the provider format for text generation", textModelSourcePlaceholder: "-- Select --",
         imageModelSource: "Image Model Provider Format", imageModelSourceDesc: "Select the provider format for image generation", imageModelSourcePlaceholder: "-- Select --",
@@ -407,8 +397,6 @@ const initialFormData = {
   image_caption_api_key: '',
   image_caption_api_base_url: '',
   openai_image_api_protocol: 'auto',
-  // ElevenLabs TTS
-  elevenlabs_api_key: '',
 };
 
 const isLazyllmVendor = (vendor: string) =>
@@ -612,7 +600,6 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => ({
   image_caption_api_key: '',
   image_caption_api_base_url: data.image_caption_api_base_url || '',
   openai_image_api_protocol: data.openai_image_api_protocol || 'auto',
-  elevenlabs_api_key: '',
 });
 
 // Settings 组件 - 纯嵌入模式（可复用）
@@ -868,22 +855,6 @@ export const Settings: React.FC = () => {
         },
       ],
     },
-    {
-      title: t('settings.sections.elevenlabs'),
-      icon: <Volume2 size={20} />,
-      fields: [
-        {
-          key: 'elevenlabs_api_key',
-          label: t('settings.fields.elevenLabsApiKey'),
-          type: 'password',
-          placeholder: t('settings.fields.elevenLabsApiKeyPlaceholder'),
-          sensitiveField: true,
-          lengthKey: 'elevenlabs_api_key_length',
-          description: t('settings.fields.elevenLabsApiKeyDesc'),
-          link: 'https://elevenlabs.io/app/settings/api-keys',
-        },
-      ],
-    },
   ];
 
   useEffect(() => {
@@ -927,7 +898,7 @@ export const Settings: React.FC = () => {
     setIsSaving(true);
     try {
       const {
-        api_key, mineru_token, baidu_api_key, elevenlabs_api_key, lazyllm_api_keys,
+        api_key, mineru_token, baidu_api_key, lazyllm_api_keys,
         text_api_key, image_api_key, image_caption_api_key,
         ...otherData
       } = formData;
@@ -940,7 +911,6 @@ export const Settings: React.FC = () => {
       if (api_key) payload.api_key = api_key;
       if (mineru_token) payload.mineru_token = mineru_token;
       if (baidu_api_key) payload.baidu_api_key = baidu_api_key;
-      if (elevenlabs_api_key) payload.elevenlabs_api_key = elevenlabs_api_key;
       if (text_api_key) payload.text_api_key = text_api_key;
       if (image_api_key) payload.image_api_key = image_api_key;
       if (image_caption_api_key) payload.image_caption_api_key = image_caption_api_key;
@@ -962,7 +932,7 @@ export const Settings: React.FC = () => {
         // Clear all sensitive fields after save
         setFormData(prev => ({
           ...prev,
-          api_key: '', mineru_token: '', baidu_api_key: '', elevenlabs_api_key: '',
+          api_key: '', mineru_token: '', baidu_api_key: '',
           lazyllm_api_keys: {},
           text_api_key: '', image_api_key: '', image_caption_api_key: '',
         }));

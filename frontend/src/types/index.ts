@@ -45,7 +45,6 @@ export interface Page {
   part?: string; // 章节名
   outline_content: OutlineContent | null;
   description_content?: DescriptionContent;
-  narration_text?: string; // TTS 旁白文本
   generated_image_url?: string; // 后端返回 generated_image_url
   generated_image_path?: string; // 前端使用的别名
   generated_svg_url?: string; // SVG 生成模式下的矢量源 URL（/files/{project}/pages/x.svg）；有则可内联矢量预览
@@ -54,21 +53,6 @@ export interface Page {
   updated_at?: string;
   image_versions?: ImageVersion[]; // 历史版本列表
 }
-
-export interface NarrationConfig {
-  speaker_persona: string;
-  target_audience: string;
-  speech_tone: string;
-  presentation_topic: string;
-  min_words: number;
-  max_words: number;
-}
-
-// 导出设置 - 组件提取方法
-export type ExportExtractorMethod = 'mineru' | 'hybrid';
-
-// 导出设置 - 背景图获取方法
-export type ExportInpaintMethod = 'generative' | 'baidu' | 'hybrid';
 
 // SVG 生成的 reasoning 档位（gpt-5.5 /responses 支持；minimal 被拒，故不含）。
 // 档位越高排版/结构越好但越慢（整页 SVG：high 适中、xhigh 实测 ~327s/页）。
@@ -91,10 +75,7 @@ export interface Project {
   template_image_path?: string; // 前端使用的别名
   template_style?: string; // 风格描述文本（无模板图模式）
   // 导出设置
-  export_extractor_method?: ExportExtractorMethod; // 组件提取方法
-  export_inpaint_method?: ExportInpaintMethod; // 背景图获取方法
   export_allow_partial?: boolean; // 是否允许返回半成品（导出出错时继续而非停止）
-  enable_icon_subject_extraction?: boolean; // 是否对小尺寸图标走百度智能抠图（透明背景）
   image_aspect_ratio?: string; // 画面比例（如 16:9, 4:3）
   generation_mode?: 'image' | 'svg'; // 页面生成方式（在“生成描述”时选定，按项目）
   svg_reasoning_effort?: SvgReasoningEffort; // SVG 生成的 reasoning 档位（前端可选，按项目）
@@ -209,10 +190,6 @@ export interface Settings {
   // OpenAI Codex OAuth
   openai_oauth_connected: boolean;
   openai_oauth_account_id?: string;
-  // ElevenLabs TTS
-  elevenlabs_enabled: boolean;
-  elevenlabs_api_key_length: number;
-  elevenlabs_voice_id?: string;
   created_at?: string;
   updated_at?: string;
 }

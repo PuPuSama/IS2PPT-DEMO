@@ -652,53 +652,6 @@ export const getTaskStatus = async (projectId: string, taskId: string): Promise<
 
 // ===== 旁白 (Narration) =====
 
-/**
- * 更新页面旁白文本
- */
-export const updatePageNarration = async (
-  projectId: string,
-  pageId: string,
-  narrationText: string
-): Promise<ApiResponse<Page>> => {
-  const response = await apiClient.put<ApiResponse<Page>>(
-    `/api/projects/${projectId}/pages/${pageId}/narration`,
-    { narration_text: narrationText }
-  );
-  return response.data;
-};
-
-/**
- * AI 生成单页旁白
- */
-export const generatePageNarration = async (
-  projectId: string,
-  pageId: string,
-  language?: OutputLanguage
-): Promise<ApiResponse<Page>> => {
-  const lang = language || await getStoredOutputLanguage();
-  const response = await apiClient.post<ApiResponse<Page>>(
-    `/api/projects/${projectId}/pages/${pageId}/generate/narration`,
-    { language: lang }
-  );
-  return response.data;
-};
-
-/**
- * 批量生成所有页面旁白
- */
-export const generateAllNarrations = async (
-  projectId: string,
-  language?: OutputLanguage,
-  forceRegenerate?: boolean
-): Promise<ApiResponse<{ total: number; generated: number; skipped: number; failed: number; pages: Page[] }>> => {
-  const lang = language || await getStoredOutputLanguage();
-  const response = await apiClient.post<ApiResponse<{ total: number; generated: number; skipped: number; failed: number; pages: Page[] }>>(
-    `/api/projects/${projectId}/generate/narrations`,
-    { language: lang, force_regenerate: forceRegenerate || false }
-  );
-  return response.data;
-};
-
 // ===== 导出 =====
 
 /**
@@ -812,52 +765,6 @@ export const listExports = async (
   download_url: string;
 }> }>> => {
   const response = await apiClient.get(`/api/projects/${projectId}/exports`);
-  return response.data;
-};
-
-/**
- * 导出为讲解视频（异步任务）
- * @param projectId 项目ID
- * @param options 导出选项
- */
-export const exportVideo = async (
-  projectId: string,
-  options?: {
-    filename?: string;
-    pageIds?: string[];
-    voice?: string;
-    rate?: string;
-    speed?: number;
-    language?: string;
-    generateNarration?: boolean;
-    enableKenBurns?: boolean;
-    includeNoImagePages?: boolean;
-    presentationTopic?: string;
-    narrationConfig?: {
-      speaker_persona?: string;
-      target_audience?: string;
-      speech_tone?: string;
-      presentation_topic?: string;
-      min_words?: number;
-      max_words?: number;
-    };
-  }
-): Promise<ApiResponse<{ task_id: string }>> => {
-  const response = await apiClient.post<
-    ApiResponse<{ task_id: string }>
-  >(`/api/projects/${projectId}/export/video`, {
-    filename: options?.filename,
-    page_ids: options?.pageIds,
-    voice: options?.voice,
-    rate: options?.rate,
-    speed: options?.speed,
-    language: options?.language,
-    generate_narration: options?.generateNarration ?? true,
-    enable_ken_burns: options?.enableKenBurns ?? false,
-    include_no_image_pages: options?.includeNoImagePages ?? false,
-    presentation_topic: options?.presentationTopic,
-    narration_config: options?.narrationConfig,
-  });
   return response.data;
 };
 
@@ -1330,20 +1237,14 @@ export const getSettings = async (): Promise<ApiResponse<Settings>> => {
   return response.data;
 };
 
-export const getElevenLabsVoices = async (): Promise<ApiResponse<{ voices: { id: string; name: string; category: string; languages?: string[]; accent?: string | null }[] }>> => {
-  const response = await apiClient.get('/api/settings/elevenlabs-voices');
-  return response.data;
-};
-
 /**
  * 更新系统设置
  */
 export const updateSettings = async (
-  data: Partial<Omit<Settings, 'id' | 'api_key_length' | 'mineru_token_length' | 'baidu_api_key_length' | 'elevenlabs_api_key_length' | 'created_at' | 'updated_at'>> & {
+  data: Partial<Omit<Settings, 'id' | 'api_key_length' | 'mineru_token_length' | 'baidu_api_key_length' | 'created_at' | 'updated_at'>> & {
     api_key?: string;
     mineru_token?: string;
     baidu_api_key?: string;
-    elevenlabs_api_key?: string;
     text_api_key?: string;
     image_api_key?: string;
     image_caption_api_key?: string;

@@ -10,9 +10,9 @@ description: "Frequently asked questions"
 
 ## Editable PPTX export has overlapping text or missing styles
 
-Usually an API configuration issue. Make sure `BAIDU_API_KEY` is set correctly — see [Configuration](/configuration#baidu-api-key).
+Editable PPTX export is only available for SVG-route projects. If an older image-route project fails, regenerate the slides with the SVG route and export again.
 
-You can also try adjusting the text extraction method in **Project Settings → Export Settings** (OCR / Vision model / Hybrid). Different methods perform differently depending on the layout.
+For SVG-route projects, enable **Allow Partial Results** in **Project Settings → Export Settings** if you need a best-effort file while investigating individual conversion failures.
 
 ## The regular PPTX export has text I can't edit in PowerPoint
 

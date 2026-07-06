@@ -1622,7 +1622,7 @@ export const SlidePreview: React.FC = () => {
         </div>
       )}
 
-      {/* 视频导出设置弹窗 */}
+      {/* 可编辑 PPTX 导出设置弹窗 */}
       {showEditablePptxDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowEditablePptxDialog(false)}>
           <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>

@@ -277,7 +277,7 @@ def render_page_svg(ai_service, outline, page_data, desc_text, page_index,
     """SVG generation mode: text model -> full-page SVG -> PNG.
 
     Returns ``(PIL.Image, svg_str)``. The PNG is fed to the unchanged
-    ``save_image_with_version`` path so all downstream (thumbnail/PDF/video/frontend)
+    ``save_image_with_version`` path so all downstream (thumbnail/PDF/export/frontend)
     stays identical; ``svg_str`` is persisted separately via ``save_page_svg``.
 
     ``reasoning_effort`` (project-level, frontend-selectable) tunes the /responses

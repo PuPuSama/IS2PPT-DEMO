@@ -166,7 +166,7 @@ def page_svg(project_id, page_id):
 
     Edit a page's source SVG directly (svg generation mode). On PUT the SVG is
     font-normalised + contract-validated, re-rendered to a fresh PNG version (so
-    thumbnails / PDF / video / export stay in sync), and persisted. Returns the
+    thumbnails / PDF / export / frontend previews stay in sync), and persisted. Returns the
     updated page. This is what powers in-frontend slide editing + the SVG code panel.
     """
     page = Page.query.get(page_id)

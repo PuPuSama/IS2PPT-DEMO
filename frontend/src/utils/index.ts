@@ -205,14 +205,9 @@ export function normalizeErrorMessage(errorMessage: string | null | undefined): 
       ? '网络连接中断，导致操作失败。请稍后重试。'
       : 'The connection was interrupted and the operation failed. Please try again later.';
   } else if (message.includes('样式提取失败') || message.includes('style extraction failed')) {
-    if (message.includes('不支持图片输入') || message.includes('support image input')) {
-      return isZh
-        ? '可编辑 PPTX 导出失败：当前图片样式提取模型不支持图片输入。请在设置中改用支持视觉输入的 image caption 模型，或切换 provider 后重试。'
-        : 'Editable PPTX export failed: the current style extraction model does not support image input. Switch to a vision-capable image caption model and try again.';
-    }
     return isZh
-      ? '可编辑 PPTX 导出失败：文本样式提取没有成功完成。请检查 image caption 模型/API 配置，或在项目设置中开启“允许返回半成品”后重试。'
-      : 'Editable PPTX export failed because text style extraction did not complete. Check the image caption model/API settings, or enable partial results and try again.';
+      ? '可编辑 PPTX 导出失败：旧图片路线的样式提取已下线。请使用 SVG 生成路线重新生成页面；如需尽力导出，可在项目设置中开启“返回半成品”。'
+      : 'Editable PPTX export failed: image-route style extraction has been removed. Regenerate the slides with the SVG route; enable partial results for best-effort export.';
   }
 
   return rawMessage;

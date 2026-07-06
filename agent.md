@@ -30,6 +30,31 @@ Current material pruning work:
 - Reference-file parse no longer auto-imports parsed images into the material library.
 - Prompt/help wording no longer refers to a material library.
 
+Current priority-pruning pass in the working tree (not committed yet):
+
+- Removed remaining FFmpeg/video export/narration docs, Docker package dependencies, video export asset, and video/narration e2e coverage.
+- Removed obsolete public material-library docs/tests and trimmed CLI material commands to the retained upload/reference behavior.
+- Removed the old image-route editable-PPTX helper script `scripts/export_editable_pptx.py`.
+- Removed stale generated/demo artifacts under `v0_demo/`.
+- Removed stale icon-subject-extraction e2e coverage; only the historical migration remains.
+- Removed obsolete CLI project update flags `export_extractor_method` and `export_inpaint_method`; only the historical migration remains.
+- Cleaned user-facing docs/help/settings/error text that still implied editable PPTX needed OCR, MinerU, Baidu, image-caption style extraction, or inpainting.
+- Cleaned the empty frontend narration API section and a stale "video export" comment on the editable-PPTX dialog.
+
+Expected grep remnants after this pass:
+
+- Historical migrations may still mention `narration_text`, `export_extractor_method`, `export_inpaint_method`, and `enable_icon_subject_extraction`; keep migration history immutable.
+- SVG editable-PPTX code still uses `EXPORT_EDITABLE_PPTX` and `/export/editable-pptx`; keep it.
+- Docs and code may explicitly say the old image-route OCR/MinerU/inpainting reverse-engineering path is removed; those are intentional explanatory mentions.
+
+Verification for this working-tree pass:
+
+- `backend`: `..\.venv\Scripts\python.exe -m compileall services controllers` passed.
+- `backend`: `..\.venv\Scripts\python.exe -c "from app import app; print('APP_IMPORT_OK')"` passed. It still emits a `pydub` ffmpeg warning from the indirect `markitdown[all]` dependency; no direct video/narration source references remain.
+- `frontend`: `npm run test:run -- src/tests/utils.normalizeErrorMessage.test.ts` passed.
+- `frontend`: `npx tsc --noEmit` still fails on the known historical TypeScript baseline, but current touched-file type issues were cleaned up (`ExportTasksPanel`, `useExportTasksStore`, and `Settings`/`Settings` type mismatch).
+- `git diff --check` passed.
+
 Retained deliberately:
 
 - SVG editable-PPTX export entry.

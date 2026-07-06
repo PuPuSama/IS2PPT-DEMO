@@ -2,7 +2,7 @@
 SVG Render Service — render an SVG string to a PNG (PIL.Image) via the resvg CLI.
 
 Used by the 'svg' generation mode to bridge LLM-produced SVG into banana-slides'
-existing PNG-based pipeline: thumbnails / PDF / video / the frontend SlideCard all
+existing PNG-based pipeline: thumbnails / PDF / export / the frontend SlideCard all
 consume a PNG, so an SVG page is rasterised here and then fed to the unchanged
 ``save_image_with_version`` path.
 

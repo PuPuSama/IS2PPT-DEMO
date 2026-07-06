@@ -4,7 +4,7 @@ description: >
   CLI tool for creating, managing, and exporting AI-generated presentations via the Banana Slides API.
   Use when the user asks to: (1) generate a PPT/presentation/slides from an idea, outline, or description,
   (2) export a project to PPTX, PDF, or images, (3) batch-generate multiple presentations,
-  (4) manage projects, pages, materials, or templates programmatically,
+  (4) manage projects, pages, image uploads, or templates programmatically,
   (5) renovate/redesign an existing PPT or PDF, (6) edit slide images with natural language.
 ---
 

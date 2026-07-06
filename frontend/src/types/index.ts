@@ -189,7 +189,7 @@ export interface Settings {
   openai_image_api_protocol?: string;
   // OpenAI Codex OAuth
   openai_oauth_connected: boolean;
-  openai_oauth_account_id?: string;
+  openai_oauth_account_id?: string | null;
   created_at?: string;
   updated_at?: string;
 }

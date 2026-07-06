@@ -209,23 +209,14 @@ banana-cli exports editable-pptx --project-id <id> --output ./editable.pptx --ma
 
 `--output` specifies a local download path; if omitted, the server-side download URL is returned. `--filename` only sets the filename generated on the server side.
 
-### materials -- Material Management
+### materials -- Image Upload
 
 ```bash
-# Upload material to project
+# Upload an image to a project
 banana-cli materials upload --file /path/to/image.png --project-id <id>
 
-# Upload global material
+# Upload an image without binding it to a project
 banana-cli materials upload --file /path/to/image.png --global
-
-# AI-generate material
-banana-cli materials generate --prompt "Tech-style background" --project-id <id> --wait
-
-# Associate global material with project
-banana-cli materials associate --project-id <id> --material-url <url>
-
-# Download material
-banana-cli materials download --material-id <mid> --output /tmp/materials.zip
 ```
 
 ### refs -- Reference Files

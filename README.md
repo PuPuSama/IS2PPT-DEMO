@@ -46,10 +46,9 @@
 </div>
 
 ## 🔥 最新动态
-- **[2026-04-25]**： 素材工具箱上线 — 在原有素材生成基础上新增整图编辑、框选编辑（overlay/replace）、智能擦除三种模式，统一入口一站式操作
 - **[2026-04-25]**：支持通过 OpenAI 官方 OAuth 登录绑定账号，绑定后可直接使用 Codex 作为文本/图片生成 provider，无需手动填写 API Key，plus账号五小时可生成100+ 2k图（[教程](https://ziy68cvfvu3.feishu.cn/wiki/LDSOwPzkhiNonkkNTF1ct2VBnNc))（基于 OpenAI 官方 OAuth PKCE 授权流程，非逆向）
 - **[2026-04-25]**：支持保存自定义文字风格描述模板，可命名、标色、持久化复用，无需每次重新输入
-- **[2026-04-23]**：支持了gpt-image-2模型，同时导出可编辑背景效果也因模型能力升级得到了提升（在 设置-导出选项-背景获取 选择 生成式获取）
+- **[2026-04-23]**：支持了 gpt-image-2 模型，提升图片生成与编辑质量
 - **[2026-04-11]**：支持了[cli操作并加入了agent skills](https://docs.bananaslides.online/cli)
 - **[2026-03]**：加入了若干功能和优化，如额外字段、多比例设定等
 - **[2026-02-09]**： 新功能和优化
@@ -120,10 +119,9 @@
 <img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/7fc1ecc6-433d-4157-b4ca-95fcebac66ba" />
 
 
-### 2. 强大的素材解析能力
+### 2. 强大的参考文件解析能力
 - **多格式支持**：上传 PDF/Docx/MD/Txt 等文件，后台自动解析内容。
-- **智能提取**：自动识别文本中的关键点、图片链接和图表信息，为生成提供丰富素材。
-- **图片自动入库**：文档解析出的图片会随参考文件关联项目后自动进入项目素材库，后续可直接复用。
+- **智能提取**：自动识别文本中的关键点、图片链接和图表信息，为生成提供丰富上下文。
 - **风格参考**：支持上传参考图片或模板，定制 PPT 风格。
 
 <img width="1920" height="1080" alt="文件解析与素材处理" src="https://github.com/user-attachments/assets/8cda1fd2-2369-4028-b310-ea6604183936" />
@@ -145,14 +143,8 @@
 <img width="1748" height="538" alt="PPT与PDF导出" src="https://github.com/user-attachments/assets/647eb9b1-d0b6-42cb-a898-378ebe06c984" />
 
 ### 5. 可自由编辑的pptx导出（Beta迭代中）
-- **导出图像为高还原度、背景干净的、可自由编辑图像和文字的PPT页面**
-- 相关更新见 https://github.com/Anionex/banana-slides/issues/121
+- **SVG 生成路线可导出为原生 PowerPoint 图形和文本框，方便继续编辑**
 <img width="1000"  alt="image" src="https://github.com/user-attachments/assets/a85d2d48-1966-4800-a4bf-73d17f914062" />
-
-### 6. 一键导出讲解视频
-- **一键将幻灯片转换为带 AI 语音旁白和字幕的讲解视频（MP4）**
-- AI 自动根据页面描述和内容生成口语化旁白
-- 支持配置多种表达风格、多语言和多种音色
 
 <br>
 
@@ -161,8 +153,8 @@
 | --- | --- | --- |
 | 页数上限 | 15页 | **无限制** | 
 | 二次编辑 | 提示词修改 | **框选编辑+口头编辑** |
-| 素材添加 | 生成后无法添加 | **生成后自由添加** |
-| 导出格式 | 支持导出为 PDF、（不可编辑图片）pptx | **导出为PDF、(图片or可编辑)pptx、讲解视频** |
+| 素材添加 | 生成后无法添加 | **生成后可粘贴/上传参考图片继续编辑** |
+| 导出格式 | 支持导出为 PDF、（不可编辑图片）pptx | **导出为 PDF、图片、PPTX 或 SVG 路线可编辑 PPTX** |
 | 水印 | 免费版有水印 | **无水印，自由增删元素** |
 
 > 注：随着新功能添加,对比可能过时
@@ -175,16 +167,13 @@
 | --- | --- |
 | ✅ 已完成 | 从想法、大纲、页面描述三种路径创建 PPT |
 | ✅ 已完成 | 解析文本中的 Markdown 格式图片 |
-| ✅ 已完成 | PPT 单页添加更多素材 |
+| ✅ 已完成 | PPT 单页粘贴/上传参考图片 |
 | ✅ 已完成 | PPT 单页框选区域Vibe口头编辑 |
-| ✅ 已完成 | 素材模块: 素材生成、上传等 |
 | ✅ 已完成 | 支持多种文件的上传+解析 |
 | ✅ 已完成 | 支持Vibe口头调整大纲和描述 |
-| ✅ 已完成 | 初步支持可编辑版本pptx文件导出 |
-| 🔄 进行中 | 支持多层次、精确抠图的可编辑pptx导出 |
+| ✅ 已完成 | SVG 路线支持可编辑版本 pptx 文件导出 |
 | 🔄 进行中 | 网络搜索 |
 | 🔄 进行中 | Agent 模式 |
-| ✅ 已完成 | TTS 讲解视频导出（中/英/日多音色、字幕） |
 | 🚍 部分 | 优化前端加载速度 |
 | 🧭 规划中 | 在线播放功能 |
 | 🧭 规划中 | 简单的动画和页面切换效果 |
@@ -279,9 +268,6 @@ MINIMAX_API_KEY=your-minimax-api-key          # MiniMax
 > LazyLLM also exposes `lazyllm install online-advanced`, but the PyPI wheel may not publish that group as a standard install extra, so Docker/prebuilt images rely on these explicit dependencies instead.
   
 </details>
-
-
-**使用新版可编辑导出配置方法，获得更好的可编辑导出效果**: 需在[百度智能云平台](https://console.bce.baidu.com/iam/#/iam/apikey/list)（点击此处进入）中获取API KEY，填写在.env文件中的BAIDU_API_KEY字段（有充足的免费使用额度）。详见https://github.com/Anionex/banana-slides/issues/121 中的说明
 
 
 <details>
@@ -393,7 +379,6 @@ docker compose up -d
 - Python 3.10 或更高版本
 - [uv](https://github.com/astral-sh/uv) - Python 包管理器
 - Node.js 16+ 和 npm
-- [FFmpeg](https://ffmpeg.org/) - 讲解视频导出必需，且必须包含 `libass` / `ass` 字幕滤镜支持
 - 有效的 Google Gemini API 密钥
 - （可选）[LibreOffice](https://www.libreoffice.org/) - 使用「PPT 翻新」功能上传 PPTX 文件时需要，用于将 PPTX 转换为 PDF。**推荐先在本地将 PPTX 转为 PDF 后再上传**，原因：LibreOffice 在服务端渲染时可能因缺少字体（如微软雅黑、Calibri 等）导致排版错位，且无法完整还原部分特效。上传 PDF 文件则不需要 LibreOffice。Docker 用户如仍需在容器内支持 PPTX 上传，可执行：
   ```bash
@@ -418,16 +403,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 在项目根目录下运行：
 ```bash
-# macOS（Homebrew）
-brew install ffmpeg-full
-brew unlink ffmpeg 2>/dev/null || true
-brew link --overwrite --force ffmpeg-full
-
-# Ubuntu / Debian
-sudo apt-get update
-sudo apt-get install -y ffmpeg libass9
-
-# 然后安装 Python 依赖
 uv sync
 ```
 

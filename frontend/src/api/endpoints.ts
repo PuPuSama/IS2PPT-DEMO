@@ -650,8 +650,6 @@ export const getTaskStatus = async (projectId: string, taskId: string): Promise<
   return response.data;
 };
 
-// ===== 旁白 (Narration) =====
-
 // ===== 导出 =====
 
 /**

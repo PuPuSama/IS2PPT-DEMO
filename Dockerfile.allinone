@@ -46,7 +46,7 @@ ARG APP_BUILD_DATE=
 
 WORKDIR /app
 
-# 安装系统依赖：nginx + supervisor + curl + ffmpeg
+# 安装系统依赖：nginx + supervisor + curl
 RUN if [ -n "$APT_MIRROR" ]; then \
         if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
             sed -i "s@deb.debian.org@$APT_MIRROR@g" /etc/apt/sources.list.d/debian.sources; \
@@ -54,7 +54,6 @@ RUN if [ -n "$APT_MIRROR" ]; then \
     fi && \
     apt-get update && apt-get install -y \
         curl \
-        ffmpeg \
         fonts-noto-cjk \
         nginx \
         supervisor \

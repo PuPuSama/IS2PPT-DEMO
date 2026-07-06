@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Editable export failure UI', () => {
-  test('shows normalized task panel error when style extraction fails', async ({ page }) => {
+  test('shows normalized task panel error for removed image-route extraction', async ({ page }) => {
     const projectId = 'mock-editable-export-failure';
     let pollCount = 0;
 
@@ -74,13 +74,13 @@ test.describe('Editable export failure UI', () => {
               task_id: 'editable-export-task-1',
               task_type: 'EXPORT_EDITABLE_PPTX',
               status: 'FAILED',
-              error_message: '文本样式提取失败: 当前图片样式提取模型不支持图片输入: caption_provider 不支持图片输入',
+              error_message: '文本样式提取失败: 旧图片路线的样式提取已下线',
               progress: {
                 total: 100,
                 completed: 0,
                 failed: 1,
                 percent: 0,
-                help_text: '当前用于图片样式提取的 caption/image_caption 模型不支持图片输入。',
+                help_text: '请使用 SVG 生成路线重新生成页面后再导出可编辑 PPTX。',
               },
             },
           }),
@@ -142,7 +142,7 @@ test.describe('Editable export failure UI', () => {
       .toBeGreaterThan(0);
 
     await page.getByRole('button', { name: /^1$/ }).click();
-    await expect(page.getByText('当前图片样式提取模型不支持图片输入')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('旧图片路线的样式提取已下线')).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('button', { name: /^1$/ })).toBeVisible({ timeout: 10000 });
   });
 

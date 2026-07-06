@@ -209,23 +209,14 @@ banana-cli exports editable-pptx --project-id <id> --output ./editable.pptx --ma
 
 `--output` 指定本地下载路径；不指定则返回服务端下载 URL。`--filename` 仅设置服务端生成的文件名。
 
-### materials — 素材管理
+### materials — 图片上传
 
 ```bash
-# 上传素材到项目
+# 上传图片到项目
 banana-cli materials upload --file /path/to/image.png --project-id <id>
 
-# 上传全局素材
+# 上传不绑定项目的图片
 banana-cli materials upload --file /path/to/image.png --global
-
-# AI 生成素材
-banana-cli materials generate --prompt "科技感背景图" --project-id <id> --wait
-
-# 关联全局素材到项目
-banana-cli materials associate --project-id <id> --material-url <url>
-
-# 下载素材
-banana-cli materials download --material-id <mid> --output /tmp/materials.zip
 ```
 
 ### refs — 参考文件

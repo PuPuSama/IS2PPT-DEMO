@@ -8,7 +8,6 @@ AI Service Prompts - 集中管理所有 AI 服务的 prompt 模板
   4. 图片生成 Prompts   — 文生图、图片编辑
   5. 图片处理 Prompts   — 背景提取、画质修复
   6. 内容提取 Prompts   — 文字属性、页面内容、排版分析、风格提取
-  7. 旁白 Prompts        — TTS 播报视频旁白生成
 """
 import json
 import logging
@@ -1409,8 +1408,3 @@ Only output the style description text, no other content.
 """
     logger.debug(f"[get_style_extraction_prompt] Final prompt:\n{prompt}")
     return prompt
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# 7. 旁白 Prompts — TTS 播报视频旁白生成
-# ═══════════════════════════════════════════════════════════════════════════════

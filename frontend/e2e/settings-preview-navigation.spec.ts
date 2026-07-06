@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 import { seedProjectWithImages } from './helpers/seed-project'
 
-test.describe('Settings navigation and preview multi-select', () => {
-  test('mock: settings back button returns to previous page and preview multi-select bar stays pinned', async ({ page }) => {
+test.describe('Preview settings modal and multi-select', () => {
+  test('mock: project settings modal can close and preview multi-select bar stays pinned', async ({ page }) => {
     const projectId = 'preview-settings-mock'
 
     await page.route(url => new URL(url).pathname.startsWith('/api/'), async (route) => {
@@ -28,7 +28,6 @@ test.describe('Settings navigation and preview multi-select', () => {
               max_description_workers: 5,
               max_image_workers: 8,
               output_language: 'zh',
-              elevenlabs_api_key_length: 0,
             },
           }),
         })
@@ -76,19 +75,11 @@ test.describe('Settings navigation and preview multi-select', () => {
         })
       }
 
-      if (url.pathname.includes('/materials') || url.pathname.includes('/image-versions') || url.pathname.includes('/voices')) {
+      if (url.pathname.includes('/materials') || url.pathname.includes('/image-versions')) {
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({ success: true, data: {} }),
-        })
-      }
-
-      if (url.pathname.includes('/export/video')) {
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true, data: { task_id: 'video-task-1' } }),
         })
       }
 
@@ -106,14 +97,9 @@ test.describe('Settings navigation and preview multi-select', () => {
     await page.goto(`/project/${projectId}/preview`)
     await page.waitForLoadState('networkidle')
 
-    await page.locator('button:has-text("导出")').first().click()
-    await page.locator('button:has-text("导出为讲解视频")').click()
-    await page.getByRole('button', { name: '高级配置' }).click()
-    await page.getByLabel('使用 ElevenLabs 语音合成').check()
-    await page.getByRole('button', { name: '前往设置' }).click()
-
-    await expect(page).toHaveURL(/\/settings$/)
-    await page.getByRole('button', { name: '返回首页' }).click()
+    await page.getByRole('button', { name: '项目设置' }).click()
+    await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
+    await page.getByRole('button', { name: /关闭|Close|common\.close/ }).click()
     await expect(page).toHaveURL(new RegExp(`/project/${projectId}/preview$`))
 
     const thumbScroller = page.locator('aside .overflow-y-auto').first()
@@ -132,7 +118,7 @@ test.describe('Settings navigation and preview multi-select', () => {
     expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(4)
   })
 
-  test('integration: settings back returns to preview and multi-select stays visible while scrolling', async ({ page }) => {
+  test('integration: project settings modal closes and multi-select stays visible while scrolling', async ({ page }) => {
     const frontendUrl = process.env.BASE_URL || 'http://localhost:3011'
     const frontendPort = parseInt(new URL(frontendUrl).port || '3011', 10)
     const backendUrl = `http://localhost:${frontendPort + 2000}`
@@ -143,14 +129,9 @@ test.describe('Settings navigation and preview multi-select', () => {
       await page.goto(`/project/${projectId}/preview`)
       await page.waitForLoadState('networkidle')
 
-      await page.locator('button:has-text("导出")').first().click()
-      await page.locator('button:has-text("导出为讲解视频")').click()
-      await page.getByRole('button', { name: '高级配置' }).click()
-      await page.getByLabel('使用 ElevenLabs 语音合成').check()
-      await page.getByRole('button', { name: '前往设置' }).click()
-
-      await expect(page).toHaveURL(/\/settings$/)
-      await page.getByRole('button', { name: '返回首页' }).click()
+      await page.getByRole('button', { name: '项目设置' }).click()
+      await expect(page.getByRole('heading', { name: '设置' })).toBeVisible()
+      await page.getByRole('button', { name: /关闭|Close|common\.close/ }).click()
       await expect(page).toHaveURL(new RegExp(`/project/${projectId}/preview$`))
 
       const thumbScroller = page.locator('aside .overflow-y-auto').first()

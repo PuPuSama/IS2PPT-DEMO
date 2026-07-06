@@ -6,16 +6,16 @@ describe('normalizeErrorMessage', () => {
     localStorage.setItem('i18nextLng', 'zh-CN');
   });
 
-  test('maps style extraction image-input failures to actionable export guidance', () => {
+  test('maps old image-route style extraction failures to SVG-route guidance', () => {
     const message = normalizeErrorMessage('文本样式提取失败: 当前图片样式提取模型不支持图片输入: caption_provider 不支持图片输入');
-    expect(message).toContain('不支持图片输入');
-    expect(message).toContain('image caption');
+    expect(message).toContain('旧图片路线');
+    expect(message).toContain('SVG');
   });
 
   test('maps generic style extraction failures to editable pptx guidance', () => {
     const message = normalizeErrorMessage('文本样式提取失败: 调用视觉模型提取文本样式失败');
     expect(message).toContain('可编辑 PPTX 导出失败');
-    expect(message).toContain('允许返回半成品');
+    expect(message).toContain('返回半成品');
   });
 
   test('maps codex oauth 401 failures to relogin guidance', () => {

@@ -27,9 +27,8 @@
             ]
           },
           {
-            "group": "素材与导出",
+            "group": "文件与导出",
             "pages": [
-              "zh/features/materials",
               "zh/features/export",
               "zh/features/import-export"
             ]
@@ -65,9 +64,8 @@
             ]
           },
           {
-            "group": "Materials & Export",
+            "group": "Files & Export",
             "pages": [
-              "features/materials",
               "features/export",
               "features/import-export"
             ]

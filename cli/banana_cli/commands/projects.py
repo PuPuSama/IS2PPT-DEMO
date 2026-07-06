@@ -78,8 +78,6 @@ def projects_update(
     template_style: Optional[str] = typer.Option(None),
     extra_requirements: Optional[str] = typer.Option(None),
     image_aspect_ratio: Optional[str] = typer.Option(None),
-    export_extractor_method: Optional[str] = typer.Option(None),
-    export_inpaint_method: Optional[str] = typer.Option(None),
     data: Optional[str] = typer.Option(None, help="JSON string body"),
     data_file: Optional[str] = typer.Option(None, help="Path to JSON file body"),
 ) -> None:
@@ -93,8 +91,6 @@ def projects_update(
         ("template_style", template_style),
         ("extra_requirements", extra_requirements),
         ("image_aspect_ratio", image_aspect_ratio),
-        ("export_extractor_method", export_extractor_method),
-        ("export_inpaint_method", export_inpaint_method),
     ]:
         if val is not None:
             payload.setdefault(key, val)

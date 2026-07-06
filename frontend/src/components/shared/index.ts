@@ -8,6 +8,8 @@ export { Toast, useToast } from './Toast';
 export { StatusBadge } from './StatusBadge';
 export { ContextualStatusBadge } from './ContextualStatusBadge';
 export { ConfirmDialog, useConfirm } from './ConfirmDialog';
+export { MaterialGeneratorModal } from './MaterialGeneratorModal';
+export { MaterialCenterModal } from './MaterialCenterModal';
 export { ReferenceFileCard } from './ReferenceFileCard';
 export { ReferenceFileSelector } from './ReferenceFileSelector';
 export { FilePreviewModal } from './FilePreviewModal';

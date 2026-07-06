@@ -8,7 +8,7 @@ import { devLog } from '@/utils/logger';
 const previewI18n = {
   zh: {
     home: { title: '蕉幻' },
-    nav: { home: '主页' },
+    nav: { home: '主页', materialGenerate: '素材生成' },
     slidePreview: {
       pageGenerating: "该页面正在生成中，请稍候...", generationStarted: "已开始生成图片，请稍候...",
       versionSwitched: "已切换到该版本", outlineSaved: "大纲和描述已保存",
@@ -98,7 +98,7 @@ const previewI18n = {
   },
   en: {
     home: { title: 'Banana Slides' },
-    nav: { home: 'Home' },
+    nav: { home: 'Home', materialGenerate: 'Generate Material' },
     slidePreview: {
       pageGenerating: "This page is generating, please wait...", generationStarted: "Image generation started, please wait...",
       versionSwitched: "Switched to this version", outlineSaved: "Outline and description saved",
@@ -210,6 +210,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Button, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
+import { MaterialGeneratorModal } from '@/components/shared/MaterialGeneratorModal';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/endpoints';
 import { materialUrlToFile } from '@/components/shared/MaterialSelector';
@@ -318,6 +319,7 @@ export const SlidePreview: React.FC = () => {
   const lastProjectId = useRef<string | null>(null); // 跟踪上一次的项目ID
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   // 素材生成模态开关（模块本身可复用，这里只是示例入口）
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   // 素材选择器模态开关
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
@@ -1440,6 +1442,15 @@ export const SlidePreview: React.FC = () => {
               <span className="hidden xl:inline">{t('preview.changeTemplate')}</span>
             </Button>
             <Button
+              variant="ghost"
+              size="sm"
+              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
+              onClick={() => setIsMaterialModalOpen(true)}
+              className="hidden lg:inline-flex"
+            >
+              <span className="hidden xl:inline">{t('nav.materialGenerate')}</span>
+            </Button>
+            <Button
               variant="secondary"
               size="sm"
               icon={<ArrowLeft size={16} className="md:w-[18px] md:h-[18px]" />}
@@ -1961,6 +1972,15 @@ export const SlidePreview: React.FC = () => {
                       className="lg:hidden text-xs"
                       title={t('preview.changeTemplate')}
                     />
+                    {/* 手机端：素材生成按钮 */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<ImagePlus size={16} />}
+                      onClick={() => setIsMaterialModalOpen(true)}
+                      className="lg:hidden text-xs"
+                      title={t('nav.materialGenerate')}
+                    />
                     {/* 手机端：刷新按钮 */}
                     <Button
                       variant="ghost"
@@ -2442,6 +2462,11 @@ export const SlidePreview: React.FC = () => {
       {/* 素材生成模态组件（可复用模块，这里只是示例挂载） */}
       {projectId && (
         <>
+          <MaterialGeneratorModal
+            projectId={projectId}
+            isOpen={isMaterialModalOpen}
+            onClose={() => setIsMaterialModalOpen(false)}
+          />
           {/* 素材选择器 */}
           <MaterialSelector
             projectId={projectId}

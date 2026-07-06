@@ -1,15 +1,18 @@
 """
-Material Controller - handles material image uploads and library access
+Material Controller - handles standalone material image generation
 """
 import json
 from flask import Blueprint, request, current_app, send_file
-from models import db, Project, Material
+from models import db, Project, Material, Task
 from utils import success_response, error_response, not_found, bad_request
 from services import FileService
+from services.ai_service_manager import get_ai_service
+from services.task_manager import task_manager, generate_material_image_task, process_material_image_task
 from pathlib import Path
 from werkzeug.utils import secure_filename
 from typing import Optional
 import tempfile
+import shutil
 import time
 import zipfile
 import io
@@ -26,6 +29,9 @@ material_bp = Blueprint('materials', __name__, url_prefix='/api/projects')
 material_global_bp = Blueprint('materials_global', __name__, url_prefix='/api/materials')
 
 ALLOWED_MATERIAL_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'}
+ALLOWED_ASPECT_RATIOS = frozenset({'16:9', '21:9', '4:3', '3:2', '5:4', '1:1', '4:5', '2:3', '3:4', '9:16'})
+ALLOWED_MATERIAL_OPERATIONS = frozenset({'generate', 'edit_full', 'region_edit', 'erase_region'})
+ALLOWED_REGION_APPLY_MODES = frozenset({'overlay_selection', 'replace_full'})
 PIL_FORMAT_EXTENSIONS = {
     'PNG': '.png',
     'JPEG': '.jpg',
@@ -331,6 +337,318 @@ def _is_svg_upload(stream) -> bool:
 
     tag = match.group(1).decode('utf-8', errors='ignore')
     return tag.split(':')[-1].lower() == 'svg'
+
+
+def _parse_selection(raw_selection):
+    """Parse and validate selection payload for material processing."""
+    if not raw_selection:
+        return None
+
+    if isinstance(raw_selection, str):
+        try:
+            raw_selection = json.loads(raw_selection)
+        except json.JSONDecodeError:
+            raise ValueError("selection must be valid JSON")
+
+    if not isinstance(raw_selection, dict):
+        raise ValueError("selection must be an object")
+
+    required_fields = ('x', 'y', 'width', 'height')
+    missing = [field for field in required_fields if field not in raw_selection]
+    if missing:
+        raise ValueError(f"selection is missing required fields: {', '.join(missing)}")
+
+    try:
+        selection = {
+            'x': int(raw_selection['x']),
+            'y': int(raw_selection['y']),
+            'width': int(raw_selection['width']),
+            'height': int(raw_selection['height']),
+            'image_width': int(raw_selection['image_width']) if raw_selection.get('image_width') is not None else None,
+            'image_height': int(raw_selection['image_height']) if raw_selection.get('image_height') is not None else None,
+        }
+    except (TypeError, ValueError):
+        raise ValueError("selection fields must be integers")
+
+    if selection['width'] <= 0 or selection['height'] <= 0:
+        raise ValueError("selection width and height must be positive")
+
+    return selection
+
+
+@material_bp.route('/<project_id>/materials/generate', methods=['POST'])
+def generate_material_image(project_id):
+    """
+    POST /api/projects/{project_id}/materials/generate - Generate a standalone material image
+
+    Supports multipart/form-data:
+    - prompt: Text-to-image prompt (passed directly to the model without modification)
+    - ref_image: Main reference image (optional)
+    - extra_images: Additional reference images (multiple files, optional)
+    
+    Note: project_id can be 'none' to generate global materials (not associated with any project)
+    """
+    try:
+        # 支持 'none' 作为特殊值，表示生成全局素材
+        if project_id != 'none':
+            project = Project.query.get(project_id)
+            if not project:
+                return not_found('Project')
+        else:
+            project = None
+            project_id = None  # 设置为None表示全局素材
+
+        # Parse request data (prioritize multipart for file uploads)
+        if request.is_json:
+            data = request.get_json() or {}
+            prompt = data.get('prompt', '').strip()
+            ref_file = None
+            extra_files = []
+        else:
+            data = request.form.to_dict()
+            prompt = (data.get('prompt') or '').strip()
+            ref_file = request.files.get('ref_image')
+            extra_files = request.files.getlist('extra_images') or []
+
+        aspect_ratio = (data.get('aspect_ratio') or '').strip() or None
+        if aspect_ratio and aspect_ratio not in ALLOWED_ASPECT_RATIOS:
+            return bad_request(f"Invalid aspect ratio. Allowed values: {', '.join(sorted(ALLOWED_ASPECT_RATIOS))}")
+
+        if not prompt:
+            return bad_request("prompt is required")
+
+        # 处理project_id：对于全局素材，使用'global'作为Task的project_id
+        # Task模型要求project_id不能为null，但Material可以
+        task_project_id = project_id if project_id is not None else 'global'
+        
+        # 验证project_id（如果不是'global'）
+        if task_project_id != 'global':
+            project = Project.query.get(task_project_id)
+            if not project:
+                return not_found('Project')
+
+        # Initialize services
+        ai_service = get_ai_service()
+        file_service = FileService(current_app.config['UPLOAD_FOLDER'])
+
+        # 创建临时目录保存参考图片（后台任务会清理）
+        temp_dir = Path(tempfile.mkdtemp(dir=current_app.config['UPLOAD_FOLDER']))
+        temp_dir_str = str(temp_dir)
+
+        try:
+            ref_path = None
+            # Save main reference image to temp directory if provided
+            if ref_file and ref_file.filename:
+                ref_filename = secure_filename(ref_file.filename or 'ref.png')
+                ref_path = temp_dir / ref_filename
+                ref_file.save(str(ref_path))
+                ref_path_str = str(ref_path)
+            else:
+                ref_path_str = None
+
+            # Save additional reference images to temp directory
+            additional_ref_images = []
+            for extra in extra_files:
+                if not extra or not extra.filename:
+                    continue
+                extra_filename = secure_filename(extra.filename)
+                extra_path = temp_dir / extra_filename
+                extra.save(str(extra_path))
+                additional_ref_images.append(str(extra_path))
+
+            # Create async task for material generation
+            task = Task(
+                project_id=task_project_id,
+                task_type='GENERATE_MATERIAL',
+                status='PENDING'
+            )
+            task.set_progress({
+                'total': 1,
+                'completed': 0,
+                'failed': 0
+            })
+            db.session.add(task)
+            db.session.commit()
+
+            # Get app instance for background task
+            app = current_app._get_current_object()
+
+            # Submit background task
+            task_manager.submit_task(
+                task.id,
+                generate_material_image_task,
+                task_project_id,  # 传递给任务函数，它会处理'global'的情况
+                prompt,
+                ai_service,
+                file_service,
+                ref_path_str,
+                additional_ref_images if additional_ref_images else None,
+                aspect_ratio or (project.image_aspect_ratio if project else None) or current_app.config.get('DEFAULT_ASPECT_RATIO', '16:9'),
+                current_app.config['DEFAULT_RESOLUTION'],
+                temp_dir_str,
+                app
+            )
+
+            # Return task_id immediately (不再清理temp_dir，由后台任务清理)
+            return success_response({
+                'task_id': task.id,
+                'status': 'PENDING'
+            }, status_code=202)
+        
+        except Exception as e:
+            # Clean up temp directory on error
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+
+    except Exception as e:
+        db.session.rollback()
+        return error_response('AI_SERVICE_ERROR', str(e), 503)
+
+
+@material_bp.route('/<project_id>/materials/process', methods=['POST'])
+def process_material_image(project_id):
+    """
+    POST /api/projects/{project_id}/materials/process - Unified material swiss-army processing endpoint
+
+    Supported multipart/form-data fields:
+    - operation: generate | edit_full | region_edit | erase_region
+    - prompt: optional for erase_region, required otherwise
+    - aspect_ratio: required for generate, ignored for edit modes
+    - apply_mode: overlay_selection | replace_full (region_edit only)
+    - selection: JSON object with x/y/width/height in source-image pixels
+    - source_image: edit target image (required for edit modes)
+    - ref_image: optional primary reference
+    - extra_images: optional additional references
+    """
+    try:
+        if project_id != 'none':
+            project = Project.query.get(project_id)
+            if not project:
+                return not_found('Project')
+        else:
+            project = None
+            project_id = None
+
+        if request.is_json:
+            data = request.get_json() or {}
+            source_file = None
+            ref_file = None
+            extra_files = []
+        else:
+            data = request.form.to_dict()
+            source_file = request.files.get('source_image')
+            ref_file = request.files.get('ref_image')
+            extra_files = request.files.getlist('extra_images') or []
+
+        operation = (data.get('operation') or 'generate').strip()
+        if operation not in ALLOWED_MATERIAL_OPERATIONS:
+            return bad_request(f"Invalid operation. Allowed values: {', '.join(sorted(ALLOWED_MATERIAL_OPERATIONS))}")
+
+        prompt = (data.get('prompt') or '').strip()
+        if operation != 'erase_region' and not prompt:
+            return bad_request("prompt is required")
+
+        aspect_ratio = (data.get('aspect_ratio') or '').strip() or None
+        if operation == 'generate':
+            if aspect_ratio and aspect_ratio not in ALLOWED_ASPECT_RATIOS:
+                return bad_request(f"Invalid aspect ratio. Allowed values: {', '.join(sorted(ALLOWED_ASPECT_RATIOS))}")
+        else:
+            aspect_ratio = None
+
+        apply_mode = (data.get('apply_mode') or 'overlay_selection').strip()
+        if operation == 'region_edit' and apply_mode not in ALLOWED_REGION_APPLY_MODES:
+            return bad_request(f"Invalid apply_mode. Allowed values: {', '.join(sorted(ALLOWED_REGION_APPLY_MODES))}")
+
+        if operation in {'edit_full', 'region_edit', 'erase_region'} and (source_file is None or not source_file.filename):
+            return bad_request("source_image is required for edit operations")
+
+        try:
+            selection = _parse_selection(data.get('selection'))
+        except ValueError as exc:
+            return bad_request(str(exc))
+
+        if operation in {'region_edit', 'erase_region'} and selection is None:
+            return bad_request("selection is required for region operations")
+
+        task_project_id = project_id if project_id is not None else 'global'
+        if task_project_id != 'global':
+            project = Project.query.get(task_project_id)
+            if not project:
+                return not_found('Project')
+
+        ai_service = get_ai_service()
+        file_service = FileService(current_app.config['UPLOAD_FOLDER'])
+
+        temp_dir = Path(tempfile.mkdtemp(dir=current_app.config['UPLOAD_FOLDER']))
+        temp_dir_str = str(temp_dir)
+
+        try:
+            def _save_temp_upload(uploaded_file, fallback_name):
+                if not uploaded_file or not uploaded_file.filename:
+                    return None
+                filename = secure_filename(uploaded_file.filename or fallback_name)
+                path = temp_dir / filename
+                uploaded_file.save(str(path))
+                return str(path)
+
+            source_image_path = _save_temp_upload(source_file, 'source.png')
+            ref_path_str = _save_temp_upload(ref_file, 'ref.png')
+
+            additional_ref_images = []
+            for extra in extra_files:
+                saved = _save_temp_upload(extra, 'extra.png')
+                if saved:
+                    additional_ref_images.append(saved)
+
+            task = Task(
+                project_id=task_project_id,
+                task_type='PROCESS_MATERIAL',
+                status='PENDING'
+            )
+            task.set_progress({
+                'total': 1,
+                'completed': 0,
+                'failed': 0,
+                'operation': operation,
+                'apply_mode': apply_mode if operation == 'region_edit' else None,
+                'selection': selection if operation in {'region_edit', 'erase_region'} else None,
+            })
+            db.session.add(task)
+            db.session.commit()
+
+            app = current_app._get_current_object()
+            task_manager.submit_task(
+                task.id,
+                process_material_image_task,
+                task_project_id,
+                operation,
+                prompt,
+                ai_service,
+                file_service,
+                source_image_path,
+                ref_path_str,
+                additional_ref_images if additional_ref_images else None,
+                aspect_ratio or (project.image_aspect_ratio if project else None) or current_app.config.get('DEFAULT_ASPECT_RATIO', '16:9'),
+                current_app.config['DEFAULT_RESOLUTION'],
+                selection,
+                apply_mode,
+                temp_dir_str,
+                app
+            )
+
+            return success_response({
+                'task_id': task.id,
+                'status': 'PENDING'
+            }, status_code=202)
+        except Exception:
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+
+    except Exception as e:
+        db.session.rollback()
+        return error_response('AI_SERVICE_ERROR', str(e), 503)
 
 
 @material_bp.route('/<project_id>/materials', methods=['GET'])

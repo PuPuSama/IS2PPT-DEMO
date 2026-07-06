@@ -4,8 +4,8 @@ import { ArrowLeft, ArrowRight, FileText, Sparkles, Download, Upload, ChevronDow
 import { useT } from '@/hooks/useT';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import PresetCapsules from '@/components/shared/PresetCapsules';
-import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
-import type { Material, SvgReasoningEffort } from '@/types';
+import { useImagePaste } from '@/hooks/useImagePaste';
+import type { SvgReasoningEffort } from '@/types';
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -141,7 +141,7 @@ const detailI18n = {
     }
   }
 };
-import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, MaterialSelector, ImportMarkdownModal } from '@/components/shared';
+import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
 import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
@@ -334,12 +334,6 @@ export const DetailEditor: React.FC = () => {
   const [descRequirements, setDescRequirements] = useState('');
   const [isDescReqDirty, setIsDescReqDirty] = useState(false);
   const reqTextareaRef = useRef<MarkdownTextareaRef>(null);
-
-  const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
-  const handleMaterialSelect = useCallback((materials: Material[]) => {
-    const markdown = buildMaterialsMarkdown(materials, setDescRequirements);
-    reqTextareaRef.current?.insertAtCursor(markdown + '\n');
-  }, []);
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -941,7 +935,6 @@ export const DetailEditor: React.FC = () => {
                         onChange={(val) => { setDescRequirements(val); setIsDescReqDirty(true); }}
                         onPaste={handleReqImagePaste}
                         onFiles={handleReqImageFiles}
-                        onSelectFromLibrary={() => setIsMaterialSelectorOpen(true)}
                         placeholder={t('detail.descRequirementsPlaceholder')}
                         className="ring-inset"
                         rows={2}
@@ -1104,13 +1097,6 @@ export const DetailEditor: React.FC = () => {
         cancelButtonLabel={t('detail.importCancel')}
         emptyError={t('detail.messages.importContentEmpty')}
         readFileError={t('detail.messages.importReadFailed')}
-      />
-      <MaterialSelector
-        projectId={projectId}
-        isOpen={isMaterialSelectorOpen}
-        onClose={() => setIsMaterialSelectorOpen(false)}
-        onSelect={handleMaterialSelect}
-        multiple
       />
     </div>
   );

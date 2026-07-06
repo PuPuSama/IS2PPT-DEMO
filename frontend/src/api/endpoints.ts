@@ -768,134 +768,8 @@ export const listExports = async (
   return response.data;
 };
 
-// ===== 素材生成 =====
-
 /**
- * 生成单张素材图片（不绑定具体页面）
- * 现在返回异步任务ID，需要通过getTaskStatus轮询获取结果
- */
-export const generateMaterialImage = async (
-  projectId: string,
-  prompt: string,
-  refImage?: File | null,
-  extraImages?: File[],
-  aspectRatio?: string
-): Promise<ApiResponse<{ task_id: string; status: string }>> => {
-  const formData = new FormData();
-  formData.append('prompt', prompt);
-  if (aspectRatio) {
-    formData.append('aspect_ratio', aspectRatio);
-  }
-  if (refImage) {
-    formData.append('ref_image', refImage);
-  }
-
-  if (extraImages && extraImages.length > 0) {
-    extraImages.forEach((file) => {
-      formData.append('extra_images', file);
-    });
-  }
-
-  const response = await apiClient.post<ApiResponse<{ task_id: string; status: string }>>(
-    `/api/projects/${projectId}/materials/generate`,
-    formData
-  );
-  return response.data;
-};
-
-export type MaterialProcessOperation =
-  | 'generate'
-  | 'edit_full'
-  | 'region_edit'
-  | 'erase_region';
-
-export interface MaterialSelectionRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  image_width: number;
-  image_height: number;
-}
-
-export interface ProcessMaterialOptions {
-  operation: MaterialProcessOperation;
-  prompt?: string;
-  sourceImage?: File | null;
-  refImage?: File | null;
-  extraImages?: File[];
-  aspectRatio?: string;
-  selection?: MaterialSelectionRect | null;
-  applyMode?: 'overlay_selection' | 'replace_full';
-}
-
-export const processMaterialImage = async (
-  projectId: string,
-  options: ProcessMaterialOptions
-): Promise<ApiResponse<{ task_id: string; status: string }>> => {
-  const formData = new FormData();
-  formData.append('operation', options.operation);
-  if (options.prompt) {
-    formData.append('prompt', options.prompt);
-  }
-  if (options.aspectRatio) {
-    formData.append('aspect_ratio', options.aspectRatio);
-  }
-  if (options.applyMode) {
-    formData.append('apply_mode', options.applyMode);
-  }
-  if (options.selection) {
-    formData.append('selection', JSON.stringify(options.selection));
-  }
-  if (options.sourceImage) {
-    formData.append('source_image', options.sourceImage);
-  }
-  if (options.refImage) {
-    formData.append('ref_image', options.refImage);
-  }
-  if (options.extraImages && options.extraImages.length > 0) {
-    options.extraImages.forEach((file) => {
-      formData.append('extra_images', file);
-    });
-  }
-
-  const response = await apiClient.post<ApiResponse<{ task_id: string; status: string }>>(
-    `/api/projects/${projectId}/materials/process`,
-    formData
-  );
-  return response.data;
-};
-
-/**
- * 获取素材列表
- * @param projectId 项目ID，可选
- *   - If provided and not 'all' or 'none': Get materials for specific project via /api/projects/{projectId}/materials
- *   - If 'all': Get all materials via /api/materials?project_id=all
- *   - If 'none': Get global materials (not bound to any project) via /api/materials?project_id=none
- *   - If not provided: Get all materials via /api/materials
- */
-export const listMaterials = async (
-  projectId?: string
-): Promise<ApiResponse<{ materials: Material[]; count: number }>> => {
-  let url: string;
-
-  if (!projectId || projectId === 'all') {
-    // Get all materials using global endpoint
-    url = '/api/materials?project_id=all';
-  } else if (projectId === 'none') {
-    // Get global materials (not bound to any project)
-    url = '/api/materials?project_id=none';
-  } else {
-    // Get materials for specific project
-    url = `/api/projects/${projectId}/materials`;
-  }
-
-  const response = await apiClient.get<ApiResponse<{ materials: Material[]; count: number }>>(url);
-  return response.data;
-};
-
-/**
- * 上传素材图片
+ * 上传编辑器内联图片
  * @param file 图片文件
  * @param projectId 可选的项目ID
  *   - If provided: Upload material bound to the project
@@ -927,14 +801,6 @@ export const uploadMaterial = async (
 };
 
 /**
- * 删除素材
- */
-export const deleteMaterial = async (materialId: string): Promise<ApiResponse<{ id: string }>> => {
-  const response = await apiClient.delete<ApiResponse<{ id: string }>>(`/api/materials/${materialId}`);
-  return response.data;
-};
-
-/**
  * Generate caption for an existing material
  */
 export const getMaterialCaption = async (materialId: string): Promise<ApiResponse<{ caption: string }>> => {
@@ -947,47 +813,6 @@ export const getMaterialCaption = async (materialId: string): Promise<ApiRespons
  */
 export const getMaterialByUrl = async (url: string): Promise<ApiResponse<Material>> => {
   const response = await apiClient.get<ApiResponse<Material>>(`/api/materials/by-url`, { params: { url } });
-  return response.data;
-};
-
-/**
- * Download selected materials bundled as a zip archive.
- */
-export const downloadMaterialsZip = async (
-  materialIds: string[]
-): Promise<ApiResponse<{ download_url: string }>> => {
-  const { data: blob } = await apiClient.post<Blob>(
-    '/api/materials/download',
-    { material_ids: materialIds },
-    { responseType: 'blob' },
-  );
-
-  const href = URL.createObjectURL(blob);
-  const link = Object.assign(document.createElement('a'), {
-    href,
-    download: 'materials.zip',
-  });
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(href);
-
-  return { success: true, data: { download_url: '' } };
-};
-
-/**
- * 关联素材到项目（通过URL）
- * @param projectId 项目ID
- * @param materialUrls 素材URL列表
- */
-export const associateMaterialsToProject = async (
-  projectId: string,
-  materialUrls: string[]
-): Promise<ApiResponse<{ updated_ids: string[]; count: number }>> => {
-  const response = await apiClient.post<ApiResponse<{ updated_ids: string[]; count: number }>>(
-    '/api/materials/associate',
-    { project_id: projectId, material_urls: materialUrls }
-  );
   return response.data;
 };
 

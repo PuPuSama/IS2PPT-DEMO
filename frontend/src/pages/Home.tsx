@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Search, Settings, FolderOpen, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
+import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
+import { Button, Card, useToast, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
-import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
+import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, createPptRenovationProject } from '@/api/endpoints';
 import { useProjectStore } from '@/store/useProjectStore';
 import { devLog } from '@/utils/logger';
 import { useTheme } from '@/hooks/useTheme';
-import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
-import type { Material } from '@/types';
+import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 
@@ -23,7 +22,6 @@ const ALLOWED_DOC_EXTENSIONS = ['pdf', 'docx', 'pptx', 'doc', 'ppt', 'xlsx', 'xl
 const homeI18n = {
   zh: {
     nav: {
-      materialGenerate: '素材生成', materialCenter: '素材中心',
       history: '历史项目', settings: '设置', help: '帮助'
     },
     settings: {
@@ -101,7 +99,6 @@ const homeI18n = {
   },
   en: {
     nav: {
-      materialGenerate: 'Generate Material', materialCenter: 'Material Center',
       history: 'History', settings: 'Settings', help: 'Help'
     },
     settings: {
@@ -192,8 +189,6 @@ export const Home: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<File | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState<string | null>(null);
-  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [isMaterialCenterOpen, setIsMaterialCenterOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
@@ -257,13 +252,8 @@ export const Home: React.FC = () => {
     }
   }, []);
 
-  const handleOpenMaterialModal = () => {
-    // 在主页始终生成全局素材，不关联任何项目
-    setIsMaterialModalOpen(true);
-  };
 
   const textareaRef = useRef<MarkdownTextareaRef>(null);
-  const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
 
   // Callback to insert at cursor position in the textarea
   const insertAtCursor = useCallback((markdown: string) => {
@@ -278,11 +268,6 @@ export const Home: React.FC = () => {
     warnUnsupportedTypes: false,
     insertAtCursor,
   });
-
-  const handleMaterialSelect = useCallback((materials: Material[]) => {
-    const markdown = buildMaterialsMarkdown(materials, setContent);
-    textareaRef.current?.insertAtCursor(markdown + '\n');
-  }, [setContent]);
 
   // 检测粘贴事件，图片走 hook，文档走独立逻辑
   const handlePaste = async (e: React.ClipboardEvent<HTMLElement>) => {
@@ -653,28 +638,6 @@ export const Home: React.FC = () => {
           }
         }
       }
-      
-      // 关联图片素材到项目（解析content中的markdown图片链接）
-      const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-      const materialUrls: string[] = [];
-      let match;
-      while ((match = imageRegex.exec(content)) !== null) {
-        materialUrls.push(match[2]); // match[2] 是 URL
-      }
-      
-      if (materialUrls.length > 0) {
-        devLog(`Associating ${materialUrls.length} materials to project ${projectId}:`, materialUrls);
-        try {
-          const response = await associateMaterialsToProject(projectId, materialUrls);
-          devLog('Materials associated successfully:', response);
-        } catch (error) {
-          console.error('Failed to associate materials:', error);
-          // 不影响主流程，继续执行
-        }
-      } else {
-        devLog('No materials to associate');
-      }
-      
       navigate(`/project/${projectId}/outline`);
     } catch (error: any) {
       console.error('创建项目失败:', error);
@@ -711,44 +674,6 @@ export const Home: React.FC = () => {
             </span>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
-            {/* 桌面端：带文字的素材生成按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={handleOpenMaterialModal}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
-            >
-              <span className="hidden md:inline">{t('nav.materialGenerate')}</span>
-            </Button>
-            {/* 手机端：仅图标的素材生成按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} />}
-              onClick={handleOpenMaterialModal}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.materialGenerate')}
-            />
-            {/* 桌面端：带文字的素材中心按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<FolderOpen size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsMaterialCenterOpen(true)}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
-            >
-              <span className="hidden md:inline">{t('nav.materialCenter')}</span>
-            </Button>
-            {/* 手机端：仅图标的素材中心按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<FolderOpen size={16} />}
-              onClick={() => setIsMaterialCenterOpen(true)}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
-              title={t('nav.materialCenter')}
-            />
             <Button
               variant="ghost"
               size="sm"
@@ -1031,7 +956,6 @@ export const Home: React.FC = () => {
               onPaste={handlePaste}
               onFiles={handleImageFiles}
               onDocumentFiles={handleDocumentFiles}
-              onSelectFromLibrary={() => setIsMaterialSelectorOpen(true)}
               rows={activeTab === 'idea' ? 4 : 8}
               className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white focus-within:border-banana-400 dark:focus-within:border-banana transition-colors duration-200"
               toolbarLeft={
@@ -1171,24 +1095,6 @@ export const Home: React.FC = () => {
         </Card>
       </main>
       <ToastContainer />
-      {/* 素材生成模态 - 在主页始终生成全局素材 */}
-      <MaterialGeneratorModal
-        projectId={null}
-        isOpen={isMaterialModalOpen}
-        onClose={() => setIsMaterialModalOpen(false)}
-      />
-      {/* 素材中心模态 */}
-      <MaterialCenterModal
-        isOpen={isMaterialCenterOpen}
-        onClose={() => setIsMaterialCenterOpen(false)}
-      />
-      {/* 从素材库选择插入到文本框 */}
-      <MaterialSelector
-        isOpen={isMaterialSelectorOpen}
-        onClose={() => setIsMaterialSelectorOpen(false)}
-        onSelect={handleMaterialSelect}
-        multiple
-      />
       {/* 参考文件选择器 */}
       {/* 在 Home 页面，始终查询全局文件，因为此时还没有项目 */}
       <ReferenceFileSelector

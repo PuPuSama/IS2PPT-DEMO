@@ -438,7 +438,7 @@ def get_description_to_outline_prompt_markdown(project_context: 'ProjectContext'
 --- 页面文字结束 ---
 
 图片素材：
-[如果参考文件、用户输入或素材库内容中存在真实图片 URL，请逐字以 markdown 格式引用；否则省略此部分。严禁编造、猜测或改写图片路径。]
+[如果参考文件或用户输入中存在真实图片 URL，请逐字以 markdown 格式引用；否则省略此部分。严禁编造、猜测或改写图片路径。]
 {_format_extra_field_instructions(extra_fields)}
 """
 
@@ -583,7 +583,7 @@ def get_page_description_prompt(project_context: 'ProjectContext', outline: list
 --- 页面文字结束 ---
 
 图片素材:
-[只有当参考文件、用户输入或素材库内容中已经明确出现了真实图片 URL 时才添加；否则省略图片素材字段]
+[只有当参考文件或用户输入中已经明确出现了真实图片 URL 时才添加；否则省略图片素材字段]
 {_format_extra_field_instructions(extra_fields)}
 
 ## 关于图片
@@ -772,7 +772,7 @@ def get_all_descriptions_stream_prompt(project_context: 'ProjectContext',
 - 细致程度要求：{DETAIL_LEVEL_SPECS[detail_level]}
 
 ## 输出格式
-每页默认包含"页面文字"和"图片素材"两个部分。图片素材只能引用参考文件、用户输入或素材库内容中已经真实出现的图片 URL（以 /files/ 开头的本地路径或 http/https URL），如果上下文中没有真实图片 URL 则省略该部分。
+每页默认包含"页面文字"和"图片素材"两个部分。图片素材只能引用参考文件或用户输入中已经真实出现的图片 URL（以 /files/ 开头的本地路径或 http/https URL），如果上下文中没有真实图片 URL 则省略该部分。
 严禁编造、猜测或改写图片路径。不要输出类似 /files/队标.png、/files/图片.jpg 这种未提供的路径；如果只是希望页面里有某类图片，请写进“视觉元素”等字段，而不是写成 markdown 图片链接。
 ```
 <!-- BEGIN -->
@@ -783,7 +783,7 @@ def get_all_descriptions_stream_prompt(project_context: 'ProjectContext',
 --- 页面文字结束 ---
 
 图片素材：
-[如果参考文件、用户输入或素材库内容中存在真实图片 URL，请逐字引用，例如 ![描述](/files/mineru/真实路径/image.png)；否则省略此部分]
+[如果参考文件或用户输入中存在真实图片 URL，请逐字引用，例如 ![描述](/files/mineru/真实路径/image.png)；否则省略此部分]
 {_format_extra_field_instructions(extra_fields)}
 <!-- PAGE_END -->
 

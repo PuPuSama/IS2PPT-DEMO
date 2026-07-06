@@ -26,60 +26,6 @@ export const escapeMarkdown = (text: string): string => {
   return text.replace(/[[\]()]/g, '\\$&');
 };
 
-/**
- * Build markdown for selected materials.
- * For materials without a caption, async-fetches one via the caption API
- * and replaces the fallback alt text afterwards.
- */
-export const buildMaterialsMarkdown = (
-  materials: import('@/types').Material[],
-  setContent?: (updater: (prev: string) => string) => void,
-): string => {
-  const lines: string[] = [];
-  const needCaption: { material: import('@/types').Material; fallback: string }[] = [];
-
-  for (const m of materials) {
-    const fallback = m.original_filename || m.filename || 'image';
-    if (m.caption) {
-      lines.push(`![${escapeMarkdown(m.caption)}](${m.url})`);
-    } else {
-      // Show spinner chip while resolving caption
-      lines.push(`![${escapeMarkdown(fallback)}](${RESOLVING_PREFIX}${m.url})`);
-      needCaption.push({ material: m, fallback });
-    }
-  }
-
-  // Async-fetch captions for materials that don't have one yet
-  if (needCaption.length > 0 && setContent) {
-    (async () => {
-      const { getMaterialCaption } = await import('@/api/endpoints');
-      const replacements = new Map<string, string>();
-      for (const { material, fallback } of needCaption) {
-        const oldMd = `![${escapeMarkdown(fallback)}](${RESOLVING_PREFIX}${material.url})`;
-        try {
-          const response = await getMaterialCaption(material.id);
-          const caption = response.data?.caption || fallback;
-          replacements.set(oldMd, `![${escapeMarkdown(caption)}](${material.url})`);
-        } catch {
-          // Caption failed — remove resolving prefix, keep fallback
-          replacements.set(oldMd, `![${escapeMarkdown(fallback)}](${material.url})`);
-        }
-      }
-      if (replacements.size > 0) {
-        setContent(prev => {
-          let content = prev;
-          for (const [oldMd, newMd] of replacements.entries()) {
-            content = content.replaceAll(oldMd, newMd);
-          }
-          return content;
-        });
-      }
-    })();
-  }
-
-  return lines.join('\n');
-};
-
 /** Generate a placeholder markdown for a file (exported for MarkdownTextarea) */
 export const generatePlaceholder = (file: File): { blobUrl: string; markdown: string } => {
   const blobUrl = URL.createObjectURL(file);
@@ -310,7 +256,7 @@ export const useImagePaste = ({
               setContentRef.current(prev => {
                 let content = prev;
                 for (const [oldMd, newMd] of replacements.entries()) {
-                  content = content.replaceAll(oldMd, newMd);
+                  content = content.split(oldMd).join(newMd);
                 }
                 return content;
               });

@@ -8,16 +8,16 @@ import { devLog } from '@/utils/logger';
 const previewI18n = {
   zh: {
     home: { title: '蕉幻' },
-    nav: { home: '主页', materialGenerate: '素材生成' },
+    nav: { home: '主页' },
     slidePreview: {
       pageGenerating: "该页面正在生成中，请稍候...", generationStarted: "已开始生成图片，请稍候...",
       versionSwitched: "已切换到该版本", outlineSaved: "大纲和描述已保存",
-      materialsAdded: "已添加 {{count}} 个素材", exportStarted: "导出任务已开始，可在导出任务面板查看进度",
+      exportStarted: "导出任务已开始，可在导出任务面板查看进度",
       cannotRefresh: "无法刷新：缺少项目ID", refreshSuccess: "刷新成功",
       extraRequirementsSaved: "额外要求已保存", styleDescSaved: "风格描述已保存",
       exportSettingsSaved: "导出设置已保存", aspectRatioSaved: "画面比例已保存", loadTemplateFailed: "加载模板失败", templateChanged: "模板更换成功",
       saveFailed: "保存失败: {{error}}", refreshFailed: "刷新失败，请稍后重试",
-      loadMaterialFailed: "加载素材失败: {{error}}", templateChangeFailed: "更换模板失败: {{error}}",
+      templateChangeFailed: "更换模板失败: {{error}}",
       versionSwitchFailed: "切换失败: {{error}}", unknownError: "未知错误",
       regionCropSuccess: "已将选中区域添加为参考图片，可在下方\"上传图片\"中查看与删除",
       regionCropFailed: "无法从当前图片裁剪区域（浏览器安全限制）。可以尝试手动上传参考图片。"
@@ -65,7 +65,7 @@ const previewI18n = {
       enterPointsPerLine: "每行输入一个要点", enterDescription: "输入页面的详细描述内容",
       selectContextImages: "选择上下文图片（可选）", useTemplateImage: "使用模板图片",
       imagesInDescription: "描述中的图片", uploadImages: "上传图片",
-      selectFromMaterials: "从素材库选择", upload: "上传",
+      upload: "上传",
       editPromptLabel: "输入修改指令(将自动添加页面描述)",
       editPromptPlaceholder: "例如：将框选区域内的素材移除、把背景改成蓝色、增大标题字号、更改文本框样式为虚线...",
       saveOutlineOnly: "仅保存大纲/描述", generateImage: "生成图片",
@@ -98,16 +98,16 @@ const previewI18n = {
   },
   en: {
     home: { title: 'Banana Slides' },
-    nav: { home: 'Home', materialGenerate: 'Generate Material' },
+    nav: { home: 'Home' },
     slidePreview: {
       pageGenerating: "This page is generating, please wait...", generationStarted: "Image generation started, please wait...",
       versionSwitched: "Switched to this version", outlineSaved: "Outline and description saved",
-      materialsAdded: "Added {{count}} material(s)", exportStarted: "Export task started, check progress in export tasks panel",
+      exportStarted: "Export task started, check progress in export tasks panel",
       cannotRefresh: "Cannot refresh: Missing project ID", refreshSuccess: "Refresh successful",
       extraRequirementsSaved: "Extra requirements saved", styleDescSaved: "Style description saved",
       exportSettingsSaved: "Export settings saved", aspectRatioSaved: "Aspect ratio saved", loadTemplateFailed: "Failed to load template", templateChanged: "Template changed successfully",
       saveFailed: "Save failed: {{error}}", refreshFailed: "Refresh failed, please try again later",
-      loadMaterialFailed: "Failed to load material: {{error}}", templateChangeFailed: "Failed to change template: {{error}}",
+      templateChangeFailed: "Failed to change template: {{error}}",
       versionSwitchFailed: "Switch failed: {{error}}", unknownError: "Unknown error",
       regionCropSuccess: "Selected region added as reference image. You can view and delete it in \"Upload Images\" below.",
       regionCropFailed: "Cannot crop from current image (browser security restriction). Try uploading a reference image manually."
@@ -155,7 +155,7 @@ const previewI18n = {
       enterPointsPerLine: "Enter one key point per line", enterDescription: "Enter detailed page description",
       selectContextImages: "Select Context Images (Optional)", useTemplateImage: "Use Template Image",
       imagesInDescription: "Images in Description", uploadImages: "Upload Images",
-      selectFromMaterials: "Select from Materials", upload: "Upload",
+      upload: "Upload",
       editPromptLabel: "Enter edit instructions (page description will be auto-added)",
       editPromptPlaceholder: "e.g., Remove elements in selected area, change background to blue, increase title font size, change text box style to dashed...",
       saveOutlineOnly: "Save Outline/Description Only", generateImage: "Generate Image",
@@ -200,7 +200,6 @@ import {
   X,
   Upload,
   Image as ImageIcon,
-  ImagePlus,
   Settings,
   CheckSquare,
   Square,
@@ -209,12 +208,9 @@ import {
   Loader2,
   Info,
 } from 'lucide-react';
-import { Button, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
-import { MaterialGeneratorModal } from '@/components/shared/MaterialGeneratorModal';
+import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/endpoints';
-import { materialUrlToFile } from '@/components/shared/MaterialSelector';
-import type { Material } from '@/api/endpoints';
 import { SlideCard } from '@/components/preview/SlideCard';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
@@ -318,11 +314,7 @@ export const SlidePreview: React.FC = () => {
   const isEditingTemplateStyle = useRef(false); // 跟踪用户是否正在编辑风格描述
   const lastProjectId = useRef<string | null>(null); // 跟踪上一次的项目ID
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
-  // 素材生成模态开关（模块本身可复用，这里只是示例入口）
-  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  // 素材选择器模态开关
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
-  const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
   // 导出设置
   const [exportAllowPartial, setExportAllowPartial] = useState<boolean>(
     currentProject?.export_allow_partial || false
@@ -882,27 +874,6 @@ export const SlidePreview: React.FC = () => {
       uploadedFileUrls.current.forEach(url => URL.revokeObjectURL(url));
     };
   }, []);
-
-  const handleSelectMaterials = async (materials: Material[]) => {
-    try {
-      // 将选中的素材转换为File对象并添加到上传列表
-      const files = await Promise.all(
-        materials.map((material) => materialUrlToFile(material))
-      );
-      setSelectedContextImages((prev) => ({
-        ...prev,
-        uploadedFiles: [...prev.uploadedFiles, ...files],
-      }));
-      show({ message: t('slidePreview.materialsAdded', { count: materials.length }), type: 'success' });
-    } catch (error: any) {
-      console.error('加载素材失败:', error);
-      show({
-        message: t('slidePreview.loadMaterialFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error',
-      });
-    }
-  };
-
   // 编辑弹窗打开时，实时把输入与图片选择写入缓存（前端会话内）
   useEffect(() => {
     if (!isEditModalOpen || !currentProject) return;
@@ -1442,15 +1413,6 @@ export const SlidePreview: React.FC = () => {
               <span className="hidden xl:inline">{t('preview.changeTemplate')}</span>
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsMaterialModalOpen(true)}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('nav.materialGenerate')}</span>
-            </Button>
-            <Button
               variant="secondary"
               size="sm"
               icon={<ArrowLeft size={16} className="md:w-[18px] md:h-[18px]" />}
@@ -1972,15 +1934,6 @@ export const SlidePreview: React.FC = () => {
                       className="lg:hidden text-xs"
                       title={t('preview.changeTemplate')}
                     />
-                    {/* 手机端：素材生成按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<ImagePlus size={16} />}
-                      onClick={() => setIsMaterialModalOpen(true)}
-                      className="lg:hidden text-xs"
-                      title={t('nav.materialGenerate')}
-                    />
                     {/* 手机端：刷新按钮 */}
                     <Button
                       variant="ghost"
@@ -2298,16 +2251,6 @@ export const SlidePreview: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('preview.uploadImages')}:</label>
-                {projectId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={<ImagePlus size={16} />}
-                    onClick={() => setIsMaterialSelectorOpen(true)}
-                  >
-                    {t('preview.selectFromMaterials')}
-                  </Button>
-                )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedContextImages.uploadedFiles.map((_, idx) => (
@@ -2459,22 +2402,8 @@ export const SlidePreview: React.FC = () => {
           </div>
         </div>
       </Modal>
-      {/* 素材生成模态组件（可复用模块，这里只是示例挂载） */}
       {projectId && (
         <>
-          <MaterialGeneratorModal
-            projectId={projectId}
-            isOpen={isMaterialModalOpen}
-            onClose={() => setIsMaterialModalOpen(false)}
-          />
-          {/* 素材选择器 */}
-          <MaterialSelector
-            projectId={projectId}
-            isOpen={isMaterialSelectorOpen}
-            onClose={() => setIsMaterialSelectorOpen(false)}
-            onSelect={handleSelectMaterials}
-            multiple={true}
-          />
           {/* 项目设置模态框 */}
           <ProjectSettingsModal
             isOpen={isProjectSettingsOpen}

@@ -112,13 +112,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal, ReferenceFileList, MaterialSelector, ImportMarkdownModal } from '@/components/shared';
+import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { OutlineCard } from '@/components/outline/OutlineCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineOutline, updateProject, addPage } from '@/api/endpoints';
-import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
-import type { Material } from '@/types';
+import { useImagePaste } from '@/hooks/useImagePaste';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 import type { Page } from '@/types';
 
@@ -223,20 +222,6 @@ export const OutlineEditor: React.FC = () => {
   const reqTextareaRef = useRef<MarkdownTextareaRef>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
-
-  const [isMaterialSelectorOpen, setIsMaterialSelectorOpen] = useState(false);
-  const [activeMaterialTarget, setActiveMaterialTarget] = useState<'input' | 'requirements'>('input');
-
-  const handleInputMaterialSelect = useCallback((materials: Material[]) => {
-    const markdown = buildMaterialsMarkdown(materials, setInputText);
-    const targetRef = desktopTextareaRef.current || mobileTextareaRef.current;
-    targetRef?.insertAtCursor(markdown + '\n');
-  }, []);
-
-  const handleReqMaterialSelect = useCallback((materials: Material[]) => {
-    const markdown = buildMaterialsMarkdown(materials, setOutlineRequirements);
-    reqTextareaRef.current?.insertAtCursor(markdown + '\n');
-  }, []);
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -651,7 +636,6 @@ export const OutlineEditor: React.FC = () => {
                       onChange={(val) => { setOutlineRequirements(val); setIsRequirementsDirty(true); }}
                       onPaste={handleReqImagePaste}
                       onFiles={handleReqImageFiles}
-                      onSelectFromLibrary={() => { setActiveMaterialTarget('requirements'); setIsMaterialSelectorOpen(true); }}
                       placeholder={t('outline.outlineRequirementsPlaceholder')}
                       className="ring-inset"
                       rows={2}
@@ -756,7 +740,6 @@ export const OutlineEditor: React.FC = () => {
                 onBlur={handleSaveInputText}
                 onPaste={handleImagePaste}
                 onFiles={handleImageFiles}
-                onSelectFromLibrary={() => { setActiveMaterialTarget('input'); setIsMaterialSelectorOpen(true); }}
                 placeholder={inputPlaceholder}
                 rows={12}
                 className="border-0 rounded-none shadow-none"
@@ -798,7 +781,6 @@ export const OutlineEditor: React.FC = () => {
               onBlur={handleSaveInputText}
               onPaste={handleImagePaste}
               onFiles={handleImageFiles}
-              onSelectFromLibrary={() => { setActiveMaterialTarget('input'); setIsMaterialSelectorOpen(true); }}
               placeholder={inputPlaceholder}
               rows={6}
               className="border-0 rounded-none shadow-none"
@@ -906,13 +888,6 @@ export const OutlineEditor: React.FC = () => {
         cancelButtonLabel={t('outline.importCancel')}
         emptyError={t('outline.messages.importContentEmpty')}
         readFileError={t('outline.messages.importReadFailed')}
-      />
-      <MaterialSelector
-        projectId={projectId}
-        isOpen={isMaterialSelectorOpen}
-        onClose={() => setIsMaterialSelectorOpen(false)}
-        onSelect={activeMaterialTarget === 'input' ? handleInputMaterialSelect : handleReqMaterialSelect}
-        multiple
       />
     </div>
   );

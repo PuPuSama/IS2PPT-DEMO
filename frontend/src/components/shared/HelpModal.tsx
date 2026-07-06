@@ -40,7 +40,7 @@ const i18nDict = {
       cases: { softwareDev: '软件开发最佳实践', deepseek: 'DeepSeek-V3.2技术展示', prefabFood: '预制菜智能产线装备研发和产业化', moneyHistory: '钱的演变：从贝壳到纸币的旅程' },
       feat: {
         paths: { t: '灵活多样的创作路径', d: '支持想法、大纲、页面描述三种起步方式，满足不同创作习惯。', items: ['一句话生成：输入一个主题，AI 自动生成结构清晰的大纲和逐页内容描述', '自然语言编辑：支持以 Vibe 形式口头修改大纲或描述，AI 实时响应调整', '大纲/描述模式：既可一键批量生成，也可手动调整细节'] },
-        parse: { t: '强大的素材解析能力', d: '上传多种格式文件，自动解析内容，为生成提供丰富素材。', items: ['多格式支持：上传 PDF/Docx/MD/Txt 等文件，后台自动解析内容', '智能提取：自动识别文本中的关键点、图片链接和图表信息', '风格参考：支持上传参考图片或模板，定制 PPT 风格'] },
+        parse: { t: '强大的参考文件解析能力', d: '上传多种格式文件，自动解析内容，为生成提供参考信息。', items: ['多格式支持：上传 PDF/Docx/MD/Txt 等文件，后台自动解析内容', '智能提取：自动识别文本中的关键点、图片链接和图表信息', '风格参考：支持上传参考图片或模板，定制 PPT 风格'] },
         vibe: { t: '「Vibe」式自然语言修改', d: '不再受限于复杂的菜单按钮，直接通过自然语言下达修改指令。', items: ['局部重绘：对不满意的区域进行口头式修改（如「把这个图换成饼图」）', '整页优化：基于 nano banana pro🍌 生成高清、风格统一的页面'] },
         export: { t: '开箱即用的格式导出', d: '一键导出标准格式，直接演示无需调整。', items: ['多格式支持：一键导出标准 PPTX 或 PDF 文件', '完美适配：默认 16:9 比例，排版无需二次调整'] },
       },
@@ -76,7 +76,7 @@ const i18nDict = {
       cases: { softwareDev: 'Software Development Best Practices', deepseek: 'DeepSeek-V3.2 Technical Showcase', prefabFood: 'Prefab Food Intelligent Production Line R&D', moneyHistory: 'The Evolution of Money: From Shells to Paper' },
       feat: {
         paths: { t: 'Flexible Creation Paths', d: 'Support idea, outline, and page description as starting points to meet different creative habits.', items: ['One-line generation: Enter a topic, AI automatically generates a clear outline and page-by-page content description', 'Natural language editing: Support Vibe-style verbal modification of outlines or descriptions, AI responds in real-time', 'Outline/Description mode: Either batch generate with one click, or manually adjust details'] },
-        parse: { t: 'Powerful Material Parsing', d: 'Upload multiple format files, automatically parse content to provide rich materials for generation.', items: ['Multi-format support: Upload PDF/Docx/MD/Txt files, backend automatically parses content', 'Smart extraction: Automatically identify key points, image links and chart information in text', 'Style reference: Support uploading reference images or templates to customize PPT style'] },
+        parse: { t: 'Powerful Reference File Parsing', d: 'Upload multiple format files and automatically parse content for generation context.', items: ['Multi-format support: Upload PDF/Docx/MD/Txt files, backend automatically parses content', 'Smart extraction: Automatically identify key points, image links and chart information in text', 'Style reference: Support uploading reference images or templates to customize PPT style'] },
         vibe: { t: '"Vibe" Style Natural Language Editing', d: 'No longer limited by complex menu buttons, directly issue modification commands through natural language.', items: ['Partial redraw: Make verbal modifications to unsatisfying areas (e.g., "Change this chart to a pie chart")', 'Full page optimization: Generate HD, style-consistent pages based on nano banana pro🍌'] },
         export: { t: 'Ready-to-Use Format Export', d: 'One-click export to standard formats, present directly without adjustments.', items: ['Multi-format support: One-click export to standard PPTX or PDF files', 'Perfect fit: Default 16:9 ratio, no secondary layout adjustments needed'] },
       },

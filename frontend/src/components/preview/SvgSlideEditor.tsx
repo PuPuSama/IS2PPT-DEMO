@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Code2, Eye, Group as GroupIcon, Loader2, Minus, Plus, RotateCcw, Save, Ungroup as UngroupIcon, X } from 'lucide-react';
 import { getPageSvg, savePageSvg } from '@/api/endpoints';
@@ -127,7 +127,10 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
   const [zoom, setZoom] = useState(1);
 
   const viewportRef = useRef<HTMLDivElement>(null);
+  const slideRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(1);
+  const zoomAnchorRef = useRef<{ clientX: number; clientY: number; anchorX: number; anchorY: number } | null>(null);
   const selectedRef = useRef<SVGGraphicsElement[]>([]);
   const suppressInject = useRef(false);
   const gesture = useRef<any>(null);
@@ -191,6 +194,61 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
   }, [recomputeBox]);
 
   const deselect = useCallback(() => { setSelection([]); }, [setSelection]);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useLayoutEffect(() => {
+    const anchor = zoomAnchorRef.current;
+    if (!anchor) return;
+    zoomAnchorRef.current = null;
+
+    const vp = viewportRef.current;
+    const slide = slideRef.current;
+    if (!vp || !slide) return;
+
+    const nextRect = slide.getBoundingClientRect();
+    vp.scrollLeft += nextRect.left + nextRect.width * anchor.anchorX - anchor.clientX;
+    vp.scrollTop += nextRect.top + nextRect.height * anchor.anchorY - anchor.clientY;
+    recomputeBox();
+  }, [zoom, recomputeBox]);
+
+  const zoomAtClientPoint = useCallback((
+    clientX: number,
+    clientY: number,
+    resolveZoom: (current: number) => number,
+  ) => {
+    const vp = viewportRef.current;
+    const slide = slideRef.current;
+    const current = zoomRef.current;
+    const next = clampZoom(resolveZoom(current));
+    if (next === current) return;
+
+    if (!vp || !slide) {
+      zoomRef.current = next;
+      setZoom(next);
+      return;
+    }
+
+    const slideRect = slide.getBoundingClientRect();
+    const anchorX = slideRect.width ? (clientX - slideRect.left) / slideRect.width : 0.5;
+    const anchorY = slideRect.height ? (clientY - slideRect.top) / slideRect.height : 0.5;
+
+    zoomAnchorRef.current = { clientX, clientY, anchorX, anchorY };
+    zoomRef.current = next;
+    setZoom(next);
+  }, []);
+
+  const zoomAtViewportCenter = useCallback((resolveZoom: (current: number) => number) => {
+    const vp = viewportRef.current;
+    if (!vp) {
+      setZoom((z) => clampZoom(resolveZoom(z)));
+      return;
+    }
+    const rect = vp.getBoundingClientRect();
+    zoomAtClientPoint(rect.left + rect.width / 2, rect.top + rect.height / 2, resolveZoom);
+  }, [zoomAtClientPoint]);
 
   // Open the inline input positioned over a clicked <text>.
   const beginEdit = useCallback((el: SVGTextElement) => {
@@ -436,11 +494,12 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
     const onWheel = (e: WheelEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      setZoom((z) => clampZoom(z * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+      zoomAtClientPoint(e.clientX, e.clientY, (z) => z * factor);
     };
     vp.addEventListener('wheel', onWheel, { passive: false });
     return () => vp.removeEventListener('wheel', onWheel);
-  }, []);
+  }, [zoomAtClientPoint]);
 
   // All distinct selectable units painted under a screen point, topmost first. Uses the
   // browser's real hit-testing (respects fill / pointer-events), so only elements
@@ -649,8 +708,12 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                   <Loader2 className="animate-spin text-gray-400" />
                 </div>
               ) : (
-                <div className="flex min-h-full min-w-full items-center justify-center p-4">
+                <div
+                  className="flex min-h-full min-w-full p-4"
+                  style={{ alignItems: 'safe center', justifyContent: 'safe center' }}
+                >
                   <div
+                    ref={slideRef}
                     className="relative overflow-hidden rounded-lg bg-white shadow"
                     style={{ width: `${zoom * 100}%`, aspectRatio: '16 / 9', flexShrink: 0 }}
                     onMouseDown={onCanvasMouseDown}
@@ -716,7 +779,7 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
               <div className="absolute bottom-3 right-3 z-30 flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white/90 px-1 py-0.5 shadow backdrop-blur dark:border-background-tertiary dark:bg-background-secondary/90">
                 <button
                   type="button"
-                  onClick={() => setZoom((z) => clampZoom(z / 1.25))}
+                  onClick={() => zoomAtViewportCenter((z) => z / 1.25)}
                   className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-foreground-secondary dark:hover:bg-background-hover"
                   title="缩小"
                 >
@@ -724,7 +787,7 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => setZoom(1)}
+                  onClick={() => zoomAtViewportCenter(() => 1)}
                   className="min-w-[3rem] rounded px-1 py-1 text-center text-xs tabular-nums text-gray-600 hover:bg-gray-100 dark:text-foreground-secondary dark:hover:bg-background-hover"
                   title="重置为 100%"
                 >
@@ -732,7 +795,7 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => setZoom((z) => clampZoom(z * 1.25))}
+                  onClick={() => zoomAtViewportCenter((z) => z * 1.25)}
                   className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-foreground-secondary dark:hover:bg-background-hover"
                   title="放大"
                 >

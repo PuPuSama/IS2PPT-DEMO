@@ -256,7 +256,7 @@ const debouncedUpdatePage = debounce(
         }
       }
 
-      // 4. 获取完整项目信息。大纲/描述入口的 AI 生成由大纲页的 SSE 流程接管。
+      // 4. 获取完整项目信息。大纲/描述入口的 AI 生成由用户在大纲页手动触发。
       const projectResponse = await api.getProject(projectId);
       const project = normalizeProject(projectResponse.data);
 

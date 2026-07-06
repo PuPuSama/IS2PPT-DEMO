@@ -123,7 +123,7 @@ describe('initializeProject - reference file association', () => {
       )
     })
 
-    // Verify call order: create → associate → get project. SSE generation starts on the outline page.
+    // Verify call order: create -> associate -> get project. Generation is triggered manually on the outline page.
     const createIdx = callOrder.indexOf('createProject')
     const associateIdx = callOrder.indexOf('associateFileToProject')
     const getProjectIdx = callOrder.indexOf('getProject')

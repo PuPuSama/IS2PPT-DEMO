@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ImageIcon, RefreshCw, Upload, Sparkles, X } from 'lucide-react';
+import { ImageIcon, RefreshCw, Upload, X } from 'lucide-react';
 import { Button, useToast, Modal } from '@/components/shared';
 import { useT } from '@/hooks/useT';
 import { listMaterials, uploadMaterial, listProjects, deleteMaterial, type Material } from '@/api/endpoints';
@@ -12,9 +12,7 @@ const materialSelectorI18n = {
       selectedCount: "已选择 {{count}} 个", allMaterials: "所有素材", unassociated: "未关联项目",
       currentProject: "当前项目", viewMoreProjects: "+ 查看更多项目...", uploadFile: "上传文件",
       previewMaterial: "预览素材", deleteMaterial: "删除素材", closePreview: "关闭预览",
-      canUploadOrGenerate: "可以上传图片或通过素材生成功能创建素材",
       canUploadImages: "可以上传图片作为素材",
-      generateMaterial: "生成素材",
       messages: {
         loadMaterialFailed: "加载素材失败", unsupportedFormat: "不支持的图片格式",
         uploadSuccess: "素材上传成功", uploadFailed: "上传素材失败",
@@ -29,9 +27,7 @@ const materialSelectorI18n = {
       selectedCount: "{{count}} selected", allMaterials: "All Materials", unassociated: "Unassociated",
       currentProject: "Current Project", viewMoreProjects: "+ View more projects...", uploadFile: "Upload File",
       previewMaterial: "Preview Material", deleteMaterial: "Delete Material", closePreview: "Close Preview",
-      canUploadOrGenerate: "You can upload images or create materials through the material generator",
       canUploadImages: "You can upload images as materials",
-      generateMaterial: "Generate Material",
       messages: {
         loadMaterialFailed: "Failed to load materials", unsupportedFormat: "Unsupported image format",
         uploadSuccess: "Material uploaded successfully", uploadFailed: "Failed to upload material",
@@ -43,7 +39,6 @@ const materialSelectorI18n = {
 };
 import type { Project } from '@/types';
 import { getImageUrl } from '@/api/client';
-import { MaterialGeneratorModal } from './MaterialGeneratorModal';
 
 interface MaterialSelectorProps {
   projectId?: string;
@@ -74,7 +69,6 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
   const [filterProjectId, setFilterProjectId] = useState<string>('all');
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoaded, setProjectsLoaded] = useState(false);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(true);
   const [showAllProjects, setShowAllProjects] = useState(false);
 
@@ -202,10 +196,6 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
     }
   };
 
-  const handleGeneratorClose = () => {
-    setIsGeneratorOpen(false);
-    loadMaterials();
-  };
 
   const handleDeleteMaterial = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -332,17 +322,6 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
                 />
               </label>
               
-              {projectId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<Sparkles size={16} />}
-                  onClick={() => setIsGeneratorOpen(true)}
-                >
-                  {t('material.generateMaterial')}
-                </Button>
-              )}
-              
               {selectedMaterials.size > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleClear}>
                   {t('common.clearSelection')}
@@ -360,7 +339,7 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
               <ImageIcon size={48} className="mb-4 opacity-50" />
               <div className="text-sm">{t('material.noMaterials')}</div>
               <div className="text-xs mt-1">
-                {projectId ? t('material.canUploadOrGenerate') : t('material.canUploadImages')}
+                {t('material.canUploadImages')}
               </div>
             </div>
           ) : (
@@ -441,14 +420,6 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
           </div>
         </div>
       </Modal>
-      
-      {projectId && (
-        <MaterialGeneratorModal
-          projectId={projectId}
-          isOpen={isGeneratorOpen}
-          onClose={handleGeneratorClose}
-        />
-      )}
     </>
   );
 };

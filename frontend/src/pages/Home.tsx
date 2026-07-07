@@ -12,11 +12,12 @@ import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
+import { homeDraftStore, type HomeDraftTab } from '@/shared/storage/homeDraft';
 import { projectSession } from '@/shared/storage/projectSession';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
-type CreationType = 'idea' | 'outline' | 'description' | 'ppt_renovation';
+type CreationType = HomeDraftTab;
 
 // 支持作为参考文件上传的文档扩展名（与后端 file_parser_service 保持一致）
 const ALLOWED_DOC_EXTENSIONS = ['pdf', 'docx', 'pptx', 'doc', 'ppt', 'xlsx', 'xls', 'csv', 'txt', 'md'];
@@ -187,8 +188,8 @@ export const Home: React.FC = () => {
   const { initializeProject, isGlobalLoading } = useProjectStore();
   const { show, ToastContainer } = useToast();
   
-  const [activeTab, setActiveTab] = useState<CreationType>('idea');
-  const [content, setContent] = useState('');
+  const [activeTab, setActiveTab] = useState<CreationType>(() => homeDraftStore.getTab());
+  const [content, setContent] = useState(() => homeDraftStore.getContent());
   const [selectedTemplate, setSelectedTemplate] = useState<File | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState<string | null>(null);
@@ -211,15 +212,13 @@ export const Home: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
 
-  // 持久化草稿到 sessionStorage，确保跳转设置页后返回时内容不丢失
+  // 持久化草稿，确保跳转设置页后返回时内容不丢失
   useEffect(() => {
-    if (content) {
-      sessionStorage.setItem(STORAGE_KEYS.homeDraftContent, content);
-    }
+    homeDraftStore.saveContent(content);
   }, [content]);
 
   useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEYS.homeDraftTab, activeTab);
+    homeDraftStore.saveTab(activeTab);
   }, [activeTab]);
 
 
@@ -584,9 +583,7 @@ export const Home: React.FC = () => {
           localStorage.setItem(STORAGE_KEYS.renovationTaskId, taskId);
         }
 
-        // Clear draft
-        sessionStorage.removeItem(STORAGE_KEYS.homeDraftContent);
-        sessionStorage.removeItem(STORAGE_KEYS.homeDraftTab);
+        homeDraftStore.clear();
 
         // Navigate to detail editor (will poll for task completion with skeleton UI)
         navigate(`/project/${projectId}/detail`);
@@ -640,6 +637,7 @@ export const Home: React.FC = () => {
           }
         }
       }
+      homeDraftStore.clear();
       navigate(`/project/${projectId}/outline`);
     } catch (error: any) {
       console.error('创建项目失败:', error);

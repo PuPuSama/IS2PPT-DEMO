@@ -8,7 +8,6 @@ ALLOWED_LAZYLLM_VENDORS = frozenset({
 })
 
 PROJECT_LAZYLLM_NAMESPACE = "IS2PPT"
-LEGACY_LAZYLLM_NAMESPACE = "BANANA"
 
 
 def collect_env_lazyllm_api_keys() -> str | None:
@@ -26,22 +25,13 @@ def get_lazyllm_api_key(source: str, namespace: str = PROJECT_LAZYLLM_NAMESPACE)
     Resolve API key for a LazyLLM source.
 
     Preferred format: {SOURCE}_API_KEY, e.g. QWEN_API_KEY. Namespaced
-    IS2PPT_{SOURCE}_API_KEY and legacy BANANA_{SOURCE}_API_KEY are accepted
-    for deployments that already configured LazyLLM-specific keys.
+    IS2PPT_{SOURCE}_API_KEY is accepted for LazyLLM-specific keys.
     """
     source_upper = (source or "").upper()
     if not source_upper:
         return ""
 
-    candidate_names = [
-        f"{source_upper}_API_KEY",
-        f"{namespace}_{source_upper}_API_KEY",
-    ]
-    legacy_name = f"{LEGACY_LAZYLLM_NAMESPACE}_{source_upper}_API_KEY"
-    if legacy_name not in candidate_names:
-        candidate_names.append(legacy_name)
-
-    for env_name in candidate_names:
+    for env_name in (f"{source_upper}_API_KEY", f"{namespace}_{source_upper}_API_KEY"):
         value = os.getenv(env_name, "")
         if value:
             return value

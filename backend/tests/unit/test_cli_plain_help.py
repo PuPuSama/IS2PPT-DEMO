@@ -41,15 +41,3 @@ def test_help_contains_new_commands():
     output = result.stdout
     assert "use" in output, "projects subcommand should list 'use'"
     assert "unuse" in output, "projects subcommand should list 'unuse'"
-
-
-def test_legacy_module_help_still_routes_to_is2ppt():
-    result = subprocess.run(
-        [sys.executable, "-m", "banana_cli", "--help"],
-        capture_output=True,
-        text=True,
-        cwd=_CLI_DIR,
-    )
-
-    assert result.returncode == 0
-    assert CLI_NAME in result.stdout or "Usage" in result.stdout

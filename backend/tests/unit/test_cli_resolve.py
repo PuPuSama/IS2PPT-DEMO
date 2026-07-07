@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
+from cli.is2ppt_cli.errors import InputError
+from cli.is2ppt_cli.identity import CONFIG_DIR_NAME
 from cli.is2ppt_cli.resolve import (
     _context_path,
     _is_full_uuid,
@@ -17,14 +17,7 @@ from cli.is2ppt_cli.resolve import (
     resolve_project_id,
     set_working_project,
 )
-from cli.is2ppt_cli.errors import InputError
-from cli.is2ppt_cli.identity import CONFIG_DIR_NAME, LEGACY_CONFIG_DIR_NAME
 
-# Note: The API uses "project_id" as key for projects and "page_id" for pages,
-# but the resolver also supports "id" as fallback for flexibility.
-
-
-# --- _is_full_uuid ---
 
 def test_is_full_uuid_valid():
     assert _is_full_uuid("a1b2c3d4-e5f6-7890-abcd-ef1234567890") is True
@@ -37,8 +30,6 @@ def test_is_full_uuid_short():
 def test_is_full_uuid_no_dashes():
     assert _is_full_uuid("a1b2c3d4e5f67890abcdef1234567890xxxx") is False
 
-
-# --- Working project context ---
 
 def test_set_and_get_working_project(tmp_path, monkeypatch):
     ctx_file = tmp_path / "context.json"
@@ -72,23 +63,13 @@ def test_get_working_project_corrupt_file(tmp_path, monkeypatch):
     assert get_working_project() is None
 
 
-
-
-def test_context_path_migrates_legacy_context(tmp_path, monkeypatch):
+def test_context_path_uses_is2ppt_config_dir(tmp_path, monkeypatch):
     appdata = tmp_path / "appdata"
     monkeypatch.setenv("APPDATA", str(appdata))
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
 
-    legacy_context = appdata / LEGACY_CONFIG_DIR_NAME / "context.json"
-    legacy_context.parent.mkdir(parents=True)
-    legacy_context.write_text(json.dumps({"project_id": "legacy-project"}), encoding="utf-8")
+    assert _context_path() == appdata / CONFIG_DIR_NAME / "context.json"
 
-    ctx_file = _context_path()
-
-    assert ctx_file == appdata / CONFIG_DIR_NAME / "context.json"
-    assert json.loads(ctx_file.read_text(encoding="utf-8")) == {"project_id": "legacy-project"}
-
-# --- resolve_project_id ---
 
 def test_resolve_full_uuid():
     full = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
@@ -154,8 +135,6 @@ def test_resolve_none_context_disabled_raises():
     with pytest.raises(InputError, match="Project ID is required"):
         resolve_project_id(None, allow_context=False)
 
-
-# --- resolve_page_id ---
 
 def test_resolve_page_full_uuid():
     full = "p1b2c3d4-e5f6-7890-abcd-ef1234567890"

@@ -11,8 +11,8 @@ from .errors import InputError
 
 def _context_path() -> Path:
     """Return the path to the CLI context file."""
-    from .config import migrate_legacy_config_file
-    return migrate_legacy_config_file("context.json")
+    from .config import default_config_dir
+    return default_config_dir() / "context.json"
 
 
 def _read_context() -> dict:
@@ -82,12 +82,10 @@ def resolve_project_id(
     if _is_full_uuid(project_id):
         return project_id
 
-    # Short prefix matching
     if api is None:
         from .state import state
         api = state.api
 
-    # Fetch up to 200 projects for prefix matching; sufficient for CLI usage
     resp = api.get("/api/projects", params={"limit": 200, "offset": 0})
     projects = resp.get("data", {}).get("projects", [])
 
@@ -125,7 +123,6 @@ def resolve_page_id(
 
     resp = api.get(f"/api/projects/{project_id}")
     data = resp.get("data", {})
-    # The API returns pages directly under data, or under data.project
     pages = data.get("pages", [])
     if not pages and isinstance(data.get("project"), dict):
         pages = data["project"].get("pages", [])

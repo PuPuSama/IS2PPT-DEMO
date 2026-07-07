@@ -22,12 +22,3 @@ def test_ensure_lazyllm_namespace_key_sets_is2ppt_key(monkeypatch):
 
     assert ensure_lazyllm_namespace_key("doubao") is True
     assert os.environ[f"{PROJECT_LAZYLLM_NAMESPACE}_DOUBAO_API_KEY"] == "doubao-key"
-
-
-def test_ensure_lazyllm_namespace_key_accepts_legacy_namespace(monkeypatch):
-    monkeypatch.delenv("GLM_API_KEY", raising=False)
-    monkeypatch.delenv("IS2PPT_GLM_API_KEY", raising=False)
-    monkeypatch.setenv("BANANA_GLM_API_KEY", "legacy-key")
-
-    assert ensure_lazyllm_namespace_key("glm") is True
-    assert os.environ["IS2PPT_GLM_API_KEY"] == "legacy-key"

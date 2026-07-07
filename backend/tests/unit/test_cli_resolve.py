@@ -18,6 +18,7 @@ from cli.banana_cli.resolve import (
     set_working_project,
 )
 from cli.banana_cli.errors import InputError
+from cli.banana_cli.identity import CONFIG_DIR_NAME, LEGACY_CONFIG_DIR_NAME
 
 # Note: The API uses "project_id" as key for projects and "page_id" for pages,
 # but the resolver also supports "id" as fallback for flexibility.
@@ -70,6 +71,22 @@ def test_get_working_project_corrupt_file(tmp_path, monkeypatch):
 
     assert get_working_project() is None
 
+
+
+
+def test_context_path_migrates_legacy_context(tmp_path, monkeypatch):
+    appdata = tmp_path / "appdata"
+    monkeypatch.setenv("APPDATA", str(appdata))
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+
+    legacy_context = appdata / LEGACY_CONFIG_DIR_NAME / "context.json"
+    legacy_context.parent.mkdir(parents=True)
+    legacy_context.write_text(json.dumps({"project_id": "legacy-project"}), encoding="utf-8")
+
+    ctx_file = _context_path()
+
+    assert ctx_file == appdata / CONFIG_DIR_NAME / "context.json"
+    assert json.loads(ctx_file.read_text(encoding="utf-8")) == {"project_id": "legacy-project"}
 
 # --- resolve_project_id ---
 

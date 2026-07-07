@@ -11,8 +11,8 @@ from .errors import InputError
 
 def _context_path() -> Path:
     """Return the path to the CLI context file."""
-    from .config import default_config_path
-    return default_config_path().parent / "context.json"
+    from .config import migrate_legacy_config_file
+    return migrate_legacy_config_file("context.json")
 
 
 def _read_context() -> dict:

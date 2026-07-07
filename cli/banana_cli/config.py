@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .errors import ConfigError
+from .identity import CONFIG_DIR_NAME, ENV_PREFIX, LEGACY_CONFIG_DIR_NAME, LEGACY_ENV_PREFIX
 
 
 @dataclass
@@ -21,26 +22,64 @@ class CLIConfig:
     verbose: bool = False
 
 
+def _env_name(prefix: str, suffix: str) -> str:
+    return f"{prefix}_{suffix}"
+
+
 ENV_MAP = {
-    "base_url": "BANANA_CLI_BASE_URL",
-    "access_code": "BANANA_CLI_ACCESS_CODE",
-    "poll_interval": "BANANA_CLI_POLL_INTERVAL",
-    "request_timeout": "BANANA_CLI_REQUEST_TIMEOUT",
-    "continue_on_error": "BANANA_CLI_CONTINUE_ON_ERROR",
+    "base_url": (_env_name(ENV_PREFIX, "BASE_URL"), _env_name(LEGACY_ENV_PREFIX, "BASE_URL")),
+    "access_code": (_env_name(ENV_PREFIX, "ACCESS_CODE"), _env_name(LEGACY_ENV_PREFIX, "ACCESS_CODE")),
+    "poll_interval": (_env_name(ENV_PREFIX, "POLL_INTERVAL"), _env_name(LEGACY_ENV_PREFIX, "POLL_INTERVAL")),
+    "request_timeout": (_env_name(ENV_PREFIX, "REQUEST_TIMEOUT"), _env_name(LEGACY_ENV_PREFIX, "REQUEST_TIMEOUT")),
+    "continue_on_error": (_env_name(ENV_PREFIX, "CONTINUE_ON_ERROR"), _env_name(LEGACY_ENV_PREFIX, "CONTINUE_ON_ERROR")),
 }
 
 
-def default_config_path() -> Path:
-    """Return platform-default config path."""
+def _platform_config_dir(config_dir_name: str) -> Path:
     appdata = os.getenv("APPDATA")
     if appdata:
-        return Path(appdata) / "banana-slides" / "cli.toml"
+        return Path(appdata) / config_dir_name
 
     xdg_home = os.getenv("XDG_CONFIG_HOME")
     if xdg_home:
-        return Path(xdg_home) / "banana-slides" / "cli.toml"
+        return Path(xdg_home) / config_dir_name
 
-    return Path.home() / ".config" / "banana-slides" / "cli.toml"
+    return Path.home() / ".config" / config_dir_name
+
+
+def default_config_dir() -> Path:
+    """Return the is2ppt platform-default config directory."""
+    return _platform_config_dir(CONFIG_DIR_NAME)
+
+
+def legacy_config_dir() -> Path:
+    """Return the legacy platform-default config directory."""
+    return _platform_config_dir(LEGACY_CONFIG_DIR_NAME)
+
+
+def default_config_path() -> Path:
+    """Return the platform-default config path."""
+    return default_config_dir() / "cli.toml"
+
+
+def legacy_config_path() -> Path:
+    """Return the legacy platform-default config path."""
+    return legacy_config_dir() / "cli.toml"
+
+
+def migrate_legacy_config_file(filename: str) -> Path:
+    """Return the is2ppt config file path, copying legacy content when needed."""
+    current = default_config_dir() / filename
+    legacy = legacy_config_dir() / filename
+    if current.exists() or not legacy.exists():
+        return current
+
+    try:
+        current.parent.mkdir(parents=True, exist_ok=True)
+        current.write_bytes(legacy.read_bytes())
+        return current
+    except OSError:
+        return legacy
 
 
 def _parse_bool(value: str | bool | None) -> bool | None:
@@ -88,6 +127,14 @@ def _validate(cfg: CLIConfig) -> CLIConfig:
     return cfg
 
 
+def _first_env_value(env_names: tuple[str, ...]) -> str | None:
+    for env_name in env_names:
+        val = os.getenv(env_name)
+        if val is not None:
+            return val
+    return None
+
+
 def resolve_config(
     *,
     base_url: str | None = None,
@@ -102,7 +149,7 @@ def resolve_config(
     """Resolve config with priority: explicit params > env > file > defaults."""
     cfg = CLIConfig()
 
-    config_file = Path(config_path) if config_path else default_config_path()
+    config_file = Path(config_path) if config_path else migrate_legacy_config_file("cli.toml")
     file_cfg = _load_file_config(config_file)
 
     if "base_url" in file_cfg:
@@ -117,8 +164,8 @@ def resolve_config(
         parsed = _parse_bool(file_cfg["continue_on_error"])
         cfg.continue_on_error = True if parsed is None else parsed
 
-    for key, env_name in ENV_MAP.items():
-        val = os.getenv(env_name)
+    for key, env_names in ENV_MAP.items():
+        val = _first_env_value(env_names)
         if val is None:
             continue
         if key in {"poll_interval", "request_timeout"}:

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { projectSession } from '@/shared/storage/projectSession';
 import { useProjectStore } from '@/store/useProjectStore';
 
 export const useResumeProjectSession = () => {
@@ -8,7 +8,7 @@ export const useResumeProjectSession = () => {
   const syncProject = useProjectStore((state) => state.syncProject);
 
   useEffect(() => {
-    const savedProjectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
+    const savedProjectId = projectSession.getActiveProjectId();
     if (savedProjectId && !currentProject) {
       syncProject();
     }

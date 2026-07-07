@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
+import { projectSession } from '@/shared/storage/projectSession';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
@@ -224,7 +225,7 @@ export const Home: React.FC = () => {
 
   // 检查是否有当前项目 & 加载用户模板
   useEffect(() => {
-    const projectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
+    const projectId = projectSession.getActiveProjectId();
     setCurrentProjectId(projectId);
 
     // 加载用户模板列表（用于按需获取File）
@@ -578,8 +579,7 @@ export const Home: React.FC = () => {
           return;
         }
 
-        // Save project ID and task ID for DetailEditor to poll
-        localStorage.setItem(STORAGE_KEYS.currentProjectId, projectId);
+        projectSession.setActiveProjectId(projectId);
         if (taskId) {
           localStorage.setItem(STORAGE_KEYS.renovationTaskId, taskId);
         }
@@ -617,7 +617,7 @@ export const Home: React.FC = () => {
       await initializeProject(activeTab as 'idea' | 'outline' | 'description', content, templateFile || undefined, styleDesc, refFileIds.length > 0 ? refFileIds : undefined, aspectRatio);
       
       // 根据类型跳转到不同页面
-      const projectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
+      const projectId = projectSession.getActiveProjectId();
       if (!projectId) {
         show({ message: t('home.messages.projectCreateFailed'), type: 'error' });
         return;

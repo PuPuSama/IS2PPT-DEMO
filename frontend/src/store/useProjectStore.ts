@@ -9,6 +9,7 @@ import {
 } from '@/utils';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
+import { projectSession } from '@/shared/storage/projectSession';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 const storeI18n = {
@@ -263,8 +264,7 @@ const debouncedUpdatePage = debounce(
 
       if (project) {
         set({ currentProject: project });
-        // 保存到 localStorage
-        localStorage.setItem(STORAGE_KEYS.currentProjectId, project.id!);
+        projectSession.setActiveProjectId(project.id!);
       }
     } catch (error: any) {
       set({ error: normalizeErrorMessage(error.message || t('store.createFailed')) });
@@ -284,7 +284,7 @@ const debouncedUpdatePage = debounce(
       if (currentProject?.id) {
         targetProjectId = currentProject.id;
       } else {
-        targetProjectId = localStorage.getItem(STORAGE_KEYS.currentProjectId) || undefined;
+        targetProjectId = projectSession.getActiveProjectId() || undefined;
       }
     }
 
@@ -303,8 +303,7 @@ const debouncedUpdatePage = debounce(
           status: project.status
         });
         set({ currentProject: project });
-        // 确保 localStorage 中保存了项目ID
-        localStorage.setItem(STORAGE_KEYS.currentProjectId, project.id!);
+        projectSession.setActiveProjectId(project.id!);
       }
     } catch (error: any) {
       // 提取更详细的错误信息
@@ -315,7 +314,7 @@ const debouncedUpdatePage = debounce(
         // 服务器返回了错误响应
         const errorData = error.response.data;
         if (error.response.status === 404) {
-          // 404错误：项目不存在，清除localStorage
+          // 404错误：项目不存在，清除项目会话缓存
           errorMessage = errorData?.error?.message || t('store.projectNotFound');
           shouldClearStorage = true;
         } else if (errorData?.error?.message) {
@@ -336,11 +335,11 @@ const debouncedUpdatePage = debounce(
         errorMessage = error.message;
       }
       
-      // 如果项目不存在，清除localStorage并重置当前项目
+      // 如果项目不存在，清除项目会话缓存并重置当前项目
       // 不显示错误toast，因为这通常是自动同步时发现的过期项目ID
       if (shouldClearStorage) {
-        console.warn('[syncProject] 项目不存在，清除localStorage');
-        localStorage.removeItem(STORAGE_KEYS.currentProjectId);
+        console.warn('[syncProject] 项目不存在，清除项目会话缓存');
+        projectSession.clearActiveProjectId();
         set({ currentProject: null });
       } else {
         set({ error: normalizeErrorMessage(errorMessage) });

@@ -146,7 +146,7 @@ import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { detailGenerationPreferences } from '@/shared/storage/detailGenerationPreferences';
 import { extraFieldCatalog, getDefaultDescriptionFields } from '@/shared/storage/extraFieldCatalog';
 import { projectSession } from '@/shared/storage/projectSession';
 import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
@@ -277,8 +277,8 @@ export const DetailEditor: React.FC = () => {
         const s = res.data;
         if (!s) return;
         setDetailLevel('default');
-        // detail level from sessionStorage (backwards compat, then from DB if we add it later)
-        const storedLevel = sessionStorage.getItem(STORAGE_KEYS.detailLevel);
+        // detail level from session storage (backwards compat, then from DB if we add it later)
+        const storedLevel = detailGenerationPreferences.readDetailLevel();
         if (storedLevel) setDetailLevel(storedLevel);
         setGenerationMode(s.description_generation_mode || 'streaming');
         const activeFields = s.description_extra_fields || getDefaultDescriptionFields();

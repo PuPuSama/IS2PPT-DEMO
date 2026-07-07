@@ -220,7 +220,7 @@ import { getImageUrl } from '@/api/client';
 import { getPageImageVersions, setCurrentImageVersion, updateProject, uploadTemplate, exportPPTX as apiExportPPTX, exportPDF as apiExportPDF, exportImages as apiExportImages, exportEditablePPTX as apiExportEditablePPTX, getSettings } from '@/api/endpoints';
 import type { ImageVersion, DescriptionContent, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { uiDismissals } from '@/shared/storage/uiDismissals';
 
 type PptxTransitionEffect =
   | 'fade'
@@ -470,9 +470,7 @@ export const SlidePreview: React.FC = () => {
 
   // 检查是否需要显示1K分辨率警告
   const checkResolutionAndExecute = useCallback(async (action: () => Promise<void>) => {
-    // 检查 localStorage 中是否已跳过警告
-    const skipWarning = localStorage.getItem(STORAGE_KEYS.skip1KResolutionWarning) === 'true';
-    if (skipWarning) {
+    if (uiDismissals.shouldSkipLowResolutionWarning()) {
       await action();
       return;
     }
@@ -499,9 +497,8 @@ export const SlidePreview: React.FC = () => {
 
   // 确认1K分辨率警告后执行
   const handleConfirm1KWarning = useCallback(async () => {
-    // 如果勾选了"不再提示"，保存到 localStorage
     if (skip1KWarningChecked) {
-      localStorage.setItem(STORAGE_KEYS.skip1KResolutionWarning, 'true');
+      uiDismissals.skipLowResolutionWarning();
     }
 
     setShow1KWarningDialog(false);

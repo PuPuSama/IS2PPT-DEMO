@@ -15,7 +15,7 @@ import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { homeDraftStore, type HomeDraftTab } from '@/shared/storage/homeDraft';
 import { projectSession } from '@/shared/storage/projectSession';
 import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { uiDismissals } from '@/shared/storage/uiDismissals';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 type CreationType = HomeDraftTab;
@@ -244,12 +244,11 @@ export const Home: React.FC = () => {
 
   // 首次访问自动弹出帮助模态框
   useEffect(() => {
-    const hasSeenHelp = localStorage.getItem(STORAGE_KEYS.hasSeenHelp);
-    if (!hasSeenHelp) {
+    if (!uiDismissals.hasSeenHomeHelp()) {
       // 延迟500ms打开，让页面先渲染完成
       const timer = setTimeout(() => {
         setIsHelpModalOpen(true);
-        localStorage.setItem(STORAGE_KEYS.hasSeenHelp, 'true');
+        uiDismissals.markHomeHelpSeen();
       }, 500);
       return () => clearTimeout(timer);
     }

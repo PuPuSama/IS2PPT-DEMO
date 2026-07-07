@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { Project, Page } from '@/types';
+import { languagePreference } from '@/shared/storage/languagePreference';
 
 /**
  * 合并 className (支持 Tailwind CSS)
@@ -94,8 +95,7 @@ export function downloadFromUrl(url: string, filename?: string) {
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'zh-CN';
-  const locale = lang.startsWith('zh') ? 'zh-CN' : 'en-US';
+  const locale = languagePreference.getDateLocale();
   return date.toLocaleString(locale, {
     year: 'numeric',
     month: '2-digit',
@@ -116,8 +116,7 @@ export function generateId(): string {
  * 将错误消息转换为友好的中英文提示
  */
 export function normalizeErrorMessage(errorMessage: string | null | undefined): string {
-  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'zh';
-  const isZh = lang.startsWith('zh');
+  const isZh = languagePreference.isChinese();
 
   if (!errorMessage) return isZh ? '操作失败' : 'Operation failed';
 

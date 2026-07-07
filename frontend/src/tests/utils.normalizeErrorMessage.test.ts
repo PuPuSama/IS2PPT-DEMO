@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { normalizeErrorMessage } from '@/utils';
+import { languagePreference } from '@/shared/storage/languagePreference';
 
 describe('normalizeErrorMessage', () => {
   beforeEach(() => {
-    localStorage.setItem('i18nextLng', 'zh-CN');
+    localStorage.setItem(languagePreference.storageKey, 'zh-CN');
   });
 
   test('maps old image-route style extraction failures to SVG-route guidance', () => {

@@ -1,11 +1,11 @@
 ---
 title: "Quick Start"
-description: "Try the demo or deploy Banana Slides locally"
+description: "Try the demo or deploy is2ppt locally"
 ---
 
-## Online Demo
+## Project Entry
 
-No installation needed — try it instantly: [bananaslides.online](https://bananaslides.online/)
+Use the repository as the current project entry: [PuPuSama/IS2PPT-DEMO](https://github.com/PuPuSama/IS2PPT-DEMO).
 
 ---
 
@@ -29,9 +29,9 @@ No installation needed — try it instantly: [bananaslides.online](https://banan
 Create a new directory, enter it, and run the following command to download the config files and start the service:
 
 ```bash
-mkdir banana-slides && cd banana-slides && \
-curl -O https://raw.githubusercontent.com/Anionex/banana-slides/main/docker-compose.prod.yml && \
-curl -O https://raw.githubusercontent.com/Anionex/banana-slides/main/.env.example && \
+mkdir is2ppt && cd is2ppt && \
+curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/docker-compose.prod.yml && \
+curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/.env.example && \
 cp .env.example .env
 ```
 
@@ -67,7 +67,7 @@ docker compose -f docker-compose.prod.yml up -d
 ## View Logs
 
 ```bash
-docker logs -f --tail 100 banana-slides-backend
+docker logs -f --tail 100 is2ppt-backend
 ```
 
 ---
@@ -85,8 +85,8 @@ docker logs -f --tail 100 banana-slides-backend
 ### Backend
 
 ```bash
-git clone https://github.com/Anionex/banana-slides
-cd banana-slides
+git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+cd is2ppt
 cp .env.example .env  # Edit .env and add your API key
 cd backend
 uv run alembic upgrade head && uv run python app.py

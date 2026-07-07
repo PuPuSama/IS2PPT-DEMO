@@ -28,7 +28,7 @@ Usually caused by incorrect model configuration. Run the **Service Test** at the
 
 Check backend logs for details:
 ```bash
-docker logs --tail 200 banana-slides-backend
+docker logs --tail 200 is2ppt-backend
 ```
 
 ## Environment variable changes not taking effect
@@ -41,7 +41,7 @@ docker logs --tail 200 banana-slides-backend
 - Upload PDF instead of PPTX for more stable results. Direct PPTX upload requires server-side LibreOffice conversion, which may fail due to missing fonts (Arial, Calibri, etc.).
 - Docker users who need PPTX support inside the container:
   ```bash
-  docker exec -it banana-slides-backend bash -c "apt-get update && apt-get install -y libreoffice-impress"
+  docker exec -it is2ppt-backend bash -c "apt-get update && apt-get install -y libreoffice-impress"
   ```
 
 ## How do I change the aspect ratio?

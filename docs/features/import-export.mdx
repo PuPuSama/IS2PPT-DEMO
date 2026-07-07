@@ -3,7 +3,7 @@ title: "Import & Export Format"
 description: "Markdown format for importing and exporting outlines and descriptions"
 ---
 
-Banana Slides uses Markdown files (`.md` / `.txt`) to import and export outlines and page descriptions. The format is human-readable and easy to edit in any text editor.
+is2ppt uses Markdown files (`.md` / `.txt`) to import and export outlines and page descriptions. The format is human-readable and easy to edit in any text editor.
 
 ## Format Structure
 
@@ -66,7 +66,7 @@ Visual Elements: growth bar chart, key metric cards, market segmentation diagram
 | Outline summary | One plain sentence after the page header | No |
 | Description | `**页面描述：**` or `**Page Description:**`, with the slide body wrapped in `--- 页面文字 ---` / `--- 页面文字结束 ---` | No |
 
-If the description ends with short extra-field lines such as `Visual Focus: ...` or `排版布局：...`, Banana Slides will preserve them on import.
+If the description ends with short extra-field lines such as `Visual Focus: ...` or `排版布局：...`, is2ppt will preserve them on import.
 
 Pages are separated by `---`.
 
@@ -106,10 +106,10 @@ This slide reviews the key conclusions and next steps.
 
 If you want to organize an outline in an external AI assistant first, or have it produce import-ready Markdown in a fixed structure, you can use the template below.
 
-Copy the prompt into any AI assistant such as ChatGPT or Claude, replace the placeholders, and ask it to output Markdown only. You can then import that result into Banana Slides.
+Copy the prompt into any AI assistant such as ChatGPT or Claude, replace the placeholders, and ask it to output Markdown only. You can then import that result into is2ppt.
 
 <Tip>
-  This is only a helper for creating import files with external AI, not the main Banana Slides workflow. In most cases, creating a project directly inside the app and using the built-in AI will be faster.
+  This is only a helper for creating import files with external AI, not the main is2ppt workflow. In most cases, creating a project directly inside the app and using the built-in AI will be faster.
 </Tip>
 
 <Tip>
@@ -122,7 +122,7 @@ Copy the prompt into any AI assistant such as ChatGPT or Claude, replace the pla
 </Tip>
 
 <Tip>
-  Banana Slides' current built-in prompt is closer to this structure:
+  is2ppt' current built-in prompt is closer to this structure:
   after the page title, write one concise outline sentence instead of a separate `**Outline Points:**` block; inside `**Page Description:**`, `--- 页面文字 ---` / `--- 页面文字结束 ---` should now be treated as required structure, not optional decoration.
 </Tip>
 
@@ -164,7 +164,7 @@ Layout: title on top, bullets on the left, stat cards on the right, table at the
 <Accordion title="AI Prompt Template">
 
 ```text
-Generate presentation content in the following Markdown format so it mirrors Banana Slides' current built-in prompt style.
+Generate presentation content in the following Markdown format so it mirrors is2ppt' current built-in prompt style.
 
 Topic: [YOUR TOPIC]
 Number of pages: [NUMBER, e.g. 8]

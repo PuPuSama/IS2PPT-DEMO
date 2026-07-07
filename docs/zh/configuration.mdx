@@ -70,7 +70,7 @@ SENSENOVA_API_KEY=your-key    # 商汤日日新
 MINIMAX_API_KEY=your-key      # MiniMax
 ```
 
-Banana Slides 会在运行时依赖中显式打包 LazyLLM 国内在线厂商 SDK：
+is2ppt 会在运行时依赖中显式打包 LazyLLM 国内在线厂商 SDK：
 `volcengine-python-sdk[ark]`（豆包/火山）、`dashscope`（通义千问/万相）、`zhipuai`（智谱 GLM）。
 LazyLLM 源码提供了 `lazyllm install online-advanced`，但当前 PyPI wheel 不一定把该组发布为标准 extra；Docker 和预构建镜像因此以显式依赖为准。
 

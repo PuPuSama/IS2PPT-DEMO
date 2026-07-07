@@ -3,7 +3,7 @@ title: "导入导出格式"
 description: "大纲和描述的 Markdown 导入导出格式说明"
 ---
 
-Banana Slides 使用 Markdown 文件（`.md` / `.txt`）导入导出大纲和页面描述，格式可读性强，可用任意文本编辑器编辑。
+is2ppt 使用 Markdown 文件（`.md` / `.txt`）导入导出大纲和页面描述，格式可读性强，可用任意文本编辑器编辑。
 
 ## 格式结构
 
@@ -106,10 +106,10 @@ Banana Slides 使用 Markdown 文件（`.md` / `.txt`）导入导出大纲和页
 
 如果你想先在外部 AI 助手中批量整理大纲，或让它按固定结构产出可导入文本，可以使用下面的模板。
 
-将提示词复制到任意 AI 助手（如 ChatGPT、Claude、Kimi），替换占位符后，让它只输出 Markdown 结果，再导入 Banana Slides。
+将提示词复制到任意 AI 助手（如 ChatGPT、Claude、Kimi），替换占位符后，让它只输出 Markdown 结果，再导入 is2ppt。
 
 <Tip>
-  这只是给外部 AI 生成导入文件的辅助方式，不是 Banana Slides 的主要创作入口。多数情况下，直接在应用内创建项目并使用内置 AI 生成会更方便。
+  这只是给外部 AI 生成导入文件的辅助方式，不是 is2ppt 的主要创作入口。多数情况下，直接在应用内创建项目并使用内置 AI 生成会更方便。
 </Tip>
 
 <Tip>
@@ -122,7 +122,7 @@ Banana Slides 使用 Markdown 文件（`.md` / `.txt`）导入导出大纲和页
 </Tip>
 
 <Tip>
-  当前 Banana Slides 内置 prompt 更接近下面这种结构：
+  当前 is2ppt 内置 prompt 更接近下面这种结构：
   页面标题之后直接给一句简短概述，不再单独生成 `**大纲要点：**`；而在 `**页面描述：**` 内部，`--- 页面文字 ---` / `--- 页面文字结束 ---` 现在应视为必需结构，而不是可选写法。
 </Tip>
 
@@ -164,7 +164,7 @@ Banana Slides 使用 Markdown 文件（`.md` / `.txt`）导入导出大纲和页
 <Accordion title="AI 提示词模板">
 
 ```text
-按照如下要求生成可直接导入banana-slides的演示文稿文字描述：
+按照如下要求生成可直接导入is2ppt的演示文稿文字描述：
 
 对于每一页：
 1. 第一行“##” 二级标题开头，后面跟页面标题

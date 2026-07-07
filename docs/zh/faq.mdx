@@ -28,7 +28,7 @@ description: "常见问题解答"
 
 也可以查看后端日志：
 ```bash
-docker logs --tail 200 banana-slides-backend
+docker logs --tail 200 is2ppt-backend
 ```
 
 ## 修改 .env 后没有生效
@@ -42,7 +42,7 @@ docker logs --tail 200 banana-slides-backend
 - 直接上传 PPTX 需要服务端 LibreOffice 转换，可能因缺少字体（微软雅黑、Calibri 等）导致排版偏差。
 - Docker 用户需要在容器内安装 LibreOffice 才支持 PPTX 上传：
   ```bash
-  docker exec -it banana-slides-backend bash -c "apt-get update && apt-get install -y libreoffice-impress"
+  docker exec -it is2ppt-backend bash -c "apt-get update && apt-get install -y libreoffice-impress"
   ```
 
 ## 如何更改画面比例？

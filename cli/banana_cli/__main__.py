@@ -1,4 +1,4 @@
-"""Module entry point for banana-cli."""
+"""Module entry point for the is2ppt CLI."""
 
 from __future__ import annotations
 

@@ -1,7 +1,11 @@
 import io
 import zipfile
 
+from pptx import Presentation
+
 from PIL import Image
+
+from app_identity import APP_NAME
 
 from services.export_service import ExportService
 
@@ -81,3 +85,13 @@ def test_create_pptx_from_images_omits_transition_when_disabled(tmp_path):
         slide_xml = pptx_zip.read('ppt/slides/slide1.xml').decode('utf-8')
 
     assert '<p:transition' not in slide_xml
+
+def test_create_pptx_from_images_sets_app_identity_metadata(tmp_path):
+    path = tmp_path / 'slide.jpg'
+    _make_image(path, 'red')
+
+    pptx_bytes = ExportService.create_pptx_from_images([str(path)])
+    prs = Presentation(io.BytesIO(pptx_bytes))
+
+    assert prs.core_properties.author == APP_NAME
+    assert prs.core_properties.last_modified_by == APP_NAME

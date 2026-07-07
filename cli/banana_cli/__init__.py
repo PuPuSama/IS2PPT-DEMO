@@ -1,4 +1,6 @@
-"""Banana Slides CLI package."""
+"""is2ppt CLI package."""
+
+from .identity import CLI_VERSION
 
 __all__ = ["__version__"]
-__version__ = "0.1.0"
+__version__ = CLI_VERSION

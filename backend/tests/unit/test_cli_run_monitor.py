@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cli.banana_cli.commands import run as run_cmd
 from cli.banana_cli.config import CLIConfig
+from cli.banana_cli.identity import DONE_MARKERS_SCHEMA, RUN_STATE_SCHEMA
 from cli.banana_cli.jobs import runner as run_runner
 from cli.banana_cli.jobs.workflow import wait_task
 from cli.banana_cli.models import ArtifactRecord, JobSpec, TaskRecord
@@ -143,6 +144,7 @@ def test_run_jobs_writes_state_file(tmp_path: Path, monkeypatch):
     assert report.totals["total"] == 1
     assert report.totals["success"] == 1
     state = json.loads(state_file.read_text(encoding="utf-8"))
+    assert state["schema"] == RUN_STATE_SCHEMA
     assert state["status"] == "COMPLETED"
     assert state["summary"]["success"] == 1
     assert state["jobs"][0]["project_id"] == "proj-1"
@@ -215,6 +217,7 @@ def test_run_jobs_done_marker_skips_completed_job(tmp_path: Path, monkeypatch):
     assert calls["count"] == 1
 
     markers = json.loads(marker_file.read_text(encoding="utf-8"))
+    assert markers["schema"] == DONE_MARKERS_SCHEMA
     assert "job-1" in markers["jobs"]
     assert markers["jobs"]["job-1"]["status"] == "SUCCESS"
 

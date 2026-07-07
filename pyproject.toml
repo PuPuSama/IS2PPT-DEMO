@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "banana-slides"
+name = "is2ppt"
 version = "0.3.0"
-description = "Banana Slides – AI native PPT generator"
+description = "is2ppt AI presentation generator"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -54,6 +54,7 @@ test = [
 ]
 
 [project.scripts]
+is2ppt = "cli.banana_cli.__main__:main"
 banana-cli = "cli.banana_cli.__main__:main"
 
 [tool.setuptools.packages.find]

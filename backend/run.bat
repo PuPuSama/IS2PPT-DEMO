@@ -1,8 +1,8 @@
 @echo off
-REM Banana Slides Backend Startup Script for Windows
+REM is2ppt backend startup script for Windows
 
 echo ╔══════════════════════════════════════╗
-echo ║   🍌 Banana Slides API Server 🍌   ║
+echo ║        is2ppt API Server          ║
 echo ╚══════════════════════════════════════╝
 echo.
 

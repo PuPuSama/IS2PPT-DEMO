@@ -1,4 +1,4 @@
-"""Tests for banana-cli config resolution."""
+"""Tests for is2ppt CLI config resolution."""
 
 from __future__ import annotations
 

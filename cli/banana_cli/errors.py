@@ -1,4 +1,4 @@
-"""Custom exceptions for banana-cli."""
+"""Custom exceptions for the is2ppt CLI."""
 
 from __future__ import annotations
 

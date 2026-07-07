@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Banana Slides Backend Startup Script
+# is2ppt backend startup script
 
 echo "╔══════════════════════════════════════╗"
-echo "║   🍌 Banana Slides API Server 🍌   ║"
+echo "║        is2ppt API Server          ║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 

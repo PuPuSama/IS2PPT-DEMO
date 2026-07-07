@@ -7,6 +7,7 @@ from typing import Optional
 import typer
 
 from .config import resolve_config
+from .identity import CLI_HELP, CLI_NAME
 from .http_client import APIClient
 from .state import state
 from .commands.projects import app as projects_app
@@ -24,8 +25,8 @@ from .commands.styles import app as styles_app
 from .commands.files import app as files_app
 
 app = typer.Typer(
-    name="banana-cli",
-    help="Banana Slides API-driven CLI",
+    name=CLI_NAME,
+    help=CLI_HELP,
     no_args_is_help=True,
     pretty_exceptions_enable=False,
 )
@@ -56,7 +57,7 @@ def main_callback(
     json_output: bool = typer.Option(False, "--json", help="Output JSON"),
     verbose: bool = typer.Option(False, "--verbose", help="Verbose output"),
 ) -> None:
-    """Banana Slides API-driven CLI."""
+    """is2ppt API-driven CLI."""
     cfg = resolve_config(
         base_url=base_url,
         access_code=access_code,

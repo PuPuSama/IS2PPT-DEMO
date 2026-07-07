@@ -26,6 +26,7 @@ import tempfile
 import img2pdf
 import fitz  # PyMuPDF
 from utils.pptx_math import latex_to_display_text, looks_like_latex_math
+from app_identity import APP_NAME
 logger = logging.getLogger(__name__)
 
 
@@ -286,8 +287,8 @@ class ExportService:
         try:
             core = prs.core_properties
             now = datetime.now(timezone.utc)
-            core.author = "banana-slides"
-            core.last_modified_by = "banana-slides"
+            core.author = APP_NAME
+            core.last_modified_by = APP_NAME
             core.created = now
             core.modified = now
             core.last_printed = None
@@ -399,9 +400,9 @@ class ExportService:
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
 
             doc.set_metadata({
-                "author": "banana-slides",
-                "producer": "banana-slides",
-                "creator": "banana-slides"
+                "author": APP_NAME,
+                "producer": APP_NAME,
+                "creator": APP_NAME
             })
 
             now = datetime.now(timezone.utc)
@@ -414,13 +415,13 @@ class ExportService:
                 <x:xmpmeta xmlns:x="adobe:ns:meta/">
                   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                     <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
-                      <dc:creator><rdf:Seq><rdf:li>banana-slides</rdf:li></rdf:Seq></dc:creator>
+                      <dc:creator><rdf:Seq><rdf:li>{APP_NAME}</rdf:li></rdf:Seq></dc:creator>
                     </rdf:Description>
                     <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-                      <pdf:Producer>banana-slides</pdf:Producer>
+                      <pdf:Producer>{APP_NAME}</pdf:Producer>
                     </rdf:Description>
                     <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-                      <xmp:CreatorTool>banana-slides</xmp:CreatorTool>
+                      <xmp:CreatorTool>{APP_NAME}</xmp:CreatorTool>
                       <xmp:CreateDate>{iso_time}</xmp:CreateDate>
                       <xmp:MetadataDate>{iso_time}</xmp:MetadataDate>
                     </rdf:Description>

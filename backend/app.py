@@ -22,6 +22,7 @@ from flask import Flask
 from flask_cors import CORS
 from models import db
 from config import Config, DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_PORT
+from app_identity import API_DESCRIPTION, API_NAME, API_VERSION, HEALTH_MESSAGE, SERVER_BANNER_TITLE
 from controllers.material_controller import material_bp, material_global_bp
 from controllers.reference_file_controller import reference_file_bp
 from controllers.settings_controller import settings_bp
@@ -154,7 +155,7 @@ def create_app():
     # Health check endpoint
     @app.route('/health')
     def health_check():
-        return {'status': 'ok', 'message': 'Banana Slides API is running'}
+        return {'status': 'ok', 'message': HEALTH_MESSAGE}
 
     # Access code verification
     @app.route('/api/access-code/check', methods=['GET'])
@@ -194,9 +195,9 @@ def create_app():
     @app.route('/')
     def index():
         return {
-            'name': 'Banana Slides API',
-            'version': '1.0.0',
-            'description': 'AI-powered PPT generation service',
+            'name': API_NAME,
+            'version': API_VERSION,
+            'description': API_DESCRIPTION,
             'endpoints': {
                 'health': '/health',
                 'api_docs': '/api',
@@ -426,7 +427,7 @@ if __name__ == '__main__':
     logging.info(
         "\n"
         "╔══════════════════════════════════════╗\n"
-        "║   🍌 Banana Slides API Server 🍌   ║\n"
+        f"║        {SERVER_BANNER_TITLE:<26}║\n"
         "╚══════════════════════════════════════╝\n"
         f"Server starting on: http://localhost:{port}\n"
         f"Output Language: {Config.OUTPUT_LANGUAGE}\n"

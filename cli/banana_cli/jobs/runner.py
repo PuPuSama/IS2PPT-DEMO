@@ -11,6 +11,7 @@ from typing import Sequence
 
 from ..config import CLIConfig
 from ..errors import CLIError, IOErrorCLI
+from ..identity import DONE_MARKERS_SCHEMA, RUN_STATE_SCHEMA
 from ..http_client import APIClient
 from ..models import ArtifactRecord, JobError, JobReport, JobSpec, RunReport, normalize_job_id
 from ..reporter import finalize_report
@@ -44,7 +45,7 @@ def _write_done_marker_file(path: Path, payload: dict[str, Any]) -> None:
 def _load_done_markers(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {
-            "schema": "banana-cli-done-markers/v1",
+            "schema": DONE_MARKERS_SCHEMA,
             "updated_at": None,
             "jobs": {},
         }
@@ -62,7 +63,7 @@ def _load_done_markers(path: Path) -> dict[str, Any]:
         jobs = {}
 
     return {
-        "schema": payload.get("schema") or "banana-cli-done-markers/v1",
+        "schema": payload.get("schema") or DONE_MARKERS_SCHEMA,
         "updated_at": payload.get("updated_at"),
         "jobs": jobs,
     }
@@ -132,7 +133,7 @@ def run_jobs(
 
     if state_path is not None:
         run_state = {
-            "schema": "banana-cli-run-state/v1",
+            "schema": RUN_STATE_SCHEMA,
             "run_id": report.run_id,
             "base_url": config.base_url,
             "started_at": report.started_at,

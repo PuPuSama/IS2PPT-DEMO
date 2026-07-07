@@ -1,4 +1,4 @@
-"""HTTP client wrapper for Banana Slides backend."""
+"""HTTP client wrapper for the is2ppt backend."""
 
 from __future__ import annotations
 

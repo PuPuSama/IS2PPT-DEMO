@@ -15,6 +15,7 @@ from pptx.oxml.ns import qn, _nsmap
 from pptx.oxml.xmlchemy import OxmlElement
 from PIL import Image, ImageFont, ImageDraw
 from html.parser import HTMLParser
+from app_identity import APP_NAME
 from utils.pptx_math import latex_to_display_text, latex_to_omml
 
 logger = logging.getLogger(__name__)
@@ -165,8 +166,8 @@ class PPTXBuilder:
         try:
             core = prs.core_properties
             now = datetime.now(timezone.utc)
-            core.author = "banana-slides"
-            core.last_modified_by = "banana-slides"
+            core.author = APP_NAME
+            core.last_modified_by = APP_NAME
             core.created = now
             core.modified = now
             core.last_printed = None

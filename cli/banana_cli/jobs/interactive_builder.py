@@ -1,4 +1,4 @@
-"""Interactive JSONL job builder for banana-cli."""
+"""Interactive JSONL job builder for is2ppt."""
 
 from __future__ import annotations
 
@@ -288,7 +288,7 @@ def interactive_generate(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Interactive generator for banana-cli jobs JSONL")
+    parser = argparse.ArgumentParser(description="Interactive generator for is2ppt jobs JSONL")
     parser.add_argument("--output", help="Output JSONL path")
     parser.add_argument("--count", type=int, help="Number of jobs to prompt")
     args = parser.parse_args(argv)

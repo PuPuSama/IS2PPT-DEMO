@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from cli.banana_cli.identity import CLI_NAME
+
 # Resolve the cli directory relative to this test file
 _CLI_DIR = str(Path(__file__).resolve().parents[3] / "cli")
 
@@ -24,7 +26,7 @@ def test_help_plain_text_in_pipe():
     assert "╭" not in output, "Help output contains Rich box-drawing characters in pipe mode"
     assert "╰" not in output, "Help output contains Rich box-drawing characters in pipe mode"
     # Should contain standard help text
-    assert "banana-cli" in output.lower() or "Usage" in output
+    assert CLI_NAME in output or "Usage" in output
 
 
 def test_help_contains_new_commands():

@@ -1,4 +1,4 @@
-"""Tests for banana-cli job loader."""
+"""Tests for the is2ppt job loader."""
 
 from __future__ import annotations
 

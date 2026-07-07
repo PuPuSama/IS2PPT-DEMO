@@ -146,6 +146,7 @@ import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 // 详细程度图标 — 暂时屏蔽，效果不够理想
 // const DETAIL_LEVEL_LINES: Record<string, number[]> = {
@@ -293,7 +294,7 @@ export const DetailEditor: React.FC = () => {
           return merged;
         });
         // Cache settings in sessionStorage for store to read
-        sessionStorage.setItem('banana-settings', JSON.stringify(s));
+        sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(s));
       } catch { /* ignore */ }
     })();
   }, []);
@@ -305,7 +306,7 @@ export const DetailEditor: React.FC = () => {
       try {
         const res = await updateSettings(updates as any);
         if (res.data) {
-          sessionStorage.setItem('banana-settings', JSON.stringify(res.data));
+          sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(res.data));
         }
       } catch (e) {
         console.error('Failed to save settings:', e);
@@ -354,7 +355,7 @@ export const DetailEditor: React.FC = () => {
   // PPT 翻新：异步任务轮询
   useEffect(() => {
     if (!projectId) return;
-    const taskId = localStorage.getItem('renovationTaskId');
+    const taskId = localStorage.getItem(STORAGE_KEYS.renovationTaskId);
     if (!taskId) return;
 
     setIsRenovationProcessing(true);
@@ -380,7 +381,7 @@ export const DetailEditor: React.FC = () => {
         await syncProject(projectId);
 
         if (task.status === 'COMPLETED') {
-          localStorage.removeItem('renovationTaskId');
+          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           await syncProject(projectId);
@@ -388,7 +389,7 @@ export const DetailEditor: React.FC = () => {
         }
 
         if (task.status === 'FAILED') {
-          localStorage.removeItem('renovationTaskId');
+          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           show({ message: task.error_message || t('detail.renovationFailed'), type: 'error' });
@@ -402,7 +403,7 @@ export const DetailEditor: React.FC = () => {
         pollFailCount++;
         console.error('Renovation task poll error:', err);
         if (pollFailCount >= 5) {
-          localStorage.removeItem('renovationTaskId');
+          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           show({ message: t('detail.renovationPollFailed'), type: 'error' });

@@ -3,8 +3,9 @@ import { checkAccessCode, verifyAccessCode } from '@/api/endpoints';
 import { useT } from '@/hooks/useT';
 import { Button } from './Button';
 import { Input } from './Input';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
-const STORAGE_KEY = 'banana-access-code';
+const STORAGE_KEY = STORAGE_KEYS.accessCode;
 
 const translations = {
   zh: {

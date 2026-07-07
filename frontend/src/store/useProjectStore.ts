@@ -9,6 +9,7 @@ import {
 } from '@/utils';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 const storeI18n = {
   zh: {
@@ -263,7 +264,7 @@ const debouncedUpdatePage = debounce(
       if (project) {
         set({ currentProject: project });
         // 保存到 localStorage
-        localStorage.setItem('currentProjectId', project.id!);
+        localStorage.setItem(STORAGE_KEYS.currentProjectId, project.id!);
       }
     } catch (error: any) {
       set({ error: normalizeErrorMessage(error.message || t('store.createFailed')) });
@@ -283,7 +284,7 @@ const debouncedUpdatePage = debounce(
       if (currentProject?.id) {
         targetProjectId = currentProject.id;
       } else {
-        targetProjectId = localStorage.getItem('currentProjectId') || undefined;
+        targetProjectId = localStorage.getItem(STORAGE_KEYS.currentProjectId) || undefined;
       }
     }
 
@@ -303,7 +304,7 @@ const debouncedUpdatePage = debounce(
         });
         set({ currentProject: project });
         // 确保 localStorage 中保存了项目ID
-        localStorage.setItem('currentProjectId', project.id!);
+        localStorage.setItem(STORAGE_KEYS.currentProjectId, project.id!);
       }
     } catch (error: any) {
       // 提取更详细的错误信息
@@ -339,7 +340,7 @@ const debouncedUpdatePage = debounce(
       // 不显示错误toast，因为这通常是自动同步时发现的过期项目ID
       if (shouldClearStorage) {
         console.warn('[syncProject] 项目不存在，清除localStorage');
-        localStorage.removeItem('currentProjectId');
+        localStorage.removeItem(STORAGE_KEYS.currentProjectId);
         set({ currentProject: null });
       } else {
         set({ error: normalizeErrorMessage(errorMessage) });
@@ -712,7 +713,7 @@ const debouncedUpdatePage = debounce(
     // 检查描述生成模式（流式/并行），优先从 sessionStorage 缓存读取以避免额外 API 调用
     let mode: string = 'streaming';
     try {
-      const cached = sessionStorage.getItem('banana-settings');
+      const cached = sessionStorage.getItem(STORAGE_KEYS.settingsSnapshot);
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed?.description_generation_mode) {

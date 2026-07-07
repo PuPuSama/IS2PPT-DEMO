@@ -3,6 +3,7 @@ import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useT } from '@/hooks/useT';
 import { Modal } from '@/components/shared/Modal';
+import { getPresetCapsulesStorageKey } from '@/shared/storage/storageKeys';
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const presetI18n = {
@@ -52,11 +53,9 @@ const SYSTEM_PRESETS: Record<PresetType, Record<'zh' | 'en', Preset[]>> = {
   },
 };
 
-const STORAGE_KEY_PREFIX = 'presetCapsules_';
-
 function loadUserPresets(type: PresetType): Preset[] {
   try {
-    const raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}${type}`);
+    const raw = localStorage.getItem(getPresetCapsulesStorageKey(type));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -64,7 +63,7 @@ function loadUserPresets(type: PresetType): Preset[] {
 }
 
 function saveUserPresets(type: PresetType, presets: Preset[]) {
-  localStorage.setItem(`${STORAGE_KEY_PREFIX}${type}`, JSON.stringify(presets));
+  localStorage.setItem(getPresetCapsulesStorageKey(type), JSON.stringify(presets));
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────

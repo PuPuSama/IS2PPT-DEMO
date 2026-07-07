@@ -9,6 +9,7 @@ import { SlidePreview } from './pages/SlidePreview';
 import { SettingsPage } from './pages/Settings';
 import { useProjectStore } from './store/useProjectStore';
 import { useToast, AccessCodeGuard } from './components/shared';
+import { STORAGE_KEYS } from './shared/storage/storageKeys';
 
 function App() {
   const { currentProject, syncProject, error, setError } = useProjectStore();
@@ -16,7 +17,7 @@ function App() {
 
   // 恢复项目状态
   useEffect(() => {
-    const savedProjectId = localStorage.getItem('currentProjectId');
+    const savedProjectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
     if (savedProjectId && !currentProject) {
       syncProject();
     }

@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 type CreationType = 'idea' | 'outline' | 'description' | 'ppt_renovation';
 
@@ -211,18 +212,18 @@ export const Home: React.FC = () => {
   // 持久化草稿到 sessionStorage，确保跳转设置页后返回时内容不丢失
   useEffect(() => {
     if (content) {
-      sessionStorage.setItem('home-draft-content', content);
+      sessionStorage.setItem(STORAGE_KEYS.homeDraftContent, content);
     }
   }, [content]);
 
   useEffect(() => {
-    sessionStorage.setItem('home-draft-tab', activeTab);
+    sessionStorage.setItem(STORAGE_KEYS.homeDraftTab, activeTab);
   }, [activeTab]);
 
 
   // 检查是否有当前项目 & 加载用户模板
   useEffect(() => {
-    const projectId = localStorage.getItem('currentProjectId');
+    const projectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
     setCurrentProjectId(projectId);
 
     // 加载用户模板列表（用于按需获取File）
@@ -241,12 +242,12 @@ export const Home: React.FC = () => {
 
   // 首次访问自动弹出帮助模态框
   useEffect(() => {
-    const hasSeenHelp = localStorage.getItem('hasSeenHelpModal');
+    const hasSeenHelp = localStorage.getItem(STORAGE_KEYS.hasSeenHelp);
     if (!hasSeenHelp) {
       // 延迟500ms打开，让页面先渲染完成
       const timer = setTimeout(() => {
         setIsHelpModalOpen(true);
-        localStorage.setItem('hasSeenHelpModal', 'true');
+        localStorage.setItem(STORAGE_KEYS.hasSeenHelp, 'true');
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -577,14 +578,14 @@ export const Home: React.FC = () => {
         }
 
         // Save project ID and task ID for DetailEditor to poll
-        localStorage.setItem('currentProjectId', projectId);
+        localStorage.setItem(STORAGE_KEYS.currentProjectId, projectId);
         if (taskId) {
-          localStorage.setItem('renovationTaskId', taskId);
+          localStorage.setItem(STORAGE_KEYS.renovationTaskId, taskId);
         }
 
         // Clear draft
-        sessionStorage.removeItem('home-draft-content');
-        sessionStorage.removeItem('home-draft-tab');
+        sessionStorage.removeItem(STORAGE_KEYS.homeDraftContent);
+        sessionStorage.removeItem(STORAGE_KEYS.homeDraftTab);
 
         // Navigate to detail editor (will poll for task completion with skeleton UI)
         navigate(`/project/${projectId}/detail`);
@@ -615,7 +616,7 @@ export const Home: React.FC = () => {
       await initializeProject(activeTab as 'idea' | 'outline' | 'description', content, templateFile || undefined, styleDesc, refFileIds.length > 0 ? refFileIds : undefined, aspectRatio);
       
       // 根据类型跳转到不同页面
-      const projectId = localStorage.getItem('currentProjectId');
+      const projectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
       if (!projectId) {
         show({ message: t('home.messages.projectCreateFailed'), type: 'error' });
         return;

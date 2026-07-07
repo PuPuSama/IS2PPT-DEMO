@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, GitFork } from 'lucide-react';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 const GITHUB_REPO = 'Anionex/banana-slides';
 const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
@@ -17,8 +18,8 @@ export const GithubRepoCard: React.FC = () => {
     const fetchStats = async () => {
       try {
         // 先尝试从 localStorage 读取缓存
-        const cached = localStorage.getItem('github_repo_stats');
-        const cacheTime = localStorage.getItem('github_repo_stats_time');
+        const cached = localStorage.getItem(STORAGE_KEYS.githubRepoStats);
+        const cacheTime = localStorage.getItem(STORAGE_KEYS.githubRepoStatsTime);
         const now = Date.now();
 
         // 缓存有效期 10 分钟
@@ -37,8 +38,8 @@ export const GithubRepoCard: React.FC = () => {
           };
           setStats(newStats);
           // 缓存结果
-          localStorage.setItem('github_repo_stats', JSON.stringify(newStats));
-          localStorage.setItem('github_repo_stats_time', now.toString());
+          localStorage.setItem(STORAGE_KEYS.githubRepoStats, JSON.stringify(newStats));
+          localStorage.setItem(STORAGE_KEYS.githubRepoStatsTime, now.toString());
         }
       } catch (error) {
         console.error('Failed to fetch GitHub stats:', error);

@@ -11,6 +11,7 @@ import * as api from '@/api/endpoints';
 import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import type { Project } from '@/types';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 // 页面特有翻译 - AI 可以直接看到所有文案
 const historyI18n = {
@@ -73,7 +74,7 @@ const historyI18n = {
 };
 
 const DEFAULT_PAGE_SIZE = 5;
-const PAGE_SIZE_KEY = 'history_page_size';
+const PAGE_SIZE_KEY = STORAGE_KEYS.historyPageSize;
 
 export const History: React.FC = () => {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ export const History: React.FC = () => {
     try {
       // 设置当前项目
       setCurrentProject(project);
-      localStorage.setItem('currentProjectId', projectId);
+      localStorage.setItem(STORAGE_KEYS.currentProjectId, projectId);
       
       // 同步项目数据
       await syncProject(projectId);
@@ -202,7 +203,7 @@ export const History: React.FC = () => {
 
   const deleteProjects = useCallback(async (projectIds: string[]) => {
     setIsDeleting(true);
-    const currentProjectId = localStorage.getItem('currentProjectId');
+    const currentProjectId = localStorage.getItem(STORAGE_KEYS.currentProjectId);
     let deletedCurrentProject = false;
 
     try {
@@ -216,7 +217,7 @@ export const History: React.FC = () => {
 
       // 检查是否删除了当前项目
       if (currentProjectId && successIds.includes(currentProjectId)) {
-        localStorage.removeItem('currentProjectId');
+        localStorage.removeItem(STORAGE_KEYS.currentProjectId);
         setCurrentProject(null);
         deletedCurrentProject = true;
       }

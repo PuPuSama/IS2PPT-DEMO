@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 export type Theme = 'light' | 'dark' | 'system';
 
-const THEME_KEY = 'banana-slides-theme';
+const THEME_KEY = STORAGE_KEYS.theme;
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window !== 'undefined' && window.matchMedia) {

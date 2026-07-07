@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useProjectStore } from '@/store/useProjectStore'
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys'
 
 // Track call order to verify files are associated before generation
 const callOrder: string[] = []
@@ -132,7 +133,7 @@ describe('initializeProject - reference file association', () => {
     expect(associateIdx).toBeLessThan(getProjectIdx)
     expect(mockGenerateFromDescription).not.toHaveBeenCalled()
     expect(mockGenerateOutline).not.toHaveBeenCalled()
-    expect(localStorage.getItem('currentProjectId')).toBe('proj-001')
+    expect(localStorage.getItem(STORAGE_KEYS.currentProjectId)).toBe('proj-001')
   })
 
   it('should create outline projects without calling the long synchronous generation endpoint', async () => {
@@ -144,7 +145,7 @@ describe('initializeProject - reference file association', () => {
 
     expect(mockGenerateOutline).not.toHaveBeenCalled()
     expect(mockGenerateFromDescription).not.toHaveBeenCalled()
-    expect(localStorage.getItem('currentProjectId')).toBe('proj-001')
+    expect(localStorage.getItem(STORAGE_KEYS.currentProjectId)).toBe('proj-001')
   })
 
   it('should not call associateFileToProject when no file IDs provided', async () => {

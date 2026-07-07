@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 // 开发环境：通过 Vite proxy 转发
 // 生产环境：通过 nginx proxy 转发
@@ -14,7 +15,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Attach access code header for backend enforcement
-    const accessCode = localStorage.getItem('banana-access-code');
+    const accessCode = localStorage.getItem(STORAGE_KEYS.accessCode);
     if (accessCode && config.headers) {
       config.headers['X-Access-Code'] = accessCode;
     }

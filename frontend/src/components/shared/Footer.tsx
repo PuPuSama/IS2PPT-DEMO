@@ -1,8 +1,6 @@
 import React from 'react';
 import { Github } from 'lucide-react';
-
-const GITHUB_REPO = 'Anionex/banana-slides';
-const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
+import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -15,7 +13,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span>© {currentYear}</span>
             <span className="font-medium bg-gradient-to-r from-banana-600 to-orange-500 bg-clip-text text-transparent">
-              蕉幻 Banana Slides
+              {APP_IDENTITY.displayName}
             </span>
           </div>
 
@@ -24,7 +22,7 @@ export const Footer: React.FC = () => {
 
           {/* GitHub Link */}
           <a
-            href={GITHUB_URL}
+            href={APP_IDENTITY.repositoryUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5"

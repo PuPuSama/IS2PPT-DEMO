@@ -7,7 +7,7 @@ import { devLog } from '@/utils/logger';
 // 组件内翻译
 const previewI18n = {
   zh: {
-    home: { title: '蕉幻' },
+    home: { title: 'is2ppt' },
     nav: { home: '主页' },
     slidePreview: {
       pageGenerating: "该页面正在生成中，请稍候...", generationStarted: "已开始生成图片，请稍候...",
@@ -97,7 +97,7 @@ const previewI18n = {
     }
   },
   en: {
-    home: { title: 'Banana Slides' },
+    home: { title: 'is2ppt' },
     nav: { home: 'Home' },
     slidePreview: {
       pageGenerating: "This page is generating, please wait...", generationStarted: "Image generation started, please wait...",

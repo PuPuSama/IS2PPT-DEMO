@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Github, Star, GitFork } from 'lucide-react';
-
-const GITHUB_REPO = 'Anionex/banana-slides';
-const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
+import { APP_IDENTITY, getRepositoryApiUrl } from '@/shared/config/appIdentity';
+import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 interface GithubStats {
   stars: number;
   forks: number;
 }
 
-const CACHE_KEY = 'github-stats-cache-v2';
+const CACHE_KEY = STORAGE_KEYS.githubBadgeStats;
 const CACHE_DURATION = 3600 * 1000; // 1 hour
 
 export const GithubBadge: React.FC = () => {
@@ -36,7 +35,7 @@ export const GithubBadge: React.FC = () => {
 
       // Fetch from API
       try {
-        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`);
+        const res = await fetch(getRepositoryApiUrl());
         if (!res.ok) throw new Error('Failed to fetch repo info');
         const data = await res.json();
 
@@ -67,7 +66,7 @@ export const GithubBadge: React.FC = () => {
 
   return (
     <a
-      href={GITHUB_URL}
+      href={APP_IDENTITY.repositoryUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-md"

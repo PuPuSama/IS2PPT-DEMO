@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, GitFork } from 'lucide-react';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
-
-const GITHUB_REPO = 'Anionex/banana-slides';
-const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
+import { APP_IDENTITY, getRepositoryApiUrl } from '@/shared/config/appIdentity';
 
 interface RepoStats {
   stars: number;
@@ -29,7 +27,7 @@ export const GithubRepoCard: React.FC = () => {
           return;
         }
 
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`);
+        const response = await fetch(getRepositoryApiUrl());
         if (response.ok) {
           const data = await response.json();
           const newStats = {
@@ -60,7 +58,7 @@ export const GithubRepoCard: React.FC = () => {
 
   return (
     <a
-      href={GITHUB_URL}
+      href={APP_IDENTITY.repositoryUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-background-tertiary hover:bg-gray-100 dark:hover:bg-background-hover border border-gray-200 dark:border-border-primary rounded-lg transition-all duration-200 hover:shadow-sm hover:border-gray-300 dark:hover:border-border-hover group"

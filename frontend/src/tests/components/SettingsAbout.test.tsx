@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { SettingsAbout } from '@/pages/Settings';
+import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 vi.mock('@/utils/appVersion', () => ({
   appVersion: {
@@ -45,7 +46,7 @@ describe('SettingsAbout', () => {
     expect(screen.getByText('关于')).toBeInTheDocument();
     expect(screen.getByText('当前版本: v9.9.9')).toBeInTheDocument();
     expect(screen.getByLabelText('当前版本 v9.9.9 (abcdef1234567890)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'GitHub 项目' })).toHaveAttribute('href', 'https://github.com/Anionex/banana-slides');
+    expect(screen.getByRole('link', { name: 'GitHub 项目' })).toHaveAttribute('href', APP_IDENTITY.repositoryUrl);
   });
 
   it('shows a user-friendly message when an update is available', async () => {
@@ -54,12 +55,12 @@ describe('SettingsAbout', () => {
         status: 'update_available',
         update_available: true,
         message: 'A newer Docker image is available.',
-        repository: 'anoinex/banana-slides',
+        repository: 'PuPuSama/IS2PPT-DEMO',
         current: { short_sha: '1111111', is_docker: true },
         latest: {
           tag: 'latest',
           sha: '2222222333333333344444444444555555555555',
-          image: 'anoinex/banana-slides:latest',
+          image: 'pupusama/is2ppt-demo:latest',
           last_updated: '2026-06-01T08:11:22Z',
         },
       },
@@ -87,12 +88,12 @@ describe('SettingsAbout', () => {
         status: 'up_to_date',
         update_available: false,
         message: 'Current image is up to date.',
-        repository: 'anoinex/banana-slides',
+        repository: 'PuPuSama/IS2PPT-DEMO',
         current: { short_sha: '2222222', is_docker: true },
         latest: {
           tag: 'latest',
           sha: '2222222',
-          image: 'anoinex/banana-slides:latest',
+          image: 'pupusama/is2ppt-demo:latest',
           last_updated: '2026-06-01T08:11:22Z',
         },
       },

@@ -305,6 +305,7 @@ import type { OutputLanguage, UpdateCheckInfo } from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 // 配置项类型定义
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
@@ -495,7 +496,7 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
               {t('settings.about.version')}: {appVersion.display}
             </div>
             <a
-              href="https://github.com/Anionex/banana-slides"
+              href={APP_IDENTITY.repositoryUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-banana-700 dark:text-banana hover:underline"

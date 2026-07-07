@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   presetCapsulesPrefix: `${prefix}-preset-capsules-`,
   githubRepoStats: `${prefix}-github-repo-stats`,
   githubRepoStatsTime: `${prefix}-github-repo-stats-time`,
+  githubBadgeStats: `${prefix}-github-badge-stats`,
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {

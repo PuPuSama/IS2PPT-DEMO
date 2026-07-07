@@ -304,7 +304,7 @@ import * as api from '@/api/endpoints';
 import type { OutputLanguage, UpdateCheckInfo } from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { projectSession } from '@/shared/storage/projectSession';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 // 配置项类型定义
@@ -870,7 +870,7 @@ export const Settings: React.FC = () => {
       if (response.data) {
         setSettings(response.data);
         setFormData(formDataFromSettings(response.data));
-        sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(response.data));
+        projectSession.saveSettingsSnapshot(response.data);
       }
     } catch (error: any) {
       console.error('加载设置失败:', error);
@@ -891,7 +891,7 @@ export const Settings: React.FC = () => {
         openai_oauth_connected: false,
         openai_oauth_account_id: null,
       };
-      sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(next));
+      projectSession.saveSettingsSnapshot(next);
       return next;
     });
   };
@@ -928,7 +928,7 @@ export const Settings: React.FC = () => {
       const response = await api.updateSettings(payload);
       if (response.data) {
         setSettings(response.data);
-        sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(response.data));
+        projectSession.saveSettingsSnapshot(response.data);
         show({ message: t('settings.messages.saveSuccess'), type: 'success' });
         show({ message: t('settings.messages.testServiceTip'), type: 'info' });
         // Clear all sensitive fields after save

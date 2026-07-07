@@ -147,6 +147,7 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { projectSession } from '@/shared/storage/projectSession';
 
 // 详细程度图标 — 暂时屏蔽，效果不够理想
 // const DETAIL_LEVEL_LINES: Record<string, number[]> = {
@@ -293,8 +294,7 @@ export const DetailEditor: React.FC = () => {
           localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(merged));
           return merged;
         });
-        // Cache settings in sessionStorage for store to read
-        sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(s));
+        projectSession.saveSettingsSnapshot(s);
       } catch { /* ignore */ }
     })();
   }, []);
@@ -306,7 +306,7 @@ export const DetailEditor: React.FC = () => {
       try {
         const res = await updateSettings(updates as any);
         if (res.data) {
-          sessionStorage.setItem(STORAGE_KEYS.settingsSnapshot, JSON.stringify(res.data));
+          projectSession.saveSettingsSnapshot(res.data);
         }
       } catch (e) {
         console.error('Failed to save settings:', e);

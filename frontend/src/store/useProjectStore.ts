@@ -10,7 +10,6 @@ import {
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 const storeI18n = {
   zh: {
@@ -709,17 +708,8 @@ const debouncedUpdatePage = debounce(
     const pages = currentProject.pages.filter((p) => p.id);
     if (pages.length === 0) return;
 
-    // 检查描述生成模式（流式/并行），优先从 sessionStorage 缓存读取以避免额外 API 调用
-    let mode: string = 'streaming';
-    try {
-      const cached = sessionStorage.getItem(STORAGE_KEYS.settingsSnapshot);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed?.description_generation_mode) {
-          mode = parsed.description_generation_mode;
-        }
-      }
-    } catch { /* ignore */ }
+    // 检查描述生成模式（流式/并行），优先从会话缓存读取以避免额外 API 调用
+    const mode = projectSession.getDescriptionGenerationMode();
 
     // SVG“施工图”描述现已同时支持流式与并行（同源 prompt），不再强制并行
 

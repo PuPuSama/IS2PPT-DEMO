@@ -40,7 +40,7 @@ class Settings(db.Model):
     # 描述生成模式: streaming / parallel (NULL=默认 streaming)
     description_generation_mode = db.Column(db.String(20), nullable=True)
 
-    # 页面生成模式: image (nano-banana 位图) / svg (整页 SVG) (NULL=默认 image)
+    # 页面生成模式: image (位图) / svg (整页 SVG) (NULL=默认 image)
     generation_mode = db.Column(db.String(20), nullable=True)
 
     # 描述额外字段配置: JSON 数组如 ["排版布局", "视觉素材"] (NULL=默认 DEFAULT_EXTRA_FIELDS)

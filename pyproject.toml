@@ -54,7 +54,7 @@ test = [
 ]
 
 [project.scripts]
-is2ppt = "cli.banana_cli.__main__:main"
+is2ppt = "cli.is2ppt_cli.__main__:main"
 banana-cli = "cli.banana_cli.__main__:main"
 
 [tool.setuptools.packages.find]

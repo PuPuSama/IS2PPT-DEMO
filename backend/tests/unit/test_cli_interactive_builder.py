@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from cli.banana_cli.errors import InputError
-from cli.banana_cli.jobs.interactive_builder import interactive_generate
+from cli.is2ppt_cli.errors import InputError
+from cli.is2ppt_cli.jobs.interactive_builder import interactive_generate
 
 
 def _input_from(values: list[str]):

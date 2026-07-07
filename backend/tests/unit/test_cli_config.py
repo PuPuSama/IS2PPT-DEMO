@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cli.banana_cli.config import default_config_path, legacy_config_path, resolve_config
-from cli.banana_cli.identity import CONFIG_DIR_NAME, ENV_PREFIX, LEGACY_CONFIG_DIR_NAME, LEGACY_ENV_PREFIX
+from cli.is2ppt_cli.config import default_config_path, legacy_config_path, resolve_config
+from cli.is2ppt_cli.identity import CONFIG_DIR_NAME, ENV_PREFIX, LEGACY_CONFIG_DIR_NAME, LEGACY_ENV_PREFIX
 
 _ENV_SUFFIXES = ("BASE_URL", "ACCESS_CODE", "POLL_INTERVAL", "REQUEST_TIMEOUT", "CONTINUE_ON_ERROR")
 

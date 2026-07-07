@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from cli.banana_cli.commands import run as run_cmd
-from cli.banana_cli.config import CLIConfig
-from cli.banana_cli.identity import DONE_MARKERS_SCHEMA, RUN_STATE_SCHEMA
-from cli.banana_cli.jobs import runner as run_runner
-from cli.banana_cli.jobs.workflow import wait_task
-from cli.banana_cli.models import ArtifactRecord, JobSpec, TaskRecord
+from cli.is2ppt_cli.commands import run as run_cmd
+from cli.is2ppt_cli.config import CLIConfig
+from cli.is2ppt_cli.identity import DONE_MARKERS_SCHEMA, RUN_STATE_SCHEMA
+from cli.is2ppt_cli.jobs import runner as run_runner
+from cli.is2ppt_cli.jobs.workflow import wait_task
+from cli.is2ppt_cli.models import ArtifactRecord, JobSpec, TaskRecord
 
 
 class _DummyTaskAPI:

@@ -6,7 +6,7 @@ import csv
 import json
 from pathlib import Path
 
-from cli.banana_cli.jobs.loader import load_jobs
+from cli.is2ppt_cli.jobs.loader import load_jobs
 
 
 def test_load_jsonl_jobs(tmp_path: Path):

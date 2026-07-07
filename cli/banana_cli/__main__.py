@@ -1,22 +1,11 @@
-"""Module entry point for the is2ppt CLI."""
+"""Compatibility entry point for the legacy banana_cli module."""
 
 from __future__ import annotations
 
-import sys
-
-import typer.core
-
-# Disable Rich markup in --help when stdout is not a TTY (e.g. piped to AI agent).
-# This produces plain-text help output that's cheaper on tokens and avoids truncation.
-if not sys.stdout.isatty():
-    typer.core.HAS_RICH = False
-
-from .app import app
-
-
-def main() -> None:
-    app()
-
+if __package__ and __package__.startswith("cli."):
+    from cli.is2ppt_cli.__main__ import main
+else:
+    from is2ppt_cli.__main__ import main
 
 if __name__ == "__main__":
     main()

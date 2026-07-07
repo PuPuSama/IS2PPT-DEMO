@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cli.banana_cli.resolve import (
+from cli.is2ppt_cli.resolve import (
     _context_path,
     _is_full_uuid,
     clear_working_project,
@@ -17,8 +17,8 @@ from cli.banana_cli.resolve import (
     resolve_project_id,
     set_working_project,
 )
-from cli.banana_cli.errors import InputError
-from cli.banana_cli.identity import CONFIG_DIR_NAME, LEGACY_CONFIG_DIR_NAME
+from cli.is2ppt_cli.errors import InputError
+from cli.is2ppt_cli.identity import CONFIG_DIR_NAME, LEGACY_CONFIG_DIR_NAME
 
 # Note: The API uses "project_id" as key for projects and "page_id" for pages,
 # but the resolver also supports "id" as fallback for flexibility.
@@ -42,7 +42,7 @@ def test_is_full_uuid_no_dashes():
 
 def test_set_and_get_working_project(tmp_path, monkeypatch):
     ctx_file = tmp_path / "context.json"
-    monkeypatch.setattr("cli.banana_cli.resolve._context_path", lambda: ctx_file)
+    monkeypatch.setattr("cli.is2ppt_cli.resolve._context_path", lambda: ctx_file)
 
     set_working_project("abc-123")
     assert get_working_project() == "abc-123"
@@ -50,7 +50,7 @@ def test_set_and_get_working_project(tmp_path, monkeypatch):
 
 def test_clear_working_project(tmp_path, monkeypatch):
     ctx_file = tmp_path / "context.json"
-    monkeypatch.setattr("cli.banana_cli.resolve._context_path", lambda: ctx_file)
+    monkeypatch.setattr("cli.is2ppt_cli.resolve._context_path", lambda: ctx_file)
 
     set_working_project("abc-123")
     clear_working_project()
@@ -59,7 +59,7 @@ def test_clear_working_project(tmp_path, monkeypatch):
 
 def test_get_working_project_no_file(tmp_path, monkeypatch):
     ctx_file = tmp_path / "nonexistent" / "context.json"
-    monkeypatch.setattr("cli.banana_cli.resolve._context_path", lambda: ctx_file)
+    monkeypatch.setattr("cli.is2ppt_cli.resolve._context_path", lambda: ctx_file)
 
     assert get_working_project() is None
 
@@ -67,7 +67,7 @@ def test_get_working_project_no_file(tmp_path, monkeypatch):
 def test_get_working_project_corrupt_file(tmp_path, monkeypatch):
     ctx_file = tmp_path / "context.json"
     ctx_file.write_text("not json", encoding="utf-8")
-    monkeypatch.setattr("cli.banana_cli.resolve._context_path", lambda: ctx_file)
+    monkeypatch.setattr("cli.is2ppt_cli.resolve._context_path", lambda: ctx_file)
 
     assert get_working_project() is None
 
@@ -135,7 +135,7 @@ def test_resolve_short_prefix_no_match():
 
 def test_resolve_falls_back_to_context(tmp_path, monkeypatch):
     ctx_file = tmp_path / "context.json"
-    monkeypatch.setattr("cli.banana_cli.resolve._context_path", lambda: ctx_file)
+    monkeypatch.setattr("cli.is2ppt_cli.resolve._context_path", lambda: ctx_file)
 
     full_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     set_working_project(full_id)
@@ -145,7 +145,7 @@ def test_resolve_falls_back_to_context(tmp_path, monkeypatch):
 
 
 def test_resolve_none_no_context_raises():
-    with patch("cli.banana_cli.resolve.get_working_project", return_value=None):
+    with patch("cli.is2ppt_cli.resolve.get_working_project", return_value=None):
         with pytest.raises(InputError, match="No project ID provided"):
             resolve_project_id(None)
 

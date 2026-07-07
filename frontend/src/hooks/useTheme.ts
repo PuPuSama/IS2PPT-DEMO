@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
-export type Theme = 'light' | 'dark' | 'system';
+import { themePreference, type Theme } from '@/shared/storage/themePreference';
 
-const THEME_KEY = STORAGE_KEYS.theme;
+export type { Theme };
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -24,17 +23,11 @@ function applyTheme(theme: Theme) {
 }
 
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(THEME_KEY) as Theme | null;
-      return stored || 'system';
-    }
-    return 'system';
-  });
+  const [theme, setThemeState] = useState<Theme>(() => themePreference.read());
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem(THEME_KEY, newTheme);
+    themePreference.save(newTheme);
     applyTheme(newTheme);
   }, []);
 

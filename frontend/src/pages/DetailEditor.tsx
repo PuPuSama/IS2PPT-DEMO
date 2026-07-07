@@ -148,6 +148,7 @@ import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings,
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 import { projectSession } from '@/shared/storage/projectSession';
+import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 
 // 详细程度图标 — 暂时屏蔽，效果不够理想
 // const DETAIL_LEVEL_LINES: Record<string, number[]> = {
@@ -355,7 +356,7 @@ export const DetailEditor: React.FC = () => {
   // PPT 翻新：异步任务轮询
   useEffect(() => {
     if (!projectId) return;
-    const taskId = localStorage.getItem(STORAGE_KEYS.renovationTaskId);
+    const taskId = renovationTaskSession.getTaskId();
     if (!taskId) return;
 
     setIsRenovationProcessing(true);
@@ -381,7 +382,7 @@ export const DetailEditor: React.FC = () => {
         await syncProject(projectId);
 
         if (task.status === 'COMPLETED') {
-          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
+          renovationTaskSession.clearTask();
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           await syncProject(projectId);
@@ -389,7 +390,7 @@ export const DetailEditor: React.FC = () => {
         }
 
         if (task.status === 'FAILED') {
-          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
+          renovationTaskSession.clearTask();
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           show({ message: task.error_message || t('detail.renovationFailed'), type: 'error' });
@@ -403,7 +404,7 @@ export const DetailEditor: React.FC = () => {
         pollFailCount++;
         console.error('Renovation task poll error:', err);
         if (pollFailCount >= 5) {
-          localStorage.removeItem(STORAGE_KEYS.renovationTaskId);
+          renovationTaskSession.clearTask();
           setIsRenovationProcessing(false);
           setRenovationProgress(null);
           show({ message: t('detail.renovationPollFailed'), type: 'error' });

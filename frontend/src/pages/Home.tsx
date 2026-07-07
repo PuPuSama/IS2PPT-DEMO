@@ -14,6 +14,7 @@ import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { homeDraftStore, type HomeDraftTab } from '@/shared/storage/homeDraft';
 import { projectSession } from '@/shared/storage/projectSession';
+import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
@@ -580,7 +581,7 @@ export const Home: React.FC = () => {
 
         projectSession.setActiveProjectId(projectId);
         if (taskId) {
-          localStorage.setItem(STORAGE_KEYS.renovationTaskId, taskId);
+          renovationTaskSession.trackTask(taskId);
         }
 
         homeDraftStore.clear();

@@ -3,7 +3,11 @@ import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useT } from '@/hooks/useT';
 import { Modal } from '@/components/shared/Modal';
-import { getPresetCapsulesStorageKey } from '@/shared/storage/storageKeys';
+import {
+  presetCapsuleStore,
+  type PresetCapsule,
+  type PresetType,
+} from '@/shared/storage/presetCapsuleStore';
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const presetI18n = {
@@ -34,12 +38,9 @@ const presetI18n = {
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-export interface Preset {
-  name: string;
-  content: string;
-}
+export type Preset = PresetCapsule;
 
-export type PresetType = 'outline' | 'description';
+export type { PresetType };
 
 // ─── System presets ──────────────────────────────────────────────────────────
 const SYSTEM_PRESETS: Record<PresetType, Record<'zh' | 'en', Preset[]>> = {
@@ -53,19 +54,6 @@ const SYSTEM_PRESETS: Record<PresetType, Record<'zh' | 'en', Preset[]>> = {
   },
 };
 
-function loadUserPresets(type: PresetType): Preset[] {
-  try {
-    const raw = localStorage.getItem(getPresetCapsulesStorageKey(type));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUserPresets(type: PresetType, presets: Preset[]) {
-  localStorage.setItem(getPresetCapsulesStorageKey(type), JSON.stringify(presets));
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 interface PresetCapsulesProps {
   type: PresetType;
@@ -74,7 +62,7 @@ interface PresetCapsulesProps {
 
 export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) {
   const t = useT(presetI18n);
-  const [userPresets, setUserPresets] = useState<Preset[]>(() => loadUserPresets(type));
+  const [userPresets, setUserPresets] = useState<PresetCapsule[]>(() => presetCapsuleStore.read(type));
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newContent, setNewContent] = useState('');
@@ -105,14 +93,14 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
 
     const updated = [...userPresets, { name: trimmedName, content: trimmedContent }];
     setUserPresets(updated);
-    saveUserPresets(type, updated);
+    presetCapsuleStore.save(type, updated);
     handleCloseModal();
   }, [newName, newContent, userPresets, type, handleCloseModal]);
 
   const handleDeletePreset = useCallback((index: number) => {
     const updated = userPresets.filter((_, i) => i !== index);
     setUserPresets(updated);
-    saveUserPresets(type, updated);
+    presetCapsuleStore.save(type, updated);
   }, [userPresets, type]);
 
   const capsuleBase = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs cursor-pointer transition-colors max-w-[200px] truncate';

@@ -11,7 +11,7 @@ test.describe('UX Polish – disabled button tooltips (mock)', () => {
   test('export button shows tooltip when images are missing', async ({ page }) => {
     // Set English locale to verify i18n tooltip content
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-language', 'en');
+      localStorage.setItem('is2ppt-language', 'en');
     });
 
     // Mock project with pages that have NO generated images
@@ -47,7 +47,7 @@ test.describe('UX Polish – disabled button tooltips (mock)', () => {
   test('next button shows tooltip when descriptions are missing in detail editor', async ({ page }) => {
     // Set English locale to verify i18n tooltip content
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-language', 'en');
+      localStorage.setItem('is2ppt-language', 'en');
     });
 
     const mockProject = {
@@ -83,7 +83,7 @@ test.describe('UX Polish – i18n strings (mock)', () => {
   test('project status text uses i18n (not hardcoded Chinese)', async ({ page }) => {
     // Set English locale
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-language', 'en');
+      localStorage.setItem('is2ppt-language', 'en');
     });
 
     const mockProjects = {
@@ -126,7 +126,7 @@ test.describe('UX Polish – i18n strings (mock)', () => {
   test('settings page error messages use i18n', async ({ page }) => {
     // Set English locale
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-language', 'en');
+      localStorage.setItem('is2ppt-language', 'en');
     });
 
     // Mock settings endpoint to fail
@@ -155,7 +155,7 @@ test.describe('UX Polish – i18n strings (mock)', () => {
 test.describe('UX Polish – integration', () => {
   test('settings page loads without hardcoded Chinese in English mode', async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-language', 'en');
+      localStorage.setItem('is2ppt-language', 'en');
     });
 
     await page.goto(`${BASE}/settings`);

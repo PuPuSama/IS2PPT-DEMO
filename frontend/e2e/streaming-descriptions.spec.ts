@@ -320,7 +320,7 @@ test.describe('Streaming Descriptions - Integration Tests', () => {
       data: { description_extra_fields: ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'] },
     });
     // Clean up localStorage pool
-    await page.evaluate(() => localStorage.removeItem('banana-available-extra-fields'));
+    await page.evaluate(() => localStorage.removeItem('is2ppt-available-extra-fields'));
   });
 
   test('edit dialog should preserve extra fields on save', async ({ page }) => {

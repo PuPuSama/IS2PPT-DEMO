@@ -23,8 +23,8 @@ test.describe('PDF Export - Backend API', () => {
     const pdfBuffer = await fileResp.body()
     expect(pdfBuffer.length).toBeGreaterThan(1000)
 
-    // Verify PDF contains metadata (check for "banana-slides" in PDF content)
+    // Verify PDF contains metadata (check for "is2ppt" in PDF content)
     const pdfContent = pdfBuffer.toString('utf-8')
-    expect(pdfContent).toContain('banana-slides')
+    expect(pdfContent).toContain('is2ppt')
   })
 })

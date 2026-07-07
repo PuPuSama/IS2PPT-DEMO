@@ -25,7 +25,7 @@ test.describe('History title editing', () => {
     ]
 
     await page.addInitScript(() => {
-      localStorage.setItem('banana-slides-theme', 'dark')
+      localStorage.setItem('is2ppt-theme', 'dark')
     })
 
     await page.route('**/api/access-code/check', async (route) => {

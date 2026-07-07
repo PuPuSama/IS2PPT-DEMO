@@ -15,8 +15,8 @@ import { test, expect } from "@playwright/test";
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5062";
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const CLI_CMD = `cd "${PROJECT_ROOT}" && uv run banana-cli --base-url ${BASE_URL} --json`;
-const CLI_CMD_NO_JSON = `cd "${PROJECT_ROOT}" && uv run banana-cli --base-url ${BASE_URL}`;
+const CLI_CMD = `cd "${PROJECT_ROOT}" && uv run is2ppt --base-url ${BASE_URL} --json`;
+const CLI_CMD_NO_JSON = `cd "${PROJECT_ROOT}" && uv run is2ppt --base-url ${BASE_URL}`;
 
 function cli(args: string, timeout = 30000): any {
   const output = execSync(`${CLI_CMD} ${args}`, {
@@ -52,7 +52,7 @@ function cliWithStderr(
 function cliHelp(args: string): string {
   // Help output goes to stdout in pipe mode (non-TTY)
   return execSync(
-    `cd "${PROJECT_ROOT}" && uv run banana-cli ${args}`,
+    `cd "${PROJECT_ROOT}" && uv run is2ppt ${args}`,
     {
       encoding: "utf-8",
       timeout: 30000,

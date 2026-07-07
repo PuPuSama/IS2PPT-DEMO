@@ -18,6 +18,7 @@ export const STORAGE_KEYS = {
   githubRepoStats: `${prefix}-github-repo-stats`,
   githubRepoStatsTime: `${prefix}-github-repo-stats-time`,
   githubBadgeStats: `${prefix}-github-badge-stats`,
+  availableExtraFields: `${prefix}-available-extra-fields`,
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {
@@ -35,6 +36,7 @@ export const LEGACY_STORAGE_KEYS = {
   presetCapsulesPrefix: 'presetCapsules_',
   githubRepoStats: 'github_repo_stats',
   githubRepoStatsTime: 'github_repo_stats_time',
+  availableExtraFields: 'banana-available-extra-fields',
 } as const;
 
 export const STORAGE_KEY_MIGRATIONS = {
@@ -49,6 +51,7 @@ export const STORAGE_KEY_MIGRATIONS = {
     [LEGACY_STORAGE_KEYS.historyPageSize, STORAGE_KEYS.historyPageSize],
     [LEGACY_STORAGE_KEYS.githubRepoStats, STORAGE_KEYS.githubRepoStats],
     [LEGACY_STORAGE_KEYS.githubRepoStatsTime, STORAGE_KEYS.githubRepoStatsTime],
+    [LEGACY_STORAGE_KEYS.availableExtraFields, STORAGE_KEYS.availableExtraFields],
   ],
   sessionStorage: [
     [LEGACY_STORAGE_KEYS.settingsSnapshot, STORAGE_KEYS.settingsSnapshot],
@@ -62,4 +65,3 @@ export const STORAGE_KEY_MIGRATIONS = {
 
 export const getPresetCapsulesStorageKey = (type: string) =>
   `${STORAGE_KEYS.presetCapsulesPrefix}${type}`;
-

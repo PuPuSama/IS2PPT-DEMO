@@ -1,7 +1,7 @@
 """
 SVG Render Service — render an SVG string to a PNG (PIL.Image) via the resvg CLI.
 
-Used by the 'svg' generation mode to bridge LLM-produced SVG into banana-slides'
+Used by the 'svg' generation mode to bridge LLM-produced SVG into is2ppt's
 existing PNG-based pipeline: thumbnails / PDF / export / the frontend SlideCard all
 consume a PNG, so an SVG page is rasterised here and then fed to the unchanged
 ``save_image_with_version`` path.
@@ -43,7 +43,7 @@ class SvgRenderError(RuntimeError):
 
 
 def resolution_to_width(resolution: str) -> int:
-    """Map a banana-slides resolution category ("1K"/"2K"/"4K") to a render width."""
+    """Map an is2ppt resolution category ("1K"/"2K"/"4K") to a render width."""
     return _RESOLUTION_WIDTH.get((resolution or "2K").upper(), 2560)
 
 

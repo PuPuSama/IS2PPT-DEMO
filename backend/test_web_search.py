@@ -25,7 +25,7 @@ def main():
     topic = sys.argv[1] if len(sys.argv) > 1 else "2026 年最值得关注的 AI Agent 框架"
 
     line()
-    print("  Banana-Slides 后端联网搜索 自测")
+    print("  is2ppt 后端联网搜索 自测")
     print(f"  测试主题：{topic}")
     print(f"  时间：{time.strftime('%Y-%m-%d %H:%M:%S')}")
     line()

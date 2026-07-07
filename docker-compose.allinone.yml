@@ -9,7 +9,7 @@ services:
         APT_MIRROR: ${APT_MIRROR:-}
         PYPI_INDEX_URL: ${PYPI_INDEX_URL:-}
         NPM_REGISTRY: ${NPM_REGISTRY:-}
-    container_name: banana-slides
+    container_name: is2ppt
     ports:
       - "${PORT:-3011}:80"
     env_file:

@@ -1,4 +1,4 @@
-banana-cli job templates
+is2ppt job templates
 
 Templates in this directory:
 1) full_generation_idea_single.jsonl
@@ -16,7 +16,7 @@ How to use:
    - template_image_path/reference_files/material_files must be absolute local paths if provided.
    - language: zh/en/ja/auto.
 4. Run:
-   ./banana-cli run jobs --file /ABS/PATH/jobs.jsonl --report /ABS/PATH/report.json
+   ./is2ppt run jobs --file /ABS/PATH/jobs.jsonl --report /ABS/PATH/report.json
 
 Notes:
 - JSONL format: one JSON object per line.

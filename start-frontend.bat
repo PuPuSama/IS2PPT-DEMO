@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0frontend"
 
 echo ============================================
-echo   Banana Slides frontend starting...
+echo   is2ppt frontend starting...
 echo   URL: http://localhost:3011
 echo   Backend should be running at http://localhost:5011
 echo   Close this window to stop the frontend.

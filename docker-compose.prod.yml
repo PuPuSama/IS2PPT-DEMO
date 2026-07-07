@@ -3,8 +3,8 @@
 services:
   backend:
     # 使用预构建的后端镜像
-    image: ${DOCKER_IMAGE_BACKEND:-anoinex/banana-slides-backend:latest}
-    container_name: banana-slides-backend
+    image: ${DOCKER_IMAGE_BACKEND:-pupusama/is2ppt-backend:latest}
+    container_name: is2ppt-backend
     ports:
       # 宿主机端口:容器内部端口
       # 宿主机端口由 BACKEND_PORT 控制，容器内部固定 5000
@@ -32,22 +32,22 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - banana-slides-network
+      - is2ppt-network
 
   frontend:
     # 使用预构建的前端镜像
-    image: ${DOCKER_IMAGE_FRONTEND:-anoinex/banana-slides-frontend:latest}
-    container_name: banana-slides-frontend
+    image: ${DOCKER_IMAGE_FRONTEND:-pupusama/is2ppt-frontend:latest}
+    container_name: is2ppt-frontend
     ports:
       - "${FRONTEND_PORT:-3011}:80"
     depends_on:
       - backend
     restart: unless-stopped
     networks:
-      - banana-slides-network
+      - is2ppt-network
 
 networks:
-  banana-slides-network:
+  is2ppt-network:
     driver: bridge
 
 volumes:

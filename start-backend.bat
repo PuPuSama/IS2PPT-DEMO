@@ -6,7 +6,7 @@ set PYTHONUTF8=1
 set FLASK_ENV=development
 
 echo ============================================
-echo   Banana Slides backend starting...
+echo   is2ppt backend starting...
 echo   URL: http://localhost:5011
 echo   Close this window to stop the backend.
 echo ============================================

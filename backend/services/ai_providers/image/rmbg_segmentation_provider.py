@@ -1,7 +1,7 @@
 """RMBG-2.0 ONNX 本地推理主体抠图 provider。
 
 模型：AI-ModelScope/RMBG-2.0 (FP16 ONNX mirror)，CPU 推理。
-首次使用懒下载到 ~/.cache/banana-slides/models/rmbg-2.0/model_fp16.onnx，
+首次使用懒下载到 ~/.cache/is2ppt/models/rmbg-2.0/model_fp16.onnx，
 可通过 RMBG_MODEL_PATH 环境变量指定本地模型路径绕过下载。
 
 注意：模型为 non-commercial license，仅用于本地推理。
@@ -18,17 +18,22 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 _MODEL_URL = "https://modelscope.cn/models/AI-ModelScope/RMBG-2.0/resolve/master/onnx/model_fp16.onnx"
-_DEFAULT_MODEL_PATH = Path.home() / ".cache" / "banana-slides" / "models" / "rmbg-2.0" / "model_fp16.onnx"
+_DEFAULT_MODEL_PATH = Path.home() / ".cache" / "is2ppt" / "models" / "rmbg-2.0" / "model_fp16.onnx"
+_LEGACY_MODEL_PATH = Path.home() / ".cache" / "banana-slides" / "models" / "rmbg-2.0" / "model_fp16.onnx"
 _INPUT_SIZE = 1024
 _MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 _STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 
 def _resolve_model_path() -> Path:
-    """优先用 RMBG_MODEL_PATH，否则用默认缓存路径。"""
+    """优先用 RMBG_MODEL_PATH；否则用 is2ppt 缓存，旧缓存存在时兼容读取。"""
     env_path = os.environ.get("RMBG_MODEL_PATH")
     if env_path:
         return Path(env_path).expanduser()
+    if _DEFAULT_MODEL_PATH.exists():
+        return _DEFAULT_MODEL_PATH
+    if _LEGACY_MODEL_PATH.exists():
+        return _LEGACY_MODEL_PATH
     return _DEFAULT_MODEL_PATH
 
 

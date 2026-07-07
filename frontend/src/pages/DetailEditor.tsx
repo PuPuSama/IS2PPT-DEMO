@@ -147,6 +147,7 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { extraFieldCatalog, getDefaultDescriptionFields } from '@/shared/storage/extraFieldCatalog';
 import { projectSession } from '@/shared/storage/projectSession';
 import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 
@@ -247,15 +248,9 @@ export const DetailEditor: React.FC = () => {
   const [pageGenMode, setPageGenMode] = useState<'image' | 'svg'>('image');
   const [svgEffort, setSvgEffort] = useState<SvgReasoningEffort>('high');
   const [enableWebResearch, setEnableWebResearch] = useState(false);
-  const [extraFieldNames, setExtraFieldNames] = useState<string[]>(['视觉元素', '视觉焦点', '排版布局', '演讲者备注']);
+  const [extraFieldNames, setExtraFieldNames] = useState<string[]>(() => getDefaultDescriptionFields());
   const [imagePromptFields, setImagePromptFields] = useState<string[]>(['视觉元素', '视觉焦点', '排版布局']);
-  // 可选字段池（localStorage 持久化，包含所有已知字段名）
-  const [availableFields, setAvailableFields] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.availableExtraFields);
-      return stored ? JSON.parse(stored) : ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'];
-    } catch { return ['视觉元素', '视觉焦点', '排版布局', '演讲者备注']; }
-  });
+  const [availableFields, setAvailableFields] = useState<string[]>(() => extraFieldCatalog.read());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [newFieldName, setNewFieldName] = useState('');
@@ -286,15 +281,10 @@ export const DetailEditor: React.FC = () => {
         const storedLevel = sessionStorage.getItem(STORAGE_KEYS.detailLevel);
         if (storedLevel) setDetailLevel(storedLevel);
         setGenerationMode(s.description_generation_mode || 'streaming');
-        const activeFields = s.description_extra_fields || ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'];
+        const activeFields = s.description_extra_fields || getDefaultDescriptionFields();
         setExtraFieldNames(activeFields);
         if (s.image_prompt_extra_fields) setImagePromptFields(s.image_prompt_extra_fields);
-        // 合并活跃字段到可选池
-        setAvailableFields(prev => {
-          const merged = [...new Set([...prev, ...activeFields])];
-          localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(merged));
-          return merged;
-        });
+        setAvailableFields(prev => extraFieldCatalog.mergeAndSave(prev, activeFields));
         projectSession.saveSettingsSnapshot(s);
       } catch { /* ignore */ }
     })();
@@ -325,7 +315,7 @@ export const DetailEditor: React.FC = () => {
     if (oldIdx === -1 || newIdx === -1) return;
     const nextPool = arrayMove(availableFields, oldIdx, newIdx);
     setAvailableFields(nextPool);
-    localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(nextPool));
+    extraFieldCatalog.save(nextPool);
     // 激活字段按新池顺序重排
     const activeSet = new Set(extraFieldNames);
     const nextActive = nextPool.filter(f => activeSet.has(f));
@@ -857,7 +847,7 @@ export const DetailEditor: React.FC = () => {
                                     ? extraFieldNames.filter(f => f !== name)
                                     : [...extraFieldNames, name];
                                   setExtraFieldNames(next);
-                                  saveSettingsDebounced({ description_extra_fields: next.length > 0 ? next : ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'] });
+                                  saveSettingsDebounced({ description_extra_fields: next.length > 0 ? next : getDefaultDescriptionFields() });
                                 }}
                                 inImagePrompt={imagePromptFields.includes(name)}
                                 imagePromptTooltip={imagePromptFields.includes(name) ? t('detail.imagePromptOn') : t('detail.imagePromptOff')}
@@ -871,7 +861,7 @@ export const DetailEditor: React.FC = () => {
                                 onRemove={() => {
                                   const nextPool = availableFields.filter(f => f !== name);
                                   setAvailableFields(nextPool);
-                                  localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(nextPool));
+                                  extraFieldCatalog.save(nextPool);
                                 }}
                               />
                             );
@@ -893,7 +883,7 @@ export const DetailEditor: React.FC = () => {
                             if (!availableFields.includes(trimmed) && availableFields.length < 10) {
                               const nextPool = [...availableFields, trimmed];
                               setAvailableFields(nextPool);
-                              localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(nextPool));
+                              extraFieldCatalog.save(nextPool);
                               // 新增字段默认勾选
                               const nextActive = [...extraFieldNames, trimmed];
                               setExtraFieldNames(nextActive);
@@ -912,7 +902,7 @@ export const DetailEditor: React.FC = () => {
                           if (trimmed && !availableFields.includes(trimmed) && availableFields.length < 10) {
                             const nextPool = [...availableFields, trimmed];
                             setAvailableFields(nextPool);
-                            localStorage.setItem(STORAGE_KEYS.availableExtraFields, JSON.stringify(nextPool));
+                            extraFieldCatalog.save(nextPool);
                             const nextActive = [...extraFieldNames, trimmed];
                             setExtraFieldNames(nextActive);
                             saveSettingsDebounced({ description_extra_fields: nextActive });

@@ -8,7 +8,7 @@ services:
         GHCR_REGISTRY: ${GHCR_REGISTRY:-ghcr.io/}
         APT_MIRROR: ${APT_MIRROR:-}
         PYPI_INDEX_URL: ${PYPI_INDEX_URL:-}
-    container_name: banana-slides-backend
+    container_name: is2ppt-backend
     ports:
       # 宿主机端口:容器内部端口
       # 宿主机端口由 BACKEND_PORT 控制，容器内部固定 5000
@@ -37,7 +37,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - banana-slides-network
+      - is2ppt-network
 
   frontend:
     build:
@@ -48,17 +48,17 @@ services:
         DOCKER_BUILDKIT: 1
         DOCKER_REGISTRY: ${DOCKER_REGISTRY:-}
         NPM_REGISTRY: ${NPM_REGISTRY:-}
-    container_name: banana-slides-frontend
+    container_name: is2ppt-frontend
     ports:
       - "${FRONTEND_PORT:-3011}:80"
     depends_on:
       - backend
     restart: unless-stopped
     networks:
-      - banana-slides-network
+      - is2ppt-network
 
 networks:
-  banana-slides-network:
+  is2ppt-network:
     driver: bridge
 
 volumes:

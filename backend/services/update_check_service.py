@@ -11,8 +11,10 @@ from typing import Any
 
 import requests
 
-DOCKER_NAMESPACE = os.getenv("DOCKERHUB_NAMESPACE") or "anoinex"
-DOCKER_REPOSITORY = os.getenv("DOCKERHUB_REPOSITORY") or "banana-slides"
+from app_identity import APP_NAME
+
+DOCKER_NAMESPACE = os.getenv("DOCKERHUB_NAMESPACE") or "pupusama"
+DOCKER_REPOSITORY = os.getenv("DOCKERHUB_REPOSITORY") or APP_NAME
 DOCKER_HUB_TAGS_URL = "https://hub.docker.com/v2/repositories/{namespace}/{repository}/tags"
 SOURCE_REMOTE = os.getenv("APP_SOURCE_REMOTE") or "origin"
 SOURCE_BRANCH = os.getenv("APP_SOURCE_BRANCH") or "main"
@@ -159,7 +161,7 @@ def fetch_docker_hub_tags(namespace: str = DOCKER_NAMESPACE, repository: str = D
     response = requests.get(
         DOCKER_HUB_TAGS_URL.format(namespace=namespace, repository=repository),
         params={"page_size": 25},
-        headers={"User-Agent": "banana-slides-updater"},
+        headers={"User-Agent": f"{APP_NAME}-updater"},
         timeout=8,
     )
     response.raise_for_status()

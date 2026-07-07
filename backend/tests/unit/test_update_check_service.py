@@ -71,7 +71,7 @@ def test_check_for_update_reports_newer_docker_image(monkeypatch):
 
     assert result["status"] == "update_available"
     assert result["update_available"] is True
-    assert result["latest"]["image"] == "anoinex/banana-slides:latest"
+    assert result["latest"]["image"] == "pupusama/is2ppt:latest"
 
 
 def test_check_for_update_does_not_report_update_for_newer_local_build(monkeypatch):

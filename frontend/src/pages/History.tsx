@@ -11,8 +11,8 @@ import * as api from '@/api/endpoints';
 import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import { projectSession } from '@/shared/storage/projectSession';
+import { historyPreferences } from '@/shared/storage/historyPreferences';
 import type { Project } from '@/types';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 
 // 页面特有翻译 - AI 可以直接看到所有文案
 const historyI18n = {
@@ -74,9 +74,6 @@ const historyI18n = {
   },
 };
 
-const DEFAULT_PAGE_SIZE = 5;
-const PAGE_SIZE_KEY = STORAGE_KEYS.historyPageSize;
-
 export const History: React.FC = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
@@ -87,10 +84,7 @@ export const History: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(() => {
-    const saved = localStorage.getItem(PAGE_SIZE_KEY);
-    return saved ? Number(saved) : DEFAULT_PAGE_SIZE;
-  });
+  const [pageSize, setPageSize] = useState(() => historyPreferences.readPageSize());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
@@ -132,7 +126,7 @@ export const History: React.FC = () => {
   }, []);
 
   const handlePageSizeChange = useCallback((size: number) => {
-    localStorage.setItem(PAGE_SIZE_KEY, String(size));
+    historyPreferences.savePageSize(size);
     setPageSize(size);
     setCurrentPage(1);
     setSelectedProjects(new Set());

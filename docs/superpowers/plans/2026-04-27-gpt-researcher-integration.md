@@ -4,7 +4,7 @@
 
 **Goal:** Integrate gpt-researcher as a Python package so users can opt-in to web research before slide generation, with the report saved as a reference file.
 
-**Architecture:** New `ResearchService` wraps GPTResearcher, mapping banana-slides provider config to gpt-researcher env vars. A new API endpoint creates an async Task. Frontend adds a toggle on Home.tsx and a Tavily API key field in Settings. The research report is stored as a `ReferenceFile`, automatically injected into all AI prompts via the existing mechanism.
+**Architecture:** New `ResearchService` wraps GPTResearcher, mapping is2ppt provider config to gpt-researcher env vars. A new API endpoint creates an async Task. Frontend adds a toggle on Home.tsx and a Tavily API key field in Settings. The research report is stored as a `ReferenceFile`, automatically injected into all AI prompts via the existing mechanism.
 
 **Tech Stack:** Python (gpt-researcher, asyncio), Flask, SQLAlchemy/Alembic, React/TypeScript, Zustand, Tailwind CSS
 
@@ -190,7 +190,7 @@ from unittest.mock import patch, MagicMock
 
 
 class TestBuildResearchEnv:
-    """Test _build_research_env maps banana-slides config to gpt-researcher env vars."""
+    """Test _build_research_env maps is2ppt config to gpt-researcher env vars."""
 
     def test_gemini_provider(self):
         from services.research_service import _build_research_env
@@ -305,7 +305,7 @@ from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
-# Provider format mapping: banana-slides format → gpt-researcher LLM prefix
+# Provider format mapping: is2ppt format → gpt-researcher LLM prefix
 _PROVIDER_LLM_PREFIX = {
     'gemini': 'google_genai',
     'openai': 'openai',
@@ -331,7 +331,7 @@ def _build_research_env(
     text_model_source: str = '',
 ) -> dict:
     """
-    Map banana-slides provider config to gpt-researcher environment variables.
+    Map is2ppt provider config to gpt-researcher environment variables.
 
     Returns a dict of env vars to set before creating GPTResearcher.
     """
@@ -858,8 +858,8 @@ In the `toolbarLeft` section of the `MarkdownTextarea` (around line 1036-1074), 
     className="flex items-center gap-1.5 cursor-pointer group ml-1"
     title={t('home.webResearch.tooltip')}
   >
-    <Globe size={16} className={`transition-colors ${enableWebResearch ? 'text-banana' : 'text-gray-400 dark:text-foreground-tertiary group-hover:text-gray-600 dark:group-hover:text-foreground-secondary'}`} />
-    <span className={`text-xs transition-colors ${enableWebResearch ? 'text-banana font-medium' : 'text-gray-400 dark:text-foreground-tertiary group-hover:text-gray-600 dark:group-hover:text-foreground-secondary'}`}>
+    <Globe size={16} className={`transition-colors ${enableWebResearch ? 'text-brand' : 'text-gray-400 dark:text-foreground-tertiary group-hover:text-gray-600 dark:group-hover:text-foreground-secondary'}`} />
+    <span className={`text-xs transition-colors ${enableWebResearch ? 'text-brand font-medium' : 'text-gray-400 dark:text-foreground-tertiary group-hover:text-gray-600 dark:group-hover:text-foreground-secondary'}`}>
       {t('home.webResearch.label')}
     </span>
     <div className="relative">
@@ -869,7 +869,7 @@ In the `toolbarLeft` section of the `MarkdownTextarea` (around line 1036-1074), 
         onChange={(e) => setEnableWebResearch(e.target.checked)}
         className="sr-only peer"
       />
-      <div className="w-8 h-4 bg-gray-200 dark:bg-background-hover peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-banana"></div>
+      <div className="w-8 h-4 bg-gray-200 dark:bg-background-hover peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand"></div>
     </div>
   </label>
 )}
@@ -1354,7 +1354,7 @@ description: 使用 AI 搜索网络资料，提升幻灯片内容质量
 
 # 联网搜索
 
-Banana Slides 集成了 [GPT-Researcher](https://github.com/assafelovic/gpt-researcher)，可以在生成幻灯片前自动搜索网络资料，让 AI 基于最新信息生成更准确、更丰富的内容。
+is2ppt 集成了 [GPT-Researcher](https://github.com/assafelovic/gpt-researcher)，可以在生成幻灯片前自动搜索网络资料，让 AI 基于最新信息生成更准确、更丰富的内容。
 
 ## 使用方法
 
@@ -1370,7 +1370,7 @@ Banana Slides 集成了 [GPT-Researcher](https://github.com/assafelovic/gpt-rese
 默认使用 DuckDuckGo（免费，无需配置）。如需更高质量的搜索结果，可以在设置页面配置 Tavily API Key：
 
 1. 前往 [Tavily](https://tavily.com/) 注册并获取 API Key
-2. 在 Banana Slides 设置页面的「网络搜索」部分填入 API Key
+2. 在 is2ppt 设置页面的「网络搜索」部分填入 API Key
 3. 系统会自动切换到 Tavily 搜索引擎
 
 ## 注意事项

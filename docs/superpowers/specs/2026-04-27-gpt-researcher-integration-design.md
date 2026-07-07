@@ -2,7 +2,7 @@
 
 ## Overview
 
-Integrate [gpt-researcher](https://github.com/assafelovic/gpt-researcher) as a Python package into Banana Slides, enabling users to run web research before generating slides. The research report is saved as a project reference file, automatically injected into all subsequent AI prompts.
+Integrate [gpt-researcher](https://github.com/assafelovic/gpt-researcher) as a Python package into is2ppt, enabling users to run web research before generating slides. The research report is saved as a project reference file, automatically injected into all subsequent AI prompts.
 
 ## Goals
 
@@ -29,7 +29,7 @@ Integrate [gpt-researcher](https://github.com/assafelovic/gpt-researcher) as a P
 User checks "Web Research" → Create Project → POST /research
   → Task created → ThreadPoolExecutor
     → ResearchService.research(query)
-      → Maps banana-slides provider config → gpt-researcher env vars
+      → Maps is2ppt provider config → gpt-researcher env vars
       → GPTResearcher(query, report_type="research_report")
       → conduct_research() + write_report()
     → Save report as ReferenceFile (markdown)
@@ -68,9 +68,9 @@ class ResearchService:
 
 Core responsibilities:
 
-**Provider Mapping** — Read banana-slides Settings to build gpt-researcher env vars:
+**Provider Mapping** — Read is2ppt Settings to build gpt-researcher env vars:
 
-| banana-slides | gpt-researcher env var |
+| is2ppt | gpt-researcher env var |
 |---|---|
 | `text_model_source=gemini` + `text_model=gemini-2.0-flash` | `SMART_LLM=google_genai:gemini-2.0-flash`, `FAST_LLM=google_genai:gemini-2.0-flash` |
 | `text_model_source=openai` + `text_model=gpt-4o` | `SMART_LLM=openai:gpt-4o`, `FAST_LLM=openai:gpt-4o` |

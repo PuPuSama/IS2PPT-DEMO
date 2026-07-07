@@ -1,10 +1,10 @@
-# Banana Slides Desktop App — Design Spec
+# is2ppt Desktop App — Design Spec
 
 Date: 2026-04-26
 
 ## Overview
 
-将 Banana Slides 打包为桌面应用，支持 Windows (NSIS installer) 和 macOS (DMG)。采用 Electron 作为桌面壳，PyInstaller 打包 Python 后端为独立可执行文件，前端构建产物作为静态资源嵌入。
+将 is2ppt 打包为桌面应用，支持 Windows (NSIS installer) 和 macOS (DMG)。采用 Electron 作为桌面壳，PyInstaller 打包 Python 后端为独立可执行文件，前端构建产物作为静态资源嵌入。
 
 核心体验目标：**一流品牌感**。自定义无边框标题栏、精致的启动画面、流畅的启动流程，不能有任何廉价感。
 
@@ -91,8 +91,8 @@ macOS 上 dock 图标点击时恢复窗口。
 ### 2.5 用户数据目录
 
 使用 `app.getPath('userData')` 作为数据根目录：
-- Windows: `%APPDATA%/BananaSlides/`
-- macOS: `~/Library/Application Support/BananaSlides/`
+- Windows: `%APPDATA%/is2ppt/`
+- macOS: `~/Library/Application Support/is2ppt/`
 
 子目录：
 - `data/database.db` — SQLite 数据库
@@ -162,7 +162,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 ### 5.1 检测逻辑
 
-- 调用 GitHub API: `GET https://api.github.com/repos/Anionex/banana-slides/releases/latest`
+- 调用 GitHub API: `GET https://api.github.com/repos/PuPuSama/IS2PPT-DEMO/releases/latest`
 - 比较 `tag_name`（semver）与当前 `app.getVersion()`
 - 如果有新版本，返回版本号、更新说明、下载链接
 
@@ -185,9 +185,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 独立 HTML 文件，无边框窗口加载。设计要求：
 
 - 尺寸：480×360，居中显示，不可调整大小
-- 背景：渐变色（banana 品牌色系，暖黄到橙色渐变）
+- 背景：渐变色（is2ppt 品牌色系，暖黄到橙色渐变）
 - Logo：居中显示应用 logo
-- 应用名："Banana Slides" 使用品牌字体
+- 应用名："is2ppt" 使用品牌字体
 - 加载动画：底部细长进度条 + 状态文字（"正在启动后端服务..."）
 - 整体风格：简洁、高级、品牌感强
 
@@ -254,7 +254,7 @@ if sys.platform == 'win32':
 
 在 `with app.app_context():` 块中添加 `db.create_all()`，确保打包后首次运行时自动创建表。开发模式下 Alembic 仍然是主要的迁移工具，`db.create_all()` 作为兜底。
 
-## 11. PyInstaller 打包规格 (banana-slides.spec)
+## 11. PyInstaller 打包规格 (is2ppt.spec)
 
 ### 11.1 入口
 
@@ -275,15 +275,15 @@ tkinter, matplotlib, scipy, IPython, jupyter, notebook — 减小体积。
 
 ### 11.5 输出
 
-- 可执行文件名：`banana-backend`
+- 可执行文件名：`is2ppt-backend`
 - 模式：`console=False`（无控制台窗口）
 - 使用 COLLECT 模式（非单文件），便于调试和更新
 
 ## 12. electron-builder 配置
 
 ```yaml
-appId: com.banana.slides
-productName: Banana Slides
+appId: com.pupusama.is2ppt
+productName: is2ppt
 
 directories:
   output: dist
@@ -311,14 +311,14 @@ win:
     - target: nsis
       arch: [x64]
   icon: resources/icon.ico
-  artifactName: "BananaSlides-${version}-Setup.${ext}"
+  artifactName: "is2ppt-${version}-Setup.${ext}"
 
 mac:
   target:
     - target: dmg
       arch: [x64, arm64]
   icon: resources/icon.icns
-  artifactName: "BananaSlides-${version}.${ext}"
+  artifactName: "is2ppt-${version}.${ext}"
 
 nsis:
   oneClick: false
@@ -326,7 +326,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: "Banana Slides"
+  shortcutName: "is2ppt"
 
 compression: maximum
 ```

@@ -1,8 +1,8 @@
-# Banana Slides Desktop App — Implementation Plan
+# is2ppt Desktop App — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Package Banana Slides as a premium desktop application for Windows and macOS using Electron + PyInstaller.
+**Goal:** Package is2ppt as a premium desktop application for Windows and macOS using Electron + PyInstaller.
 
 **Architecture:** Electron shell manages a frameless window with custom title bar, spawns a PyInstaller-packaged Python backend as a child process, and loads the Vite-built frontend. Auto-updater checks GitHub Releases and shows a non-intrusive notification bar.
 
@@ -35,7 +35,7 @@
 | File | Change |
 |------|--------|
 | `backend/app.py` | Windows UTF-8, env-based paths, db.create_all |
-| `backend/banana-slides.spec` | PyInstaller packaging spec |
+| `backend/is2ppt.spec` | PyInstaller packaging spec |
 | `frontend/src/api/client.ts` | Desktop mode base URL detection |
 | `frontend/src/App.tsx` | Mount DesktopTitleBar + UpdateChecker |
 | `frontend/src/components/shared/index.ts` | Export new components |
@@ -98,7 +98,7 @@ This is a no-op when tables already exist (Alembic-managed), but ensures tables 
 
 - [ ] **Step 4: Verify backend still starts normally**
 
-Run: `cd /home/aa/banana-slides/backend && uv run python -c "from app import create_app; app = create_app(); print('OK')"`
+Run: `cd /home/aa/is2ppt/backend && uv run python -c "from app import create_app; app = create_app(); print('OK')"`
 
 Expected: `OK` with no errors.
 
@@ -118,7 +118,7 @@ git commit -m "feat(backend): add desktop environment support
 ### Task 2: PyInstaller Packaging Spec
 
 **Files:**
-- Create: `backend/banana-slides.spec`
+- Create: `backend/is2ppt.spec`
 
 - [ ] **Step 1: Create the PyInstaller spec file**
 
@@ -200,7 +200,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='banana-backend',
+    name='is2ppt-backend',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -216,14 +216,14 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='banana-backend',
+    name='is2ppt-backend',
 )
 ```
 
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/banana-slides.spec
+git add backend/is2ppt.spec
 git commit -m "feat(backend): add PyInstaller packaging spec"
 ```
 
@@ -239,11 +239,11 @@ git commit -m "feat(backend): add PyInstaller packaging spec"
 
 ```json
 {
-  "name": "banana-slides-desktop",
+  "name": "is2ppt-desktop",
   "version": "0.3.0",
-  "description": "Banana Slides Desktop App",
+  "description": "is2ppt Desktop App",
   "main": "main.js",
-  "author": "Anionex",
+  "author": "PuPuSama",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -340,7 +340,7 @@ function getBackendPath() {
     return null;
   }
   const resourcesPath = process.resourcesPath;
-  const exeName = process.platform === 'win32' ? 'banana-backend.exe' : 'banana-backend';
+  const exeName = process.platform === 'win32' ? 'is2ppt-backend.exe' : 'is2ppt-backend';
   return path.join(resourcesPath, 'backend', exeName);
 }
 
@@ -501,15 +501,15 @@ const semver = require('semver');
 const { app } = require('electron');
 const log = require('electron-log');
 
-const REPO_OWNER = 'Anionex';
-const REPO_NAME = 'banana-slides';
+const REPO_OWNER = 'PuPuSama';
+const REPO_NAME = 'IS2PPT-DEMO';
 
 function checkForUpdates() {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'api.github.com',
       path: `/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`,
-      headers: { 'User-Agent': `BananaSlides/${app.getVersion()}` },
+      headers: { 'User-Agent': `is2ppt/${app.getVersion()}` },
     };
 
     const req = https.get(options, (res) => {
@@ -580,7 +580,7 @@ A self-contained HTML file with inline CSS. Premium brand feel: warm gradient, c
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Banana Slides</title>
+<title>is2ppt</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -635,7 +635,7 @@ A self-contained HTML file with inline CSS. Premium brand feel: warm gradient, c
 <body>
   <div class="logo-area">
     <div class="logo-icon">🍌</div>
-    <div class="app-name">Banana Slides</div>
+    <div class="app-name">is2ppt</div>
     <div class="tagline">AI-Native Presentation Generator</div>
   </div>
   <div class="progress-area">
@@ -745,7 +745,7 @@ function createMainWindow() {
 function createTray() {
   const icon = nativeImage.createFromPath(getIconPath()).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
-  tray.setToolTip('Banana Slides');
+  tray.setToolTip('is2ppt');
 
   const contextMenu = Menu.buildFromTemplate([
     { label: '显示主窗口', click: () => { mainWindow.show(); mainWindow.focus(); } },
@@ -766,7 +766,7 @@ function createAppMenu() {
     ...(isMac ? [{
       label: app.name,
       submenu: [
-        { label: '关于 Banana Slides', role: 'about' },
+        { label: '关于 is2ppt', role: 'about' },
         { type: 'separator' },
         { label: '隐藏', role: 'hide' },
         { label: '隐藏其他', role: 'hideOthers' },
@@ -853,8 +853,8 @@ function createAppMenu() {
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: '关于 Banana Slides',
-              message: `Banana Slides v${app.getVersion()}`,
+              title: '关于 is2ppt',
+              message: `is2ppt v${app.getVersion()}`,
               detail: 'AI-Native Presentation Generator',
             });
           },
@@ -990,7 +990,7 @@ export function DesktopTitleBar() {
         >
           <span className="text-lg">🍌</span>
           <span className="text-sm font-semibold text-gray-700 tracking-wide">
-            Banana Slides
+            is2ppt
           </span>
         </div>
       )}
@@ -1209,7 +1209,7 @@ This ensures all asset paths are relative, which is required for Electron's `fil
 
 - [ ] **Step 4: Verify frontend builds**
 
-Run: `cd /home/aa/banana-slides/frontend && npm run build`
+Run: `cd /home/aa/is2ppt/frontend && npm run build`
 
 Expected: Build succeeds with no errors. Check that `dist/index.html` uses relative paths (`./ ` prefix, not `/`).
 
@@ -1235,8 +1235,8 @@ git commit -m "feat(frontend): adapt for desktop mode
 - [ ] **Step 1: Create desktop/electron-builder.yml**
 
 ```yaml
-appId: com.banana.slides
-productName: Banana Slides
+appId: com.pupusama.is2ppt
+productName: is2ppt
 
 directories:
   output: dist
@@ -1267,7 +1267,7 @@ win:
       arch:
         - x64
   icon: resources/icon.ico
-  artifactName: "BananaSlides-${version}-Setup.${ext}"
+  artifactName: "is2ppt-${version}-Setup.${ext}"
 
 mac:
   target:
@@ -1276,7 +1276,7 @@ mac:
         - x64
         - arm64
   icon: resources/icon.icns
-  artifactName: "BananaSlides-${version}.${ext}"
+  artifactName: "is2ppt-${version}.${ext}"
 
 nsis:
   oneClick: false
@@ -1284,7 +1284,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: "Banana Slides"
+  shortcutName: "is2ppt"
 
 compression: maximum
 ```
@@ -1293,7 +1293,7 @@ compression: maximum
 
 Create a minimal 1x1 PNG as placeholder (real icons will be added by the designer):
 
-Run: `cd /home/aa/banana-slides/desktop && mkdir -p resources && python3 -c "
+Run: `cd /home/aa/is2ppt/desktop && mkdir -p resources && python3 -c "
 import struct, zlib
 def create_png(path, w=256, h=256):
     raw = b''
@@ -1389,13 +1389,13 @@ jobs:
         run: uv pip install pyinstaller
 
       - name: Package backend
-        run: cd backend && uv run pyinstaller banana-slides.spec --noconfirm
+        run: cd backend && uv run pyinstaller is2ppt.spec --noconfirm
 
       - name: Prepare desktop build
         shell: bash
         run: |
           cp -r frontend/dist desktop/frontend
-          cp -r backend/dist/banana-backend desktop/backend
+          cp -r backend/dist/is2ppt-backend desktop/backend
 
       - name: Install Electron dependencies
         run: cd desktop && npm ci
@@ -1432,7 +1432,7 @@ Release as draft."
 | Task | Component | Files |
 |------|-----------|-------|
 | 1 | Backend desktop adaptations | `backend/app.py` |
-| 2 | PyInstaller spec | `backend/banana-slides.spec` |
+| 2 | PyInstaller spec | `backend/is2ppt.spec` |
 | 3 | Electron scaffold | `desktop/package.json`, `desktop/.gitignore` |
 | 4 | Preload script | `desktop/preload.js` |
 | 5 | Python manager | `desktop/python-manager.js` |

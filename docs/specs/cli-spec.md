@@ -1,10 +1,10 @@
-# Banana Slides CLI 需求规格（API 驱动，接近全量能力）
+# is2ppt CLI 需求规格（API 驱动，接近全量能力）
 
 ## 1. 目标与非目标
 
 ### 1.1 目标
 
-1. 在不改动后端 API 的前提下，提供可批量执行的命令行工具 `banana-cli`。
+1. 在不改动后端 API 的前提下，提供可批量执行的命令行工具 `is2ppt`。
 2. 以“纯 HTTP API 编排”为唯一依赖边界，不直接复用后端内部 Python 业务模块。
 3. 首版提供高阶批处理入口 `run jobs`，并提供低阶子命令覆盖后端主要能力域。
 4. 支持无鉴权和 `X-Access-Code` 两种现有后端模式。
@@ -23,74 +23,74 @@
 
 | 方法 | Endpoint | CLI 子命令 | Phase |
 |---|---|---|---|
-| `GET` | `/api/projects` | `banana-cli projects list` | P1 |
-| `POST` | `/api/projects` | `banana-cli projects create` | P1 |
-| `GET` | `/api/projects/{project_id}` | `banana-cli projects get` | P1 |
-| `PUT` | `/api/projects/{project_id}` | `banana-cli projects update` | P1 |
-| `DELETE` | `/api/projects/{project_id}` | `banana-cli projects delete` | P1 |
-| `POST` | `/api/projects/{project_id}/generate/outline` | `banana-cli workflows outline` | P1 |
-| `POST` | `/api/projects/{project_id}/generate/from-description` | `banana-cli workflows outline --from-description` | P1 |
-| `POST` | `/api/projects/{project_id}/generate/descriptions` | `banana-cli workflows descriptions` | P1 |
-| `POST` | `/api/projects/{project_id}/generate/images` | `banana-cli workflows images` | P1 |
-| `POST` | `/api/projects/{project_id}/refine/outline` | `banana-cli workflows outline --refine` | P1 |
-| `POST` | `/api/projects/{project_id}/refine/descriptions` | `banana-cli workflows descriptions --refine` | P1 |
-| `GET` | `/api/projects/{project_id}/tasks/{task_id}` | `banana-cli tasks status` | P1 |
-| `GET` | `/api/projects/{project_id}/tasks/{task_id}` | `banana-cli tasks wait` | P1 |
-| `POST` | `/api/projects/{project_id}/pages` | `banana-cli pages create` | P1 |
-| `PUT` | `/api/projects/{project_id}/pages/{page_id}` | `banana-cli pages update` | P1 |
-| `DELETE` | `/api/projects/{project_id}/pages/{page_id}` | `banana-cli pages delete` | P1 |
-| `PUT` | `/api/projects/{project_id}/pages/{page_id}/outline` | `banana-cli pages set-outline` | P1 |
-| `PUT` | `/api/projects/{project_id}/pages/{page_id}/description` | `banana-cli pages set-description` | P1 |
-| `POST` | `/api/projects/{project_id}/pages/{page_id}/generate/description` | `banana-cli pages gen-description` | P1 |
-| `POST` | `/api/projects/{project_id}/pages/{page_id}/generate/image` | `banana-cli pages gen-image` | P1 |
-| `POST` | `/api/projects/{project_id}/pages/{page_id}/edit/image` | `banana-cli pages edit-image` | P1 |
-| `POST` | `/api/projects/{project_id}/template` | `banana-cli templates upload` | P1 |
-| `DELETE` | `/api/projects/{project_id}/template` | `banana-cli templates delete` | P1 |
-| `GET` | `/api/projects/{project_id}/export/pptx` | `banana-cli exports pptx` | P1 |
-| `GET` | `/api/projects/{project_id}/export/pdf` | `banana-cli exports pdf` | P1 |
-| `GET` | `/api/projects/{project_id}/export/images` | `banana-cli exports images` | P1 |
-| `POST` | `/api/projects/{project_id}/export/editable-pptx` | `banana-cli exports editable-pptx` | P1 |
-| `POST` | `/api/reference-files/upload` | `banana-cli refs upload` | P1 |
-| `GET` | `/api/reference-files/project/{project_id}` | `banana-cli refs list` | P1 |
-| `GET` | `/api/reference-files/{file_id}` | `banana-cli refs get` | P1 |
-| `POST` | `/api/reference-files/{file_id}/parse` | `banana-cli refs parse` | P1 |
-| `POST` | `/api/reference-files/{file_id}/associate` | `banana-cli refs associate` | P1 |
-| `POST` | `/api/reference-files/{file_id}/dissociate` | `banana-cli refs dissociate` | P1 |
-| `DELETE` | `/api/reference-files/{file_id}` | `banana-cli refs delete` | P1 |
-| `GET` | `/api/projects/{project_id}/materials` | `banana-cli materials list --project-id` | P1 |
-| `POST` | `/api/projects/{project_id}/materials/upload` | `banana-cli materials upload --project-id` | P1 |
-| `POST` | `/api/projects/{project_id}/materials/generate` | `banana-cli materials generate --project-id` | P1 |
-| `GET` | `/api/materials` | `banana-cli materials list --scope` | P1 |
-| `POST` | `/api/materials/associate` | `banana-cli materials associate` | P1 |
-| `DELETE` | `/api/materials/{material_id}` | `banana-cli materials delete` | P1 |
+| `GET` | `/api/projects` | `is2ppt projects list` | P1 |
+| `POST` | `/api/projects` | `is2ppt projects create` | P1 |
+| `GET` | `/api/projects/{project_id}` | `is2ppt projects get` | P1 |
+| `PUT` | `/api/projects/{project_id}` | `is2ppt projects update` | P1 |
+| `DELETE` | `/api/projects/{project_id}` | `is2ppt projects delete` | P1 |
+| `POST` | `/api/projects/{project_id}/generate/outline` | `is2ppt workflows outline` | P1 |
+| `POST` | `/api/projects/{project_id}/generate/from-description` | `is2ppt workflows outline --from-description` | P1 |
+| `POST` | `/api/projects/{project_id}/generate/descriptions` | `is2ppt workflows descriptions` | P1 |
+| `POST` | `/api/projects/{project_id}/generate/images` | `is2ppt workflows images` | P1 |
+| `POST` | `/api/projects/{project_id}/refine/outline` | `is2ppt workflows outline --refine` | P1 |
+| `POST` | `/api/projects/{project_id}/refine/descriptions` | `is2ppt workflows descriptions --refine` | P1 |
+| `GET` | `/api/projects/{project_id}/tasks/{task_id}` | `is2ppt tasks status` | P1 |
+| `GET` | `/api/projects/{project_id}/tasks/{task_id}` | `is2ppt tasks wait` | P1 |
+| `POST` | `/api/projects/{project_id}/pages` | `is2ppt pages create` | P1 |
+| `PUT` | `/api/projects/{project_id}/pages/{page_id}` | `is2ppt pages update` | P1 |
+| `DELETE` | `/api/projects/{project_id}/pages/{page_id}` | `is2ppt pages delete` | P1 |
+| `PUT` | `/api/projects/{project_id}/pages/{page_id}/outline` | `is2ppt pages set-outline` | P1 |
+| `PUT` | `/api/projects/{project_id}/pages/{page_id}/description` | `is2ppt pages set-description` | P1 |
+| `POST` | `/api/projects/{project_id}/pages/{page_id}/generate/description` | `is2ppt pages gen-description` | P1 |
+| `POST` | `/api/projects/{project_id}/pages/{page_id}/generate/image` | `is2ppt pages gen-image` | P1 |
+| `POST` | `/api/projects/{project_id}/pages/{page_id}/edit/image` | `is2ppt pages edit-image` | P1 |
+| `POST` | `/api/projects/{project_id}/template` | `is2ppt templates upload` | P1 |
+| `DELETE` | `/api/projects/{project_id}/template` | `is2ppt templates delete` | P1 |
+| `GET` | `/api/projects/{project_id}/export/pptx` | `is2ppt exports pptx` | P1 |
+| `GET` | `/api/projects/{project_id}/export/pdf` | `is2ppt exports pdf` | P1 |
+| `GET` | `/api/projects/{project_id}/export/images` | `is2ppt exports images` | P1 |
+| `POST` | `/api/projects/{project_id}/export/editable-pptx` | `is2ppt exports editable-pptx` | P1 |
+| `POST` | `/api/reference-files/upload` | `is2ppt refs upload` | P1 |
+| `GET` | `/api/reference-files/project/{project_id}` | `is2ppt refs list` | P1 |
+| `GET` | `/api/reference-files/{file_id}` | `is2ppt refs get` | P1 |
+| `POST` | `/api/reference-files/{file_id}/parse` | `is2ppt refs parse` | P1 |
+| `POST` | `/api/reference-files/{file_id}/associate` | `is2ppt refs associate` | P1 |
+| `POST` | `/api/reference-files/{file_id}/dissociate` | `is2ppt refs dissociate` | P1 |
+| `DELETE` | `/api/reference-files/{file_id}` | `is2ppt refs delete` | P1 |
+| `GET` | `/api/projects/{project_id}/materials` | `is2ppt materials list --project-id` | P1 |
+| `POST` | `/api/projects/{project_id}/materials/upload` | `is2ppt materials upload --project-id` | P1 |
+| `POST` | `/api/projects/{project_id}/materials/generate` | `is2ppt materials generate --project-id` | P1 |
+| `GET` | `/api/materials` | `is2ppt materials list --scope` | P1 |
+| `POST` | `/api/materials/associate` | `is2ppt materials associate` | P1 |
+| `DELETE` | `/api/materials/{material_id}` | `is2ppt materials delete` | P1 |
 
 ### 2.2 Phase 2（补齐接近全量）
 
 | 方法 | Endpoint | CLI 子命令 | Phase |
 |---|---|---|---|
-| `POST` | `/api/projects/renovation` | `banana-cli renovation create` | P2 |
-| `POST` | `/api/extract-style` | `banana-cli styles extract` | P2 |
-| `GET` | `/api/projects/{project_id}/pages/{page_id}/image-versions` | `banana-cli pages versions` | P2 |
-| `POST` | `/api/projects/{project_id}/pages/{page_id}/image-versions/{version_id}/set-current` | `banana-cli pages set-current` | P2 |
-| `POST` | `/api/projects/{project_id}/pages/{page_id}/regenerate-renovation` | `banana-cli pages regenerate-renovation` | P2 |
-| `GET` | `/api/settings` | `banana-cli settings get` | P2 |
-| `PUT` | `/api/settings` | `banana-cli settings update` | P2 |
-| `POST` | `/api/settings/reset` | `banana-cli settings reset` | P2 |
-| `POST` | `/api/settings/verify` | `banana-cli settings verify` | P2 |
-| `POST` | `/api/settings/tests/{test_name}` | `banana-cli settings test` | P2 |
-| `GET` | `/api/settings/tests/{task_id}/status` | `banana-cli settings test-status` | P2 |
-| `POST` | `/api/materials/upload` | `banana-cli materials upload --global` | P2 |
-| `POST` | `/api/materials/download` | `banana-cli materials download` | P2 |
-| `GET` | `/files/{project_id}/{type}/{filename}` | `banana-cli files fetch` | P2 |
-| `GET` | `/files/materials/{filename}` | `banana-cli files fetch` | P2 |
-| `GET` | `/files/user-templates/{template_id}/{filename}` | `banana-cli files fetch` | P2 |
+| `POST` | `/api/projects/renovation` | `is2ppt renovation create` | P2 |
+| `POST` | `/api/extract-style` | `is2ppt styles extract` | P2 |
+| `GET` | `/api/projects/{project_id}/pages/{page_id}/image-versions` | `is2ppt pages versions` | P2 |
+| `POST` | `/api/projects/{project_id}/pages/{page_id}/image-versions/{version_id}/set-current` | `is2ppt pages set-current` | P2 |
+| `POST` | `/api/projects/{project_id}/pages/{page_id}/regenerate-renovation` | `is2ppt pages regenerate-renovation` | P2 |
+| `GET` | `/api/settings` | `is2ppt settings get` | P2 |
+| `PUT` | `/api/settings` | `is2ppt settings update` | P2 |
+| `POST` | `/api/settings/reset` | `is2ppt settings reset` | P2 |
+| `POST` | `/api/settings/verify` | `is2ppt settings verify` | P2 |
+| `POST` | `/api/settings/tests/{test_name}` | `is2ppt settings test` | P2 |
+| `GET` | `/api/settings/tests/{task_id}/status` | `is2ppt settings test-status` | P2 |
+| `POST` | `/api/materials/upload` | `is2ppt materials upload --global` | P2 |
+| `POST` | `/api/materials/download` | `is2ppt materials download` | P2 |
+| `GET` | `/files/{project_id}/{type}/{filename}` | `is2ppt files fetch` | P2 |
+| `GET` | `/files/materials/{filename}` | `is2ppt files fetch` | P2 |
+| `GET` | `/files/user-templates/{template_id}/{filename}` | `is2ppt files fetch` | P2 |
 
 ## 3. CLI 命令契约（参数、输入输出、退出码）
 
 ### 3.1 命令行总入口
 
 ```bash
-banana-cli [GLOBAL_OPTIONS] <domain> <action> [OPTIONS]
+is2ppt [GLOBAL_OPTIONS] <domain> <action> [OPTIONS]
 ```
 
 全局参数：
@@ -106,20 +106,20 @@ banana-cli [GLOBAL_OPTIONS] <domain> <action> [OPTIONS]
 ### 3.2 顶级命令面
 
 ```bash
-banana-cli run jobs --file <jobs.jsonl|jobs.csv> --report <path> [--continue-on-error] [--timeout-sec N] [--state-file <path>] [--progress-interval-sec N]
-banana-cli run monitor --state-file <path> [--watch] [--interval N]
-banana-cli projects list|get|create|update|delete ...
-banana-cli workflows outline|descriptions|images|full ...
-banana-cli tasks status|wait --project-id <id> --task-id <id>
-banana-cli pages create|update|delete|set-outline|set-description|gen-description|gen-image|edit-image|versions|set-current|regenerate-renovation ...
-banana-cli templates upload|delete ...
-banana-cli exports pptx|pdf|images|editable-pptx ...
-banana-cli refs upload|list|get|parse|associate|dissociate|delete ...
-banana-cli materials list|upload|generate|associate|download|delete ...
-banana-cli settings get|update|reset|verify|test|test-status ...
-banana-cli renovation create ...
-banana-cli styles extract ...
-banana-cli files fetch --url <download_url> --output <path>
+is2ppt run jobs --file <jobs.jsonl|jobs.csv> --report <path> [--continue-on-error] [--timeout-sec N] [--state-file <path>] [--progress-interval-sec N]
+is2ppt run monitor --state-file <path> [--watch] [--interval N]
+is2ppt projects list|get|create|update|delete ...
+is2ppt workflows outline|descriptions|images|full ...
+is2ppt tasks status|wait --project-id <id> --task-id <id>
+is2ppt pages create|update|delete|set-outline|set-description|gen-description|gen-image|edit-image|versions|set-current|regenerate-renovation ...
+is2ppt templates upload|delete ...
+is2ppt exports pptx|pdf|images|editable-pptx ...
+is2ppt refs upload|list|get|parse|associate|dissociate|delete ...
+is2ppt materials list|upload|generate|associate|download|delete ...
+is2ppt settings get|update|reset|verify|test|test-status ...
+is2ppt renovation create ...
+is2ppt styles extract ...
+is2ppt files fetch --url <download_url> --output <path>
 ```
 
 ### 3.3 高阶命令契约：`run jobs`
@@ -249,8 +249,8 @@ job_id,job_type,creation_type,idea_prompt,outline_text,description_text,project_
 
 默认路径：
 
-1. macOS/Linux：`${XDG_CONFIG_HOME:-~/.config}/banana-slides/cli.toml`
-2. Windows：`%APPDATA%/banana-slides/cli.toml`
+1. macOS/Linux：`${XDG_CONFIG_HOME:-~/.config}/is2ppt/cli.toml`
+2. Windows：`%APPDATA%/is2ppt/cli.toml`
 
 TOML 字段：
 
@@ -265,11 +265,11 @@ report_dir = "./reports"
 
 ### 5.3 环境变量
 
-1. `BANANA_CLI_BASE_URL`
-2. `BANANA_CLI_ACCESS_CODE`
-3. `BANANA_CLI_POLL_INTERVAL`
-4. `BANANA_CLI_REQUEST_TIMEOUT`
-5. `BANANA_CLI_CONTINUE_ON_ERROR`
+1. `IS2PPT_CLI_BASE_URL`
+2. `IS2PPT_CLI_ACCESS_CODE`
+3. `IS2PPT_CLI_POLL_INTERVAL`
+4. `IS2PPT_CLI_REQUEST_TIMEOUT`
+5. `IS2PPT_CLI_CONTINUE_ON_ERROR`
 
 ### 5.4 鉴权规则
 
@@ -332,7 +332,7 @@ GET /api/projects/{project_id}/tasks/{task_id}
 实现结构（仓库内 Python 包）：
 
 ```text
-cli/banana_cli/
+cli/is2ppt_cli/
   __init__.py
   __main__.py
   app.py
@@ -453,7 +453,7 @@ cli/banana_cli/
 ### 10.1 示例：`full_generation` JSONL 行
 
 ```json
-{"job_id":"job-ai-001","job_type":"full_generation","creation_type":"idea","idea_prompt":"生成一份关于 AI Agent 工程实践的 6 页演示文稿","template_image_path":"/Users/chenzixin/projects/banana-slides/assets/test_img.png","template_style":"科技感、深蓝主色、信息密度高","extra_requirements":"每页保持标题可读性，图文比例约 6:4","language":"zh","max_description_workers":5,"max_image_workers":6,"use_template":true,"reference_files":["/Users/chenzixin/projects/banana-slides/docs/quickstart.mdx"],"material_files":[],"export":{"formats":["pptx","pdf","editable_pptx"],"filename_prefix":"ai-agent-practice","page_ids":[],"editable_max_depth":1,"editable_max_workers":4},"policy":{"continue_on_error":true,"timeout_sec":1800}}
+{"job_id":"job-ai-001","job_type":"full_generation","creation_type":"idea","idea_prompt":"生成一份关于 AI Agent 工程实践的 6 页演示文稿","template_image_path":"/Users/chenzixin/projects/is2ppt/assets/test_img.png","template_style":"科技感、深蓝主色、信息密度高","extra_requirements":"每页保持标题可读性，图文比例约 6:4","language":"zh","max_description_workers":5,"max_image_workers":6,"use_template":true,"reference_files":["/Users/chenzixin/projects/is2ppt/docs/quickstart.mdx"],"material_files":[],"export":{"formats":["pptx","pdf","editable_pptx"],"filename_prefix":"ai-agent-practice","page_ids":[],"editable_max_depth":1,"editable_max_workers":4},"policy":{"continue_on_error":true,"timeout_sec":1800}}
 ```
 
 ### 10.2 示例：最终报告 JSON

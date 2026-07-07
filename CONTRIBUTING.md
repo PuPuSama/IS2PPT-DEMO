@@ -1,6 +1,6 @@
-# Contributing to Banana-slides
+# Contributing to is2ppt
 
-Thank you for your interest in contributing to Banana-slides! We welcome contributions from the community.
+Thank you for your interest in contributing to is2ppt! We welcome contributions from the community.
 
 ## Before You Start
 
@@ -23,7 +23,7 @@ When you open a Pull Request, the PR template includes a CLA checkbox. Simply ch
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/Anionex/banana-slides/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/PuPuSama/IS2PPT-DEMO/issues)
 2. If not, create a new issue with:
    - A clear, descriptive title
    - Steps to reproduce the bug
@@ -63,8 +63,8 @@ When you open a Pull Request, the PR template includes a CLA checkbox. Simply ch
 
 ```bash
 # 克隆代码仓库
-git clone https://github.com/Anionex/banana-slides.git
-cd banana-slides
+git clone https://github.com/PuPuSama/IS2PPT-DEMO.git is2ppt
+cd is2ppt
 
 # 安装 uv（如果尚未安装）
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -108,4 +108,4 @@ If you have questions, feel free to open an issue or reach out to the maintainer
 
 ---
 
-Thank you for contributing to Banana-slides! 🍌
+Thank you for contributing to is2ppt!

@@ -22,7 +22,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const assignee = 'Anionex';
+            const assignee = context.repo.owner;
             const title = '提醒：更换微信群二维码';
             const now = new Date();
             const shanghaiDate = new Intl.DateTimeFormat('zh-CN', {

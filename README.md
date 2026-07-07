@@ -1,16 +1,7 @@
 <div align="center">
 
 <p>
-  <img src="https://github.com/user-attachments/assets/81fe6816-44cc-4c61-97c7-f3c099650966" alt="Banana Slides" width="860">
-</p>
-<p>
-  <a href="https://trendshift.io/repositories/22056" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/22056" alt="Anionex%2Fbanana-slides | Trendshift" width="265" height="58">
-  </a>
-  <br>
-  <a href="https://hellogithub.com/repository/Anionex/banana-slides" target="_blank">
-    <img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=c8a0ee51918e4353af08012b8472b85e&claim_uid=CtDTm2jbUHhVGBr&theme=neutral" alt="Featured｜HelloGitHub" width="265" height="58">
-  </a>
+  <img src="https://github.com/user-attachments/assets/81fe6816-44cc-4c61-97c7-f3c099650966" alt="is2ppt" width="860">
 </p>
 <p>
   <a href="#-项目缘起"><b>简体中文</b></a>
@@ -18,26 +9,26 @@
   <a href="README_EN.md"><b>English</b></a>
 </p>
 <p>
-  <a href="https://github.com/Anionex/banana-slides/stargazers"><img src="https://img.shields.io/github/stars/Anionex/banana-slides?style=flat-square&color=FFD700" alt="GitHub Stars"></a>
-  <a href="https://github.com/Anionex/banana-slides/network"><img src="https://img.shields.io/github/forks/Anionex/banana-slides?style=flat-square&color=FFD700" alt="GitHub Forks"></a>
-  <a href="https://github.com/Anionex/banana-slides/watchers"><img src="https://img.shields.io/github/watchers/Anionex/banana-slides?style=flat-square&color=FFD700" alt="GitHub Watchers"></a>
-  <a href="https://github.com/Anionex/banana-slides"><img src="https://img.shields.io/badge/version-v0.4.0-44cc11?style=flat-square" alt="Version"></a>
-  <a href="https://github.com/Anionex/banana-slides/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Anionex/banana-slides?color=0055aa&style=flat-square" alt="License"></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/stargazers"><img src="https://img.shields.io/github/stars/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Stars"></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/network"><img src="https://img.shields.io/github/forks/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Forks"></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/watchers"><img src="https://img.shields.io/github/watchers/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Watchers"></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO"><img src="https://img.shields.io/badge/version-v0.4.0-44cc11?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/LICENSE"><img src="https://img.shields.io/github/license/PuPuSama/IS2PPT-DEMO?color=0055aa&style=flat-square" alt="License"></a>
   <br>
   <img src="https://img.shields.io/badge/Docker-Build-4A90D9?logo=docker&logoColor=white&style=flat-square" alt="Docker Build">
-  <a href="https://deepwiki.com/Anionex/banana-slides"><img src="./assets/badge-deepwiki-flat.svg" alt="Ask DeepWiki"></a>
+  <a href="https://deepwiki.com/PuPuSama/IS2PPT-DEMO"><img src="./assets/badge-deepwiki-flat.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p>
-  <b>一个基于 nano banana pro 🍌 的原生 AI PPT 生成应用</b><br>
+  <b>一个原生 AI PPT 生成应用</b><br>
   <b>在几分钟内从想法到演示文稿，无需繁琐排版、口头提出修改，迈向真正的 "Vibe PPT"</b>
 </p>
 <p>
-  <a href="https://bananaslides.online/"><b>🚀 在线 Demo</b></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO"><b>项目入口</b></a>
   &nbsp;|&nbsp;
-  <a href="https://docs.bananaslides.online/"><b>📖 文档</b></a>
+  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/tree/main/docs"><b>📖 文档</b></a>
   &nbsp;|&nbsp;
- <a href="https://github.com/Anionex/banana-slides#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><b>部署方法</b></a>
+ <a href="https://github.com/PuPuSama/IS2PPT-DEMO#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><b>部署方法</b></a>
 </p>
 <p>
   如果该项目对你有用，欢迎 <b>Star 🌟</b> & <b>Fork 🍴</b>
@@ -49,7 +40,7 @@
 - **[2026-04-25]**：支持通过 OpenAI 官方 OAuth 登录绑定账号，绑定后可直接使用 Codex 作为文本/图片生成 provider，无需手动填写 API Key，plus账号五小时可生成100+ 2k图（[教程](https://ziy68cvfvu3.feishu.cn/wiki/LDSOwPzkhiNonkkNTF1ct2VBnNc))（基于 OpenAI 官方 OAuth PKCE 授权流程，非逆向）
 - **[2026-04-25]**：支持保存自定义文字风格描述模板，可命名、标色、持久化复用，无需每次重新输入
 - **[2026-04-23]**：支持了 gpt-image-2 模型，提升图片生成与编辑质量
-- **[2026-04-11]**：支持了[cli操作并加入了agent skills](https://docs.bananaslides.online/cli)
+- **[2026-04-11]**：支持了[cli操作并加入了agent skills](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/cli.mdx)
 - **[2026-03]**：加入了若干功能和优化，如额外字段、多比例设定等
 - **[2026-02-09]**： 新功能和优化
   * 新功能
@@ -75,7 +66,7 @@
 
 以上这些缺陷，让传统的AI ppt生成器难以同时满足我们“快”和“美”的两大PPT制作需求。即使自称Vibe PPT，但是在我的眼中还远不够“Vibe”。
 
-但是，nano banana🍌模型的出现让一切有了转机。我尝试使用🍌pro进行ppt页面生成，发现生成的结果无论是质量、美感还是一致性，都做的非常好，且几乎能精确渲染prompt要求的所有文字+遵循参考图的风格。那为什么不基于🍌pro，做一个原生的"Vibe PPT"应用呢？
+但是，新一代图像生成模型的出现让一切有了转机。我尝试使用图像模型进行ppt页面生成，发现生成的结果无论是质量、美感还是一致性，都做的非常好，且几乎能精确渲染prompt要求的所有文字+遵循参考图的风格。那为什么不基于图像模型，做一个原生的"Vibe PPT"应用呢？
 
 ## 👨‍💻 适用场景
 
@@ -105,7 +96,7 @@
 
 </div>
 
-更多可见<a href="https://github.com/Anionex/banana-slides/issues/2" > 使用案例 </a>
+更多可见<a href="https://github.com/PuPuSama/IS2PPT-DEMO/issues/2" > 使用案例 </a>
 
 
 ## 🎯 功能介绍
@@ -129,7 +120,7 @@
 ### 3. "Vibe" 式自然语言修改
 不再受限于复杂的菜单按钮，直接通过**自然语言**下达修改指令。
 - **局部重绘**：对不满意的区域进行口头式修改（如"把这个图换成饼图"）。
-- **整页优化**：基于 nano banana pro🍌 生成高清、风格统一的页面。
+- **整页优化**：基于图像生成模型生成高清、风格统一的页面。
 
 <img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/929ba24a-996c-4f6d-9ec6-818be6b08ea3" />
 
@@ -182,17 +173,11 @@
 
 ## 📦 使用方法
 
-### （新）使用应用模板一键部署
-这是最简单的方式，无需安装docker或下载项目，创建后可直接进入应用
+### 部署入口
+当前推荐通过 Docker Compose 或源码方式部署，步骤见下方说明。
 
-
-1. 通过雨云一键部署和启动本应用 (带宽大，适合高清图片生成和下载。新用户有免费试用)
-- [图文教程](https://ziy68cvfvu3.feishu.cn/wiki/B5RIwg3OUiCfo9kyadzcR9CInnc?from=from_copylink)
-
-[![通过雨云一键部署](https://rainyun-apps.cn-nb1.rains3.com/materials/deploy-on-rainyun-cn.svg)](https://app.rainyun.com/apps/rca/store/7549/anionex_)
-
-2. 敬请期待
-
+1. [部署文档](https://github.com/PuPuSama/IS2PPT-DEMO/tree/main/docs/zh)
+2. 更多托管模板入口将后续补充
 
 ### 使用 Docker Compose🐳
 通过docker compose快速启动前后端服务。
@@ -208,8 +193,8 @@
 
 0. **克隆代码仓库**
 ```bash
-git clone https://github.com/Anionex/banana-slides
-cd banana-slides
+git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+cd is2ppt
 ```
 
 1. **配置环境变量**
@@ -225,7 +210,7 @@ cp .env.example .env
 <summary>点击展开详情</summary>
   
 > **项目中大模型接口以AIHubMix平台格式为标准，推荐使用 [AIHubMix(点击此处可直接访问)](https://aihubmix.com/?aff=17EC) 获取API密钥，减小迁移成本**<br>
-> **友情提示：谷歌nano banana pro模型接口费用较高，请注意调用成本**
+> **友情提示：Google 图像生成模型接口费用较高，请注意调用成本**
 ```env
 # AI Provider格式配置 (gemini / openai / vertex)
 AI_PROVIDER_FORMAT=gemini
@@ -263,7 +248,7 @@ MINIMAX_API_KEY=your-minimax-api-key          # MiniMax
 ...
 ```
 
-> Banana Slides explicitly packages the LazyLLM online provider SDKs used by domestic vendors:
+> is2ppt explicitly packages the LazyLLM online provider SDKs used by domestic vendors:
 > `volcengine-python-sdk[ark]` for Doubao, `dashscope` for Qwen/Wanxiang, and `zhipuai` for GLM/Zhipu.
 > LazyLLM also exposes `lazyllm install online-advanced`, but the PyPI wheel may not publish that group as a standard install extra, so Docker/prebuilt images rely on these explicit dependencies instead.
   
@@ -301,8 +286,8 @@ docker compose -f docker-compose.prod.yml up -d
 ```
 
 镜像名称：
-- `anoinex/banana-slides-frontend:latest`
-- `anoinex/banana-slides-backend:latest`
+- `pupusama/is2ppt-frontend:latest`
+- `pupusama/is2ppt-backend:latest`
 
 启动后可在应用内进入 **设置 → 关于 → 检查更新**，应用会根据当前版本 SHA 判断是否已有可用更新；源码运行时也会用当前 Git SHA 参与判断。
 
@@ -334,13 +319,13 @@ docker compose up -d
 
 ```bash
 # 查看后端日志（最后 200 行）
-docker logs --tail 200 banana-slides-backend
+docker logs --tail 200 is2ppt-backend
 
 # 实时查看后端日志（最后 100 行）
-docker logs -f --tail 100 banana-slides-backend
+docker logs -f --tail 100 is2ppt-backend
 
 # 查看前端日志（最后 100 行）
-docker logs --tail 100 banana-slides-frontend
+docker logs --tail 100 is2ppt-frontend
 ```
 
 5. **停止服务**
@@ -371,7 +356,7 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-**注：感谢优秀开发者朋友 [@ShellMonster](https://github.com/ShellMonster/) 提供了[新人部署教程](https://github.com/ShellMonster/banana-slides/blob/docs-deploy-tutorial/docs/NEWBIE_DEPLOYMENT.md)，专为没有任何服务器部署经验的新手设计，可[点击链接](https://github.com/ShellMonster/banana-slides/blob/docs-deploy-tutorial/docs/NEWBIE_DEPLOYMENT.md)查看。**
+**注：感谢优秀开发者朋友 [@ShellMonster](https://github.com/ShellMonster/) 提供了[新人部署教程](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/quickstart.mdx)，专为没有任何服务器部署经验的新手设计，可[点击链接](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/quickstart.mdx)查看。**
 
 ### 从源码部署
 
@@ -382,7 +367,7 @@ docker compose up -d
 - 有效的 Google Gemini API 密钥
 - （可选）[LibreOffice](https://www.libreoffice.org/) - 使用「PPT 翻新」功能上传 PPTX 文件时需要，用于将 PPTX 转换为 PDF。**推荐先在本地将 PPTX 转为 PDF 后再上传**，原因：LibreOffice 在服务端渲染时可能因缺少字体（如微软雅黑、Calibri 等）导致排版错位，且无法完整还原部分特效。上传 PDF 文件则不需要 LibreOffice。Docker 用户如仍需在容器内支持 PPTX 上传，可执行：
   ```bash
-  docker exec -it banana-slides-backend bash -c "apt-get update && apt-get install -y libreoffice-impress && rm -rf /var/lib/apt/lists/*"
+  docker exec -it is2ppt-backend bash -c "apt-get update && apt-get install -y libreoffice-impress && rm -rf /var/lib/apt/lists/*"
   ```
   > 注意：此方式安装的 LibreOffice 在容器重建后会丢失，需重新安装。
 
@@ -390,8 +375,8 @@ docker compose up -d
 
 0. **克隆代码仓库**
 ```bash
-git clone https://github.com/Anionex/banana-slides
-cd banana-slides
+git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+cd is2ppt
 ```
 
 1. **安装 uv（如果尚未安装）**
@@ -488,19 +473,19 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
 
 
 ## **🔧 常见问题**
-可见[官网文档](https://docs.bananaslides.online/zh/faq)
+可见[项目文档](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/faq.mdx)
 
 也可以直接到 DeepWiki 提问 
-<a href="https://deepwiki.com/Anionex/banana-slides"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+<a href="https://deepwiki.com/PuPuSama/IS2PPT-DEMO"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 
 
 
 ## 🤝 贡献指南
 
 欢迎通过
-[Issue](https://github.com/Anionex/banana-slides/issues)
+[Issue](https://github.com/PuPuSama/IS2PPT-DEMO/issues)
 和
-[Pull Request](https://github.com/Anionex/banana-slides/pulls)
+[Pull Request](https://github.com/PuPuSama/IS2PPT-DEMO/pulls)
 为本项目贡献力量！
 
 > **重要：** 贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -542,7 +527,7 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
 
 - 项目贡献者们：
 
-[![Contributors](https://contrib.rocks/image?repo=Anionex/banana-slides)](https://github.com/Anionex/banana-slides/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=PuPuSama/IS2PPT-DEMO)](https://github.com/PuPuSama/IS2PPT-DEMO/graphs/contributors)
 
 - [Linux.do](https://linux.do/): 新的理想型社区
   
@@ -558,15 +543,15 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
  
 ## 📈 项目统计
 
-<a href="https://www.star-history.com/#Anionex/banana-slides&type=Timeline&legend=top-left">
+<a href="https://www.star-history.com/#PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left">
 
  <picture>
 
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Anionex/banana-slides&type=Timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&theme=dark&legend=top-left" />
 
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Anionex/banana-slides&type=Timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left" />
 
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Anionex/banana-slides&type=Timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left" />
 
  </picture>
 

@@ -1,6 +1,6 @@
-BANANA-SLIDES CONTRIBUTOR LICENSE AGREEMENT
+IS2PPT CONTRIBUTOR LICENSE AGREEMENT
 
-By submitting a Contribution to Banana-slides ("Project"), you agree to the terms of this Contributor License Agreement ("CLA").
+By submitting a Contribution to is2ppt ("Project"), you agree to the terms of this Contributor License Agreement ("CLA").
 
 1. Definitions
 

@@ -396,5 +396,5 @@ docker compose logs frontend
 ---
 
 **最后更新**: 2025-01-20  
-**维护者**: Banana Slides Team
+**维护者**: is2ppt Team
 

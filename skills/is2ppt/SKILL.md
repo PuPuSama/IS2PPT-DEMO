@@ -1,14 +1,14 @@
 ---
-name: banana-cli
+name: is2ppt
 description: >
-  CLI tool for creating, managing, and exporting AI-generated presentations via the Banana Slides API.
+  CLI tool for creating, managing, and exporting AI-generated presentations via the is2ppt API.
   Use when the user asks to: (1) generate a PPT/presentation/slides from an idea, outline, or description,
   (2) export a project to PPTX, PDF, or images, (3) batch-generate multiple presentations,
   (4) manage projects, pages, image uploads, or templates programmatically,
   (5) renovate/redesign an existing PPT or PDF, (6) edit slide images with natural language.
 ---
 
-# banana-cli
+# is2ppt
 
 CLI for creating, managing, and exporting AI-generated presentations.
 
@@ -25,24 +25,24 @@ If this fails, the backend is not running. Read [references/setup.md](references
 ## Invocation
 
 ```bash
-banana-cli <command> [options]
+is2ppt <command> [options]
 ```
 
-If `banana-cli` is not on PATH, use `uv run banana-cli` from the project root, or install globally with `uv tool install .`
+If `is2ppt` is not on PATH, use `uv run is2ppt` from the project root, or install globally with `uv tool install .`
 
 ## End-to-End Workflow
 
 ```bash
 # 1. Create project and set as working project
-result=$(banana-cli --json projects create --creation-type idea --idea-prompt "Your topic")
+result=$(is2ppt --json projects create --creation-type idea --idea-prompt "Your topic")
 project_id=$(echo "$result" | jq -r '.data.project_id')
-banana-cli projects use "$project_id"
+is2ppt projects use "$project_id"
 
 # 2. Generate everything (outline → descriptions → images)
-banana-cli workflows full --language zh --pages 8
+is2ppt workflows full --language zh --pages 8
 
 # 3. Export to local file
-banana-cli exports pptx --output ./slides.pptx
+is2ppt exports pptx --output ./slides.pptx
 ```
 
 Once a working project is set, `--project-id` is optional on all subsequent commands.
@@ -54,8 +54,8 @@ Once a working project is set, `--project-id` is optional on all subsequent comm
 All `--project-id` and `--page-id` accept short prefixes (like git short hashes):
 
 ```bash
-banana-cli projects get a1b2          # matches a1b2c3d4-...
-banana-cli pages edit-image --page-id b9c8 --instruction "change title to red"
+is2ppt projects get a1b2          # matches a1b2c3d4-...
+is2ppt pages edit-image --page-id b9c8 --instruction "change title to red"
 ```
 
 ### Working project context
@@ -63,10 +63,10 @@ banana-cli pages edit-image --page-id b9c8 --instruction "change title to red"
 Avoid repeating `--project-id` by setting a working project:
 
 ```bash
-banana-cli projects use a1b2     # set (accepts prefix)
-banana-cli workflows outline      # uses working project
-banana-cli projects use           # show current
-banana-cli projects unuse         # clear
+is2ppt projects use a1b2     # set (accepts prefix)
+is2ppt workflows outline      # uses working project
+is2ppt projects use           # show current
+is2ppt projects unuse         # clear
 ```
 
 ### Page count control
@@ -74,19 +74,19 @@ banana-cli projects unuse         # clear
 `--pages` is a hint to the AI — actual page count may differ. The CLI warns on stderr when they don't match.
 
 ```bash
-banana-cli workflows outline --pages 5
-banana-cli workflows full --pages 10 --language en
+is2ppt workflows outline --pages 5
+is2ppt workflows full --pages 10 --language en
 ```
 
 ### Export with auto-download
 
 ```bash
 # Download directly to local path
-banana-cli exports pptx --output ./slides.pptx
-banana-cli exports pdf --output ./report.pdf
+is2ppt exports pptx --output ./slides.pptx
+is2ppt exports pdf --output ./report.pdf
 
 # Without --output, returns a server-side download URL
-banana-cli exports pptx
+is2ppt exports pptx
 ```
 
 ### Batch generation
@@ -97,19 +97,19 @@ cat > jobs.jsonl << 'EOF'
 {"job_id":"t2","job_type":"full_generation","creation_type":"idea","idea_prompt":"ML Basics","language":"zh","export":{"formats":["pptx","pdf"]}}
 EOF
 
-banana-cli run jobs --file jobs.jsonl --report report.json --state-file state.json
+is2ppt run jobs --file jobs.jsonl --report report.json --state-file state.json
 ```
 
 ### Renovate existing PPT
 
 ```bash
-banana-cli renovation create --file /absolute/path/to/slides.pptx --language zh
+is2ppt renovation create --file /absolute/path/to/slides.pptx --language zh
 ```
 
 ### JSON output for scripting
 
 ```bash
-banana-cli --json projects list | jq '.data.projects[].project_id'
+is2ppt --json projects list | jq '.data.projects[].project_id'
 ```
 
 ## Important Notes
@@ -119,8 +119,8 @@ banana-cli --json projects list | jq '.data.projects[].project_id'
 - `--wait` / `tasks wait` can be interrupted (Ctrl+C) and resumed anytime — backend tasks are unaffected
 - Progress lines go to stderr (format: `[PROGRESS] STAGE STATUS completed/total`), keeping stdout JSON clean
 - `--help` output is plain text when piped (non-TTY) — safe for agent consumption
-- Config priority: CLI args > env vars (`BANANA_CLI_*`) > TOML config (`~/.config/banana-slides/cli.toml`) > defaults
+- Config priority: CLI args > env vars (`IS2PPT_CLI_*`) > TOML config (`~/.config/is2ppt/cli.toml`) > defaults
 
 ## Discovering Commands
 
-Run `banana-cli --help` for the top-level command list, and `banana-cli <command> --help` for subcommand options. Help output is plain text when piped (non-TTY).
+Run `is2ppt --help` for the top-level command list, and `is2ppt <command> --help` for subcommand options. Help output is plain text when piped (non-TTY).

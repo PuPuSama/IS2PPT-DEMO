@@ -1,12 +1,12 @@
-# Banana Slides Setup
+# is2ppt Setup
 
-Full documentation: https://docs.bananaslides.online/
+Full documentation: see the docs directory in this repository.
 
 ## Install and Start Backend
 
 ```bash
-git clone https://github.com/Anionex/banana-slides
-cd banana-slides
+git clone https://github.com/PuPuSama/IS2PPT-DEMO
+cd IS2PPT-DEMO
 cp .env.example .env
 # Edit .env — at minimum set an AI provider key (see below)
 cd backend
@@ -40,15 +40,15 @@ Supported providers: `gemini`, `openai`, `vertex`, `lazyllm`, `anthropic`.
 curl -sf http://localhost:5011/health
 ```
 
-## Install banana-cli
+## Install is2ppt
 
 ```bash
 # Option A: use directly from project root (no install needed)
-uv run banana-cli --help
+uv run is2ppt --help
 
-# Option B: install globally (then use banana-cli directly)
+# Option B: install globally (then use is2ppt directly)
 uv tool install .
-banana-cli --help
+is2ppt --help
 ```
 
-If the backend runs on a non-default port, pass `--base-url` or set `BANANA_CLI_BASE_URL`.
+If the backend runs on a non-default port, pass `--base-url` or set `IS2PPT_CLI_BASE_URL`.

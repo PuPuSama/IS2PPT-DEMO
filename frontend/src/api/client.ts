@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { ACCESS_CODE_HEADER, accessCodeSession } from '@/shared/auth/accessCodeSession';
 
 // 开发环境：通过 Vite proxy 转发
 // 生产环境：通过 nginx proxy 转发
@@ -15,9 +15,9 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Attach access code header for backend enforcement
-    const accessCode = localStorage.getItem(STORAGE_KEYS.accessCode);
+    const accessCode = accessCodeSession.get();
     if (accessCode && config.headers) {
-      config.headers['X-Access-Code'] = accessCode;
+      config.headers[ACCESS_CODE_HEADER] = accessCode;
     }
 
     // 如果请求体是 FormData，删除 Content-Type 让浏览器自动设置

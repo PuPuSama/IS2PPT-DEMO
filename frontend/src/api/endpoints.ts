@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import type { Project, Task, ApiResponse, CreateProjectRequest, Page, Material, SvgReasoningEffort } from '@/types';
 import type { Settings } from '../types/index';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
+import { accessCodeSession } from '@/shared/auth/accessCodeSession';
 
 export type { Material };
 
@@ -157,13 +157,12 @@ export const generateOutlineStream = async (
   enableWebResearch?: boolean,
 ): Promise<void> => {
   const lang = language || await getStoredOutputLanguage();
-  const accessCode = localStorage.getItem(STORAGE_KEYS.accessCode);
 
   const response = await fetch(`/api/projects/${projectId}/generate/outline/stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(accessCode ? { 'X-Access-Code': accessCode } : {}),
+      ...accessCodeSession.getAuthHeaders(),
     },
     body: JSON.stringify({ language: lang, lock_page_count: lockPageCount, enable_web_research: enableWebResearch }),
   });
@@ -286,13 +285,12 @@ export const generateDescriptionsStream = async (
   svgReasoningEffort?: SvgReasoningEffort,
 ): Promise<void> => {
   const lang = language || await getStoredOutputLanguage();
-  const accessCode = localStorage.getItem(STORAGE_KEYS.accessCode);
 
   const response = await fetch(`/api/projects/${projectId}/generate/descriptions/stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(accessCode ? { 'X-Access-Code': accessCode } : {}),
+      ...accessCodeSession.getAuthHeaders(),
     },
     body: JSON.stringify({
       language: lang,

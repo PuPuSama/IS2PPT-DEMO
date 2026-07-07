@@ -1,11 +1,9 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { checkAccessCode, verifyAccessCode } from '@/api/endpoints';
 import { useT } from '@/hooks/useT';
+import { accessCodeSession } from '@/shared/auth/accessCodeSession';
 import { Button } from './Button';
 import { Input } from './Input';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
-
-const STORAGE_KEY = STORAGE_KEYS.accessCode;
 
 const translations = {
   zh: {
@@ -42,15 +40,15 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
     try {
       const res = await checkAccessCode();
       if (!res.data.enabled) { setStatus('pass'); return; }
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = accessCodeSession.get();
       if (saved) {
         const v = await verifyAccessCode(saved);
         if (v.data.valid) { setStatus('pass'); return; }
-        localStorage.removeItem(STORAGE_KEY);
+        accessCodeSession.clear();
       }
       setStatus('prompt');
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      accessCodeSession.clear();
       setStatus('connectError');
     }
   };
@@ -64,7 +62,7 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
     try {
       const res = await verifyAccessCode(code.trim());
       if (res.data.valid) {
-        localStorage.setItem(STORAGE_KEY, code.trim());
+        accessCodeSession.save(code.trim());
         setStatus('pass');
       } else {
         setError(t('error'));

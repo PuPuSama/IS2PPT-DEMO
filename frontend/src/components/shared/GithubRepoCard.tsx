@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Star, GitFork } from 'lucide-react';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
 import { APP_IDENTITY, getRepositoryApiUrl } from '@/shared/config/appIdentity';
-
-interface RepoStats {
-  stars: number;
-  forks: number;
-}
+import { githubStatsCache, type GithubStats } from '@/shared/storage/githubStatsCache';
 
 export const GithubRepoCard: React.FC = () => {
-  const [stats, setStats] = useState<RepoStats | null>(null);
+  const [stats, setStats] = useState<GithubStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // 先尝试从 localStorage 读取缓存
-        const cached = localStorage.getItem(STORAGE_KEYS.githubRepoStats);
-        const cacheTime = localStorage.getItem(STORAGE_KEYS.githubRepoStatsTime);
-        const now = Date.now();
-
-        // 缓存有效期 10 分钟
-        if (cached && cacheTime && now - parseInt(cacheTime) < 10 * 60 * 1000) {
-          setStats(JSON.parse(cached));
+        const cachedStats = githubStatsCache.readRepoCard();
+        if (cachedStats) {
+          setStats(cachedStats);
           setLoading(false);
           return;
         }
@@ -35,9 +25,7 @@ export const GithubRepoCard: React.FC = () => {
             forks: data.forks_count,
           };
           setStats(newStats);
-          // 缓存结果
-          localStorage.setItem(STORAGE_KEYS.githubRepoStats, JSON.stringify(newStats));
-          localStorage.setItem(STORAGE_KEYS.githubRepoStatsTime, now.toString());
+          githubStatsCache.saveRepoCard(newStats);
         }
       } catch (error) {
         console.error('Failed to fetch GitHub stats:', error);

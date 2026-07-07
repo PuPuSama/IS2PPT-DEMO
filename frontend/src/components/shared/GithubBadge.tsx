@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Github, Star, GitFork } from 'lucide-react';
 import { APP_IDENTITY, getRepositoryApiUrl } from '@/shared/config/appIdentity';
-import { STORAGE_KEYS } from '@/shared/storage/storageKeys';
-
-interface GithubStats {
-  stars: number;
-  forks: number;
-}
-
-const CACHE_KEY = STORAGE_KEYS.githubBadgeStats;
-const CACHE_DURATION = 3600 * 1000; // 1 hour
+import { githubStatsCache, type GithubStats } from '@/shared/storage/githubStatsCache';
 
 export const GithubBadge: React.FC = () => {
   const [stats, setStats] = useState<GithubStats>({
@@ -19,18 +11,10 @@ export const GithubBadge: React.FC = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      // Check cache
-      try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            setStats(data);
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Failed to read github stats cache', e);
+      const cachedStats = githubStatsCache.readBadge();
+      if (cachedStats) {
+        setStats(cachedStats);
+        return;
       }
 
       // Fetch from API
@@ -45,10 +29,7 @@ export const GithubBadge: React.FC = () => {
         };
 
         setStats(newStats);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          data: newStats,
-          timestamp: Date.now(),
-        }));
+        githubStatsCache.saveBadge(newStats);
       } catch (error) {
         console.error('Error fetching GitHub stats:', error);
       }

@@ -14,6 +14,7 @@ describe('migrateAppStorage', () => {
     localStorage.setItem(`${LEGACY_STORAGE_KEYS.presetCapsulesPrefix}outline`, '[{"id":"1"}]');
     localStorage.setItem(LEGACY_STORAGE_KEYS.availableExtraFields, '["视觉元素"]');
     sessionStorage.setItem(LEGACY_STORAGE_KEYS.settingsSnapshot, '{"description_generation_mode":"streaming"}');
+    sessionStorage.setItem(LEGACY_STORAGE_KEYS.detailLevel, 'detailed');
 
     migrateAppStorage();
 
@@ -22,6 +23,7 @@ describe('migrateAppStorage', () => {
     expect(localStorage.getItem(`${STORAGE_KEYS.presetCapsulesPrefix}outline`)).toBe('[{"id":"1"}]');
     expect(localStorage.getItem(STORAGE_KEYS.availableExtraFields)).toBe('["视觉元素"]');
     expect(sessionStorage.getItem(STORAGE_KEYS.settingsSnapshot)).toBe('{"description_generation_mode":"streaming"}');
+    expect(sessionStorage.getItem(STORAGE_KEYS.detailLevel)).toBe('detailed');
   });
 
   it('does not overwrite existing is2ppt keys', () => {

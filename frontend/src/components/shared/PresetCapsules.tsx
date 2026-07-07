@@ -116,8 +116,8 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
   }, [userPresets, type]);
 
   const capsuleBase = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs cursor-pointer transition-colors max-w-[200px] truncate';
-  const systemCapsule = `${capsuleBase} bg-gray-100 dark:bg-background-primary text-gray-600 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-banana-900/20 hover:text-banana-700 dark:hover:text-banana-400 border border-gray-200 dark:border-border-primary`;
-  const userCapsule = `${capsuleBase} bg-banana-50 dark:bg-banana-900/20 text-banana-700 dark:text-banana-400 hover:bg-banana-100 dark:hover:bg-banana-900/30 border border-banana-200 dark:border-banana-700/40`;
+  const systemCapsule = `${capsuleBase} bg-gray-100 dark:bg-background-primary text-gray-600 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-700 dark:hover:text-brand-400 border border-gray-200 dark:border-border-primary`;
+  const userCapsule = `${capsuleBase} bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900/30 border border-brand-200 dark:border-brand-700/40`;
 
   return (
     <>
@@ -155,7 +155,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
               type="button"
               data-testid={`${type}-delete-preset-${i}`}
               aria-label="Delete preset"
-              className="ml-0.5 p-0.5 rounded-full hover:bg-banana-200 dark:hover:bg-banana-800/40 transition-colors"
+              className="ml-0.5 p-0.5 rounded-full hover:bg-brand-200 dark:hover:bg-brand-800/40 transition-colors"
               onClick={(e) => { e.stopPropagation(); handleDeletePreset(i); }}
             >
               <X size={10} />
@@ -168,7 +168,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
           type="button"
           data-testid={`${type}-add-preset`}
           onClick={() => setIsModalOpen(true)}
-          className={`${capsuleBase} bg-white dark:bg-background-primary text-gray-400 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana-400 hover:border-banana-300 dark:hover:border-banana-600/40 border border-dashed border-gray-300 dark:border-border-primary`}
+          className={`${capsuleBase} bg-white dark:bg-background-primary text-gray-400 dark:text-foreground-tertiary hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-300 dark:hover:border-brand-600/40 border border-dashed border-gray-300 dark:border-border-primary`}
         >
           <Plus size={10} />
           {t('preset.addCustom')}
@@ -193,7 +193,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder={t('preset.namePlaceholder')}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary text-gray-700 dark:text-foreground-secondary placeholder-gray-400 dark:placeholder-foreground-tertiary/50 focus:outline-none focus:border-banana-300 dark:focus:border-banana-500/40 transition-colors"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary text-gray-700 dark:text-foreground-secondary placeholder-gray-400 dark:placeholder-foreground-tertiary/50 focus:outline-none focus:border-brand-300 dark:focus:border-brand-500/40 transition-colors"
             />
           </div>
           <div>
@@ -206,7 +206,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
               onChange={(e) => setNewContent(e.target.value)}
               placeholder={t('preset.contentPlaceholder')}
               rows={3}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary text-gray-700 dark:text-foreground-secondary placeholder-gray-400 dark:placeholder-foreground-tertiary/50 resize-y focus:outline-none focus:border-banana-300 dark:focus:border-banana-500/40 transition-colors"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary text-gray-700 dark:text-foreground-secondary placeholder-gray-400 dark:placeholder-foreground-tertiary/50 resize-y focus:outline-none focus:border-brand-300 dark:focus:border-brand-500/40 transition-colors"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -223,7 +223,7 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
               data-testid={`${type}-preset-confirm`}
               onClick={handleAddPreset}
               disabled={!newName.trim() || !newContent.trim()}
-              className="px-4 py-2 text-sm rounded-lg bg-banana-500 text-white hover:bg-banana-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm rounded-lg bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {t('preset.add')}
             </button>

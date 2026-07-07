@@ -490,7 +490,7 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-foreground-tertiary">
             <span>{files.length > 0 ? t('referenceFile.totalFiles', { count: files.length }) : t('referenceFile.noFiles')}</span>
             {selectedFiles.size > 0 && (
-              <span className="ml-2 text-banana-600">
+              <span className="ml-2 text-brand-600">
                 {t('referenceFile.selectedCount', { count: selectedFiles.size })}
               </span>
             )}
@@ -595,7 +595,7 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
                     onClick={() => handleSelectFile(file)}
                     className={`
                       p-4 cursor-pointer transition-colors
-                      ${isSelected ? 'bg-banana-50 dark:bg-background-secondary border-l-4 border-l-banana-500' : 'hover:bg-gray-50 dark:hover:bg-background-hover'}
+                      ${isSelected ? 'bg-brand-50 dark:bg-background-secondary border-l-4 border-l-brand-500' : 'hover:bg-gray-50 dark:hover:bg-background-hover'}
                       ${file.parse_status === 'failed' ? 'opacity-60' : ''}
                     `}
                   >
@@ -606,7 +606,7 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
                           className={`
                             w-5 h-5 rounded border-2 flex items-center justify-center
                             ${isSelected
-                              ? 'bg-banana-500 border-banana-500'
+                              ? 'bg-brand-500 border-brand-500'
                               : 'border-gray-300 dark:border-border-primary'
                             }
                             ${file.parse_status === 'failed' ? 'opacity-50' : ''}

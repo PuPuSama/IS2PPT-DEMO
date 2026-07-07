@@ -499,7 +499,7 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
               href={APP_IDENTITY.repositoryUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-banana-700 dark:text-banana hover:underline"
+              className="inline-flex items-center gap-1 text-brand-700 dark:text-brand hover:underline"
             >
               {t('settings.about.source')}
             </a>
@@ -1141,7 +1141,7 @@ export const Settings: React.FC = () => {
           <select
             value={value as string}
             onChange={(e) => handleFieldChange(field.key, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             {!(value as string) && (
               <option value="" disabled>
@@ -1173,8 +1173,8 @@ export const Settings: React.FC = () => {
             <button
               type="button"
               onClick={() => handleFieldChange(field.key, !isEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 ${
-                isEnabled ? 'bg-banana-500' : 'bg-gray-200'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
+                isEnabled ? 'bg-brand-500' : 'bg-gray-200'
               }`}
             >
               <span
@@ -1225,7 +1225,7 @@ export const Settings: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
             {field.description}
             {field.link && (
-              <a href={field.link} target="_blank" rel="noopener noreferrer" className="text-banana-500 hover:underline">{t('settings.fields.applyLink')}</a>
+              <a href={field.link} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">{t('settings.fields.applyLink')}</a>
             )}
           </p>
         )}
@@ -1300,7 +1300,7 @@ export const Settings: React.FC = () => {
           <select
             value={sourceValue}
             onChange={(e) => handleFieldChange(item.sourceKey, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value="">{t('settings.fields.modelProviderPlaceholder')}</option>
             {ALL_PROVIDER_SOURCES.map((option) => (
@@ -1320,7 +1320,7 @@ export const Settings: React.FC = () => {
 
         {/* Gemini/OpenAI 提供商：显示 API Base URL + API Key */}
         {isApiKeyProvider && (
-          <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+          <div className="space-y-3 pl-3 border-l-2 border-brand-300 dark:border-brand-600">
             <Input
               label={t('settings.fields.perModelApiBaseUrl')}
               type="text"
@@ -1349,14 +1349,14 @@ export const Settings: React.FC = () => {
 
         {/* Image API Protocol: for image model when effective provider is openai */}
         {item.sourceKey === 'image_model_source' && (sourceValue === 'openai' || (!sourceValue && formData.ai_provider_format === 'openai')) && (
-          <div className="pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+          <div className="pl-3 border-l-2 border-brand-300 dark:border-brand-600">
             <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
               {t('settings.fields.imageApiProtocol')}
             </label>
             <select
               value={formData.openai_image_api_protocol}
               onChange={(e) => handleFieldChange('openai_image_api_protocol', e.target.value)}
-              className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+              className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             >
               <option value="auto">{t('settings.fields.imageApiProtocolAuto')}</option>
               <option value="images">{t('settings.fields.imageApiProtocolImages')}</option>
@@ -1428,7 +1428,7 @@ export const Settings: React.FC = () => {
               <select
                 value={formData.ai_provider_format}
                 onChange={(e) => handleFieldChange('ai_provider_format', e.target.value)}
-                className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+                className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               >
                 {ALL_PROVIDER_SOURCES.map((option) => (
                   <option
@@ -1445,7 +1445,7 @@ export const Settings: React.FC = () => {
 
             {/* Gemini/OpenAI: API Base URL + API Key */}
             {API_KEY_PROVIDERS.has(formData.ai_provider_format) && (
-              <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+              <div className="space-y-3 pl-3 border-l-2 border-brand-300 dark:border-brand-600">
                 <Input
                   label={t('settings.fields.apiBaseUrl')}
                   type="text"
@@ -1818,7 +1818,7 @@ export const SettingsPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-banana-50 dark:from-background-primary to-yellow-50 dark:to-background-primary">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 dark:from-background-primary to-yellow-50 dark:to-background-primary">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Card className="p-6 md:p-8">
           <div className="space-y-8">
@@ -1853,7 +1853,7 @@ export const SettingsPage: React.FC = () => {
           aria-label="Back to top"
           title="Back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 p-3 rounded-full bg-banana-500 text-white shadow-lg hover:bg-banana-600 transition-all z-50"
+          className="fixed bottom-6 right-6 p-3 rounded-full bg-brand-500 text-white shadow-lg hover:bg-brand-600 transition-all z-50"
         >
           <ArrowUp size={20} />
         </button>

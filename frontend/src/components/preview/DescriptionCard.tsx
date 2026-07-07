@@ -156,13 +156,13 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
     <>
       <Card className="p-0 overflow-hidden flex flex-col">
         {/* 标题栏 */}
-        <div className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary">
+        <div className="bg-brand-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900 dark:text-foreground-primary">{t('descriptionCard.page', { num: index + 1 })}</span>
               {index === 0 && (
                 <span
-                  className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded"
+                  className="text-xs px-1.5 py-0.5 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 rounded"
                   title={t('descriptionCard.coverPageTooltip')}
                 >
                   {t('descriptionCard.coverPage')}

@@ -187,7 +187,7 @@ const SortableFieldPill: React.FC<{
         isDragging ? '' : 'transition-colors duration-150 '
       }${
         active
-          ? 'bg-banana-50 dark:bg-banana-900/20 border-banana-300 dark:border-banana-700 text-banana-700 dark:text-banana-400'
+          ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-300 dark:border-brand-700 text-brand-700 dark:text-brand-400'
           : 'bg-gray-50 dark:bg-background-hover border-gray-200 dark:border-border-primary text-gray-400 dark:text-foreground-tertiary line-through'
       }`}
       onClick={onToggle}
@@ -196,7 +196,7 @@ const SortableFieldPill: React.FC<{
       {active && onToggleImagePrompt && (
         <span
           role="button"
-          className={`relative group/img ml-0.5 transition-colors ${inImagePrompt ? 'text-banana-500' : 'text-gray-300 dark:text-gray-600'}`}
+          className={`relative group/img ml-0.5 transition-colors ${inImagePrompt ? 'text-brand-500' : 'text-gray-300 dark:text-gray-600'}`}
           onClick={e => { e.stopPropagation(); onToggleImagePrompt(); }}
         >
           <ImageIcon size={10} />
@@ -281,7 +281,7 @@ export const DetailEditor: React.FC = () => {
         if (!s) return;
         setDetailLevel('default');
         // detail level from sessionStorage (backwards compat, then from DB if we add it later)
-        const storedLevel = sessionStorage.getItem('banana-detail-level');
+        const storedLevel = sessionStorage.getItem(STORAGE_KEYS.detailLevel);
         if (storedLevel) setDetailLevel(storedLevel);
         setGenerationMode(s.description_generation_mode || 'streaming');
         const activeFields = s.description_extra_fields || ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'];
@@ -701,14 +701,14 @@ export const DetailEditor: React.FC = () => {
                 {t('detail.renovationProcessing')}
               </span>
               {renovationProgress && renovationProgress.total > 0 && (
-                <span className="text-sm font-medium text-banana-600 dark:text-banana">
+                <span className="text-sm font-medium text-brand-600 dark:text-brand">
                   {t('detail.renovationProgress', { completed: String(renovationProgress.completed), total: String(renovationProgress.total) })}
                 </span>
               )}
             </div>
             <div className="w-full h-2.5 bg-gray-200 dark:bg-background-hover rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-banana-400 to-banana-500 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-gradient-to-r from-brand-400 to-brand-500 rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: renovationProgress && renovationProgress.total > 0
                     ? `${Math.round((renovationProgress.completed / renovationProgress.total) * 100)}%`
@@ -743,7 +743,7 @@ export const DetailEditor: React.FC = () => {
                   type="button"
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                     pageGenMode === m
-                      ? 'bg-white dark:bg-background-primary text-banana-600 dark:text-banana shadow-sm'
+                      ? 'bg-white dark:bg-background-primary text-brand-600 dark:text-brand shadow-sm'
                       : 'text-gray-500 dark:text-foreground-tertiary hover:text-gray-700 dark:hover:text-foreground-secondary'
                   }`}
                   onClick={() => setPageGenMode(m)}
@@ -764,7 +764,7 @@ export const DetailEditor: React.FC = () => {
                     type="button"
                     className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
                       svgEffort === e
-                        ? 'bg-white dark:bg-background-primary text-banana-600 dark:text-banana shadow-sm'
+                        ? 'bg-white dark:bg-background-primary text-brand-600 dark:text-brand shadow-sm'
                         : 'text-gray-500 dark:text-foreground-tertiary hover:text-gray-700 dark:hover:text-foreground-secondary'
                     }`}
                     onClick={() => setSvgEffort(e)}
@@ -794,7 +794,7 @@ export const DetailEditor: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSettingsOpen(!settingsOpen)}
-                icon={<span className="relative"><Settings2 size={16} />{descRequirements && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-banana-400" />}</span>}
+                icon={<span className="relative"><Settings2 size={16} />{descRequirements && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-brand-400" />}</span>}
                 title={t('detail.descSettings')}
               />
               {settingsOpen && (
@@ -815,7 +815,7 @@ export const DetailEditor: React.FC = () => {
                           type="button"
                           className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                             generationMode === mode
-                              ? 'bg-banana-500 text-white'
+                              ? 'bg-brand-500 text-white'
                               : 'bg-gray-100 dark:bg-background-hover text-gray-600 dark:text-foreground-tertiary hover:bg-gray-200 dark:hover:bg-background-primary'
                           }`}
                           onClick={() => {
@@ -881,7 +881,7 @@ export const DetailEditor: React.FC = () => {
                     <div className="flex gap-1">
                       <input
                         type="text"
-                        className="flex-1 min-w-0 px-2 py-1 text-xs rounded-md border border-gray-200 dark:border-border-primary bg-white dark:bg-background-primary text-gray-700 dark:text-foreground-secondary focus:outline-none focus:ring-1 focus:ring-banana-500/30"
+                        className="flex-1 min-w-0 px-2 py-1 text-xs rounded-md border border-gray-200 dark:border-border-primary bg-white dark:bg-background-primary text-gray-700 dark:text-foreground-secondary focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                         placeholder={t('detail.addField')}
                         value={newFieldName}
                         onChange={e => setNewFieldName(e.target.value)}
@@ -904,7 +904,7 @@ export const DetailEditor: React.FC = () => {
                       />
                       <button
                         type="button"
-                        className="p-1 rounded-md text-gray-400 hover:text-banana-500 hover:bg-gray-100 dark:hover:bg-background-hover transition-colors disabled:opacity-40"
+                        className="p-1 rounded-md text-gray-400 hover:text-brand-500 hover:bg-gray-100 dark:hover:bg-background-hover transition-colors disabled:opacity-40"
                         disabled={!newFieldName.trim() || availableFields.includes(newFieldName.trim()) || availableFields.length >= 10}
                         onClick={() => {
                           const trimmed = newFieldName.trim();

@@ -598,7 +598,7 @@ export const OutlineEditor: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSettingsOpen(!settingsOpen)}
-                icon={<span className="relative"><Settings2 size={16} className="md:w-[18px] md:h-[18px]" />{outlineRequirements && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-banana-400" />}</span>}
+                icon={<span className="relative"><Settings2 size={16} className="md:w-[18px] md:h-[18px]" />{outlineRequirements && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-brand-400" />}</span>}
                 title={t('outline.outlineRequirements')}
               />
               {settingsOpen && (
@@ -697,8 +697,8 @@ export const OutlineEditor: React.FC = () => {
             <div className="bg-white dark:bg-background-secondary rounded-card shadow-md border border-gray-100 dark:border-border-primary overflow-hidden">
               <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-100 dark:border-border-secondary">
                 {currentProject.creation_type === 'idea'
-                  ? <Sparkle size={14} className="text-banana-500 flex-shrink-0" />
-                  : <FileText size={14} className="text-banana-500 flex-shrink-0" />}
+                  ? <Sparkle size={14} className="text-brand-500 flex-shrink-0" />
+                  : <FileText size={14} className="text-brand-500 flex-shrink-0" />}
                 <span className="text-xs font-medium text-gray-500 dark:text-foreground-tertiary">{inputLabel}</span>
                 <div className="ml-auto flex items-center gap-1">
                   <button
@@ -736,7 +736,7 @@ export const OutlineEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsPanelOpen(true)}
-            className="hidden md:flex absolute left-0 top-6 z-10 items-center justify-center w-6 h-14 bg-white dark:bg-background-secondary border border-l-0 border-gray-200 dark:border-border-primary rounded-r-lg shadow-md text-gray-400 hover:text-banana-500 hover:border-banana-300 dark:hover:border-banana-500/40 hover:shadow-lg transition-all"
+            className="hidden md:flex absolute left-0 top-6 z-10 items-center justify-center w-6 h-14 bg-white dark:bg-background-secondary border border-l-0 border-gray-200 dark:border-border-primary rounded-r-lg shadow-md text-gray-400 hover:text-brand-500 hover:border-brand-300 dark:hover:border-brand-500/40 hover:shadow-lg transition-all"
           >
             <PanelLeftOpen size={14} />
           </button>
@@ -747,8 +747,8 @@ export const OutlineEditor: React.FC = () => {
           <div className="bg-white dark:bg-background-secondary rounded-card shadow-md border border-gray-100 dark:border-border-primary overflow-hidden">
             <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-100 dark:border-border-secondary">
               {currentProject.creation_type === 'idea'
-                ? <Sparkle size={14} className="text-banana-500 flex-shrink-0" />
-                : <FileText size={14} className="text-banana-500 flex-shrink-0" />}
+                ? <Sparkle size={14} className="text-brand-500 flex-shrink-0" />
+                : <FileText size={14} className="text-brand-500 flex-shrink-0" />}
               <span className="text-xs font-medium text-gray-500 dark:text-foreground-tertiary">{inputLabel}</span>
             </div>
             <MarkdownTextarea
@@ -827,7 +827,7 @@ export const OutlineEditor: React.FC = () => {
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-2">
                               <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
-                              <div className="h-4 w-16 bg-banana-100 dark:bg-banana-900/30 rounded" />
+                              <div className="h-4 w-16 bg-brand-100 dark:bg-brand-900/30 rounded" />
                             </div>
                             <div className="h-5 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
                             <div className="space-y-2">

@@ -64,7 +64,7 @@ export const Landing: React.FC = () => {
   const features = [
     {
       key: 'flexiblePaths',
-      icon: <Sparkles size={24} className="text-yellow-600 dark:text-banana" />,
+      icon: <Sparkles size={24} className="text-yellow-600 dark:text-brand" />,
       bg: "bg-yellow-50 dark:bg-yellow-900/10 border-yellow-100 dark:border-yellow-900/20"
     },
     {
@@ -88,7 +88,7 @@ export const Landing: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-background-primary relative overflow-hidden flex flex-col font-sans">
       {/* 动态背景 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-banana-100/40 to-transparent dark:from-banana-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 animate-float-slow"></div>
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-brand-100/40 to-transparent dark:from-brand-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 animate-float-slow"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-orange-100/40 to-transparent dark:from-orange-900/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 animate-float-delayed"></div>
       </div>
 
@@ -111,7 +111,7 @@ export const Landing: React.FC = () => {
             variant="primary" 
             size="sm"
             onClick={() => navigate('/')}
-            className="shadow-lg shadow-banana-500/20 hover:shadow-banana-500/30 transition-all"
+            className="shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all"
           >
             {t('landing.nav.enter')}
           </Button>
@@ -123,17 +123,17 @@ export const Landing: React.FC = () => {
         <div className="space-y-8 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 text-sm font-medium mx-auto backdrop-blur-sm shadow-sm">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-banana-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-banana-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
             </span>
             {t('landing.hero.badge')}
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
             {t('landing.hero.title_start')}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 via-orange-500 to-pink-500 px-2 relative inline-block">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 via-orange-500 to-pink-500 px-2 relative inline-block">
               {t('landing.hero.title_highlight')}
-              <svg className="absolute w-full h-3 -bottom-1 left-0 text-banana-200 dark:text-banana-900/30 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <svg className="absolute w-full h-3 -bottom-1 left-0 text-brand-200 dark:text-brand-900/30 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
               </svg>
             </span>
@@ -148,7 +148,7 @@ export const Landing: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Button
               size="lg"
-              className="w-full sm:w-auto text-base px-8 py-6 rounded-full shadow-xl shadow-banana-500/20 hover:shadow-banana-500/30 hover:-translate-y-1 transition-all duration-300 font-bold"
+              className="w-full sm:w-auto text-base px-8 py-6 rounded-full shadow-xl shadow-brand-500/20 hover:shadow-brand-500/30 hover:-translate-y-1 transition-all duration-300 font-bold"
               onClick={() => navigate('/')}
               icon={<ChevronRight size={20} />}
             >
@@ -253,7 +253,7 @@ export const Landing: React.FC = () => {
                   <ul className="space-y-4 pt-4">
                     {(t(`help.features.${feature.key}.details`, { returnObjects: true }) as string[])?.map((detail: string, i: number) => (
                       <li key={i} className="flex items-start gap-3">
-                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-banana-500 shrink-0" />
+                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
                         <span className="text-gray-600 dark:text-gray-400 font-medium">{detail}</span>
                       </li>
                     ))}

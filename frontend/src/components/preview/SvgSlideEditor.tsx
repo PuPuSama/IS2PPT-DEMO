@@ -680,7 +680,7 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
               <RotateCcw size={14} /> 重置
             </button>
             <button type="button" onClick={handleSave} disabled={!dirty || saving || loading}
-              className="flex items-center gap-1 rounded-md bg-banana-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-banana-600 disabled:opacity-40">
+              className="flex items-center gap-1 rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600 disabled:opacity-40">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 保存
             </button>
             <button type="button" onClick={onClose}
@@ -737,14 +737,14 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                       minWidth: editing.width, height: editing.height,
                       fontSize: editing.fontSize, lineHeight: `${editing.height}px`,
                     }}
-                    className="z-20 rounded border border-banana-500 bg-white px-1 text-gray-900 shadow outline-none"
+                    className="z-20 rounded border border-brand-500 bg-white px-1 text-gray-900 shadow outline-none"
                   />
                 )}
 
                 {/* marquee rubber-band */}
                 {marqueeBox && (
                   <div
-                    className="pointer-events-none absolute z-10 border border-dashed border-banana-500 bg-banana-400/10"
+                    className="pointer-events-none absolute z-10 border border-dashed border-brand-500 bg-brand-400/10"
                     style={{ left: marqueeBox.left, top: marqueeBox.top, width: marqueeBox.width, height: marqueeBox.height }}
                   />
                 )}
@@ -752,11 +752,11 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                 {/* vector selection box + corner handles */}
                 {selBox && !editing && (
                   <div
-                    className="pointer-events-none absolute z-10 border border-banana-500 bg-banana-400/5"
+                    className="pointer-events-none absolute z-10 border border-brand-500 bg-brand-400/5"
                     style={{ left: selBox.left, top: selBox.top, width: selBox.width, height: selBox.height }}
                   >
                     {selMeta.count > 1 && (
-                      <span className="absolute -top-5 left-0 rounded bg-banana-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                      <span className="absolute -top-5 left-0 rounded bg-brand-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
                         {selMeta.count} 个元素
                       </span>
                     )}
@@ -764,7 +764,7 @@ export default function SvgSlideEditor({ projectId, pageId, onClose, onSaved }: 
                       <div
                         key={c}
                         onMouseDown={(e) => startResize(c, e)}
-                        className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-banana-600 bg-white ${handlePos[c]}`}
+                        className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white ${handlePos[c]}`}
                       />
                     ))}
                   </div>

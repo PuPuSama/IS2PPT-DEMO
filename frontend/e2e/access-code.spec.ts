@@ -83,7 +83,7 @@ test.describe('Access Code Guard (mocked)', () => {
     });
     // Set localStorage before navigating
     await page.goto('/');
-    await page.evaluate(() => localStorage.setItem('banana-access-code', 'saved-code'));
+    await page.evaluate(() => localStorage.setItem('is2ppt-access-code', 'saved-code'));
     await page.reload();
     await expect(page.getByText('请输入访问口令')).not.toBeVisible({ timeout: 10000 });
     expect(verified).toBe(true);

@@ -78,9 +78,9 @@ test.describe('Detail level selector — mock tests', () => {
     const buttons = page.locator('button', { hasText: /精简|标准|详细/ })
     await expect(buttons).toHaveCount(3)
 
-    // "标准" should have the active style (bg-banana-500)
+    // "标准" should have the active style (bg-brand-500)
     const standardBtn = page.locator('button', { hasText: '标准' })
-    await expect(standardBtn).toHaveClass(/bg-banana-500/)
+    await expect(standardBtn).toHaveClass(/bg-brand-500/)
   })
 
   test('clicking a level option changes the selection', async ({ page }) => {
@@ -92,17 +92,17 @@ test.describe('Detail level selector — mock tests', () => {
     // Click "精简"
     const conciseBtn = page.locator('button', { hasText: '精简' })
     await conciseBtn.click()
-    await expect(conciseBtn).toHaveClass(/bg-banana-500/)
+    await expect(conciseBtn).toHaveClass(/bg-brand-500/)
 
     // "标准" should no longer be active
     const standardBtn = page.locator('button', { hasText: '标准' })
-    await expect(standardBtn).not.toHaveClass(/bg-banana-500/)
+    await expect(standardBtn).not.toHaveClass(/bg-brand-500/)
 
     // Click "详细"
     const detailedBtn = page.locator('button', { hasText: '详细' })
     await detailedBtn.click()
-    await expect(detailedBtn).toHaveClass(/bg-banana-500/)
-    await expect(conciseBtn).not.toHaveClass(/bg-banana-500/)
+    await expect(detailedBtn).toHaveClass(/bg-brand-500/)
+    await expect(conciseBtn).not.toHaveClass(/bg-brand-500/)
   })
 
   test('batch generate sends correct detail_level in request', async ({ page }) => {

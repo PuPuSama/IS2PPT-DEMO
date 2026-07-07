@@ -128,7 +128,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                 onClick={() => setActiveTab('project')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeTab === 'project'
-                    ? 'bg-banana-500 text-white shadow-md'
+                    ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
@@ -139,7 +139,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                 onClick={() => setActiveTab('export')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeTab === 'export'
-                    ? 'bg-banana-500 text-white shadow-md'
+                    ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
@@ -150,7 +150,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                 onClick={() => setActiveTab('global')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeTab === 'global'
-                    ? 'bg-banana-500 text-white shadow-md'
+                    ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
@@ -176,7 +176,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">{t('projectSettings.aspectRatio')}</h4>
                       <div className="relative group">
-                        <button type="button" className="p-1 -m-1 rounded-full focus:outline-none focus:ring-2 focus:ring-banana-500">
+                        <button type="button" className="p-1 -m-1 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-500">
                           <HelpCircle size={16} className="text-gray-400 dark:text-foreground-tertiary cursor-help" />
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-10 pointer-events-none">
@@ -197,7 +197,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                         onClick={() => onAspectRatioChange?.(opt.value)}
                         className={`px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                           aspectRatio === opt.value
-                            ? 'border-banana-500 bg-banana-50 dark:bg-background-secondary text-banana-700 dark:text-banana'
+                            ? 'border-brand-500 bg-brand-50 dark:bg-background-secondary text-brand-700 dark:text-brand'
                             : 'border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-background-secondary'
                         }`}
                       >

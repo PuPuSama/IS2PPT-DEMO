@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   githubRepoStatsTime: `${prefix}-github-repo-stats-time`,
   githubBadgeStats: `${prefix}-github-badge-stats`,
   availableExtraFields: `${prefix}-available-extra-fields`,
+  detailLevel: `${prefix}-detail-level`,
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {
@@ -37,6 +38,7 @@ export const LEGACY_STORAGE_KEYS = {
   githubRepoStats: 'github_repo_stats',
   githubRepoStatsTime: 'github_repo_stats_time',
   availableExtraFields: 'banana-available-extra-fields',
+  detailLevel: 'banana-detail-level',
 } as const;
 
 export const STORAGE_KEY_MIGRATIONS = {
@@ -57,6 +59,7 @@ export const STORAGE_KEY_MIGRATIONS = {
     [LEGACY_STORAGE_KEYS.settingsSnapshot, STORAGE_KEYS.settingsSnapshot],
     [LEGACY_STORAGE_KEYS.homeDraftContent, STORAGE_KEYS.homeDraftContent],
     [LEGACY_STORAGE_KEYS.homeDraftTab, STORAGE_KEYS.homeDraftTab],
+    [LEGACY_STORAGE_KEYS.detailLevel, STORAGE_KEYS.detailLevel],
   ],
   localStoragePrefixes: [
     [LEGACY_STORAGE_KEYS.presetCapsulesPrefix, STORAGE_KEYS.presetCapsulesPrefix],

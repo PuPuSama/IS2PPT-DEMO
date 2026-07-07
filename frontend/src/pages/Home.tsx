@@ -654,7 +654,7 @@ export const Home: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50/30 to-pink-50/50 dark:from-background-primary dark:via-background-primary dark:to-background-primary relative overflow-hidden">
       {/* 背景装饰元素 - 仅在亮色模式显示 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none dark:hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-banana-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-yellow-400/5 rounded-full blur-3xl"></div>
       </div>
@@ -671,7 +671,7 @@ export const Home: React.FC = () => {
                 className="h-10 md:h-12 w-auto rounded-lg object-contain"
               />
             </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-brand-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
               {APP_IDENTITY.displayName}
             </span>
           </div>
@@ -680,7 +680,7 @@ export const Home: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/history')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className="text-xs md:text-sm hover:bg-brand-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
             >
               <span className="hidden sm:inline">{t('nav.history')}</span>
               <span className="sm:hidden">{t('nav.history')}</span>
@@ -690,7 +690,7 @@ export const Home: React.FC = () => {
               size="sm"
               icon={<Settings size={16} className="md:w-[18px] md:h-[18px]" />}
               onClick={() => navigate('/settings')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className="text-xs md:text-sm hover:bg-brand-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
             >
               <span className="hidden md:inline">{t('nav.settings')}</span>
             </Button>
@@ -698,7 +698,7 @@ export const Home: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsHelpModalOpen(true)}
-              className="hidden md:inline-flex hover:bg-banana-50/50"
+              className="hidden md:inline-flex hover:bg-brand-50/50"
             >
               {t('nav.help')}
             </Button>
@@ -708,7 +708,7 @@ export const Home: React.FC = () => {
               size="sm"
               icon={<HelpCircle size={16} />}
               onClick={() => setIsHelpModalOpen(true)}
-              className="md:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
+              className="md:hidden hover:bg-brand-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.help')}
             />
             {/* 分隔线 */}
@@ -716,7 +716,7 @@ export const Home: React.FC = () => {
             {/* 语言切换按钮 */}
             <button
               onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-brand-100/60 dark:hover:bg-background-hover rounded-md transition-all"
               title={t('settings.language.label')}
             >
               <Globe size={14} />
@@ -726,7 +726,7 @@ export const Home: React.FC = () => {
             <div className="relative" ref={themeMenuRef}>
               <button
                 onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="flex items-center gap-1 p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+                className="flex items-center gap-1 p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-brand-100/60 dark:hover:bg-background-hover rounded-md transition-all"
                 title={t('settings.theme.label')}
               >
                 {theme === 'system' ? <Monitor size={16} /> : isDark ? <Moon size={16} /> : <Sun size={16} />}
@@ -739,21 +739,21 @@ export const Home: React.FC = () => {
                   <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary rounded-lg shadow-lg dark:shadow-none py-1 min-w-[120px]">
                     <button
                       onClick={() => { setTheme('light'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'light' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'light' ? 'text-brand' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Sun size={14} />
                       <span>{t('settings.theme.light')}</span>
                     </button>
                     <button
                       onClick={() => { setTheme('dark'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'dark' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'dark' ? 'text-brand' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Moon size={14} />
                       <span>{t('settings.theme.dark')}</span>
                     </button>
                     <button
                       onClick={() => { setTheme('system'); setIsThemeMenuOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'system' ? 'text-banana' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${theme === 'system' ? 'text-brand' : 'text-gray-700 dark:text-foreground-secondary'}`}
                     >
                       <Monitor size={14} />
                       <span>{t('settings.theme.system')}</span>
@@ -776,12 +776,12 @@ export const Home: React.FC = () => {
         {/* Hero 标题区 */}
         <div className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-background-secondary backdrop-blur-sm rounded-full shadow-sm dark:shadow-none mb-4">
-            <span className="text-2xl animate-pulse"><Sparkles size={20} className="text-orange-500 dark:text-banana" /></span>
+            <span className="text-2xl animate-pulse"><Sparkles size={20} className="text-orange-500 dark:text-brand" /></span>
             <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('home.tagline')}</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-            <span className="bg-gradient-to-r from-yellow-600 via-orange-500 to-pink-500 dark:from-banana-dark dark:via-banana dark:to-banana-light bg-clip-text text-transparent dark:italic" style={{
+            <span className="bg-gradient-to-r from-yellow-600 via-orange-500 to-pink-500 dark:from-brand-dark dark:via-brand dark:to-brand-light bg-clip-text text-transparent dark:italic" style={{
               backgroundSize: '200% auto',
               animation: 'gradient 3s ease infinite',
             }}>
@@ -796,7 +796,7 @@ export const Home: React.FC = () => {
           {/* 特性标签 */}
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-4">
             {[
-              { icon: <Sparkles size={14} className="text-yellow-600 dark:text-banana" />, label: t('home.features.oneClick') },
+              { icon: <Sparkles size={14} className="text-yellow-600 dark:text-brand" />, label: t('home.features.oneClick') },
               { icon: <FileEdit size={14} className="text-blue-500 dark:text-blue-400" />, label: t('home.features.naturalEdit') },
               { icon: <Search size={14} className="text-orange-500 dark:text-orange-400" />, label: t('home.features.regionEdit') },
 
@@ -825,8 +825,8 @@ export const Home: React.FC = () => {
                   onClick={() => setActiveTab(type)}
                   className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 md:py-3 rounded-lg dark:rounded-xl font-medium transition-all text-sm md:text-base touch-manipulation ${
                     activeTab === type
-                      ? 'bg-gradient-to-r from-banana-500 to-banana-600 dark:from-banana dark:to-banana text-black shadow-yellow dark:shadow-lg dark:shadow-banana/20'
-                      : 'bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100'
+                      ? 'bg-gradient-to-r from-brand-500 to-brand-600 dark:from-brand dark:to-brand text-black shadow-yellow dark:shadow-lg dark:shadow-brand/20'
+                      : 'bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover active:bg-brand-100'
                   }`}
                 >
                   <span className="scale-90 md:scale-100">{config.icon}</span>
@@ -840,13 +840,13 @@ export const Home: React.FC = () => {
           <div className="relative">
             <p className="text-sm md:text-base mb-4 md:mb-6 leading-relaxed">
               <span className="inline-flex items-center gap-2 text-gray-600 dark:text-foreground-tertiary">
-                <Lightbulb size={16} className="text-banana-600 dark:text-banana flex-shrink-0" />
+                <Lightbulb size={16} className="text-brand-600 dark:text-brand flex-shrink-0" />
                 <span className="font-semibold">
                   {tabConfig[activeTab].description}
                 </span>
                 {tabConfig[activeTab].example && (
                   <span className="relative group/tip inline-flex">
-                    <HelpCircle size={15} className="text-gray-400 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana cursor-help transition-colors" />
+                    <HelpCircle size={15} className="text-gray-400 dark:text-foreground-tertiary hover:text-brand-600 dark:hover:text-brand cursor-help transition-colors" />
                     <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tip:block z-50 w-72 md:w-80 p-3 bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary rounded-lg shadow-xl dark:shadow-none text-xs text-gray-700 dark:text-foreground-secondary whitespace-pre-line leading-relaxed">
                       {tabConfig[activeTab].example}
                       <span className="absolute left-1/2 -translate-x-1/2 top-full -mt-px w-2 h-2 bg-white dark:bg-background-elevated border-r border-b border-gray-200 dark:border-border-primary rotate-45" />
@@ -863,7 +863,7 @@ export const Home: React.FC = () => {
               /* PPT 翻新：文件上传区 */
               <div className="space-y-4">
                 <div
-                  className="border-2 border-dashed border-gray-300 dark:border-border-primary rounded-xl p-8 text-center cursor-pointer hover:border-banana-400 dark:hover:border-banana transition-colors duration-200"
+                  className="border-2 border-dashed border-gray-300 dark:border-border-primary rounded-xl p-8 text-center cursor-pointer hover:border-brand-400 dark:hover:border-brand transition-colors duration-200"
                   onClick={() => renovationFileInputRef.current?.click()}
                   onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onDrop={(e) => {
@@ -883,7 +883,7 @@ export const Home: React.FC = () => {
                 >
                   {renovationFile ? (
                     <div className="flex items-center justify-center gap-3">
-                      <FileText size={24} className="text-banana-600 dark:text-banana" />
+                      <FileText size={24} className="text-brand-600 dark:text-brand" />
                       <div className="text-left">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{renovationFile.name}</p>
                         <p className="text-xs text-gray-500 dark:text-foreground-tertiary">{(renovationFile.size / 1024 / 1024).toFixed(1)} MB</p>
@@ -935,7 +935,7 @@ export const Home: React.FC = () => {
                         onChange={(e) => setKeepLayout(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 dark:peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
                     </div>
                   </label>
                   <Button
@@ -959,7 +959,7 @@ export const Home: React.FC = () => {
               onFiles={handleImageFiles}
               onDocumentFiles={handleDocumentFiles}
               rows={activeTab === 'idea' ? 4 : 8}
-              className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white focus-within:border-banana-400 dark:focus-within:border-banana transition-colors duration-200"
+              className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white focus-within:border-brand-400 dark:focus-within:border-brand transition-colors duration-200"
               toolbarLeft={
                 <div className="flex items-center gap-1">
                   <button
@@ -989,7 +989,7 @@ export const Home: React.FC = () => {
                             <button
                               key={opt.value}
                               onClick={() => { setAspectRatio(opt.value); setIsAspectRatioOpen(false); }}
-                              className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${aspectRatio === opt.value ? 'text-banana font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                              className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${aspectRatio === opt.value ? 'text-brand font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
                             >
                               {opt.label}
                             </button>
@@ -1045,7 +1045,7 @@ export const Home: React.FC = () => {
           <div className="mb-6 md:mb-8 pt-4 border-t border-gray-100 dark:border-border-primary">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <div className="flex items-center gap-2">
-                <Palette size={18} className="text-orange-600 dark:text-banana flex-shrink-0" />
+                <Palette size={18} className="text-orange-600 dark:text-brand flex-shrink-0" />
                 <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                   {t('home.template.title')}
                 </h3>
@@ -1071,7 +1071,7 @@ export const Home: React.FC = () => {
                     }}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 dark:peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
                 </div>
               </label>
             </div>

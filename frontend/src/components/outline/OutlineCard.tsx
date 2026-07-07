@@ -106,7 +106,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
   return (
     <Card
       className={`p-4 relative ${
-        isSelected ? 'border-2 border-banana-500 shadow-yellow' : ''
+        isSelected ? 'border-2 border-brand-500 shadow-yellow' : ''
       }`}
       onClick={!isEditing ? onClick : undefined}
     >
@@ -130,7 +130,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
             </span>
             {index === 0 && !isEditing && (
               <span
-                className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded"
+                className="text-xs px-1.5 py-0.5 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 rounded"
                 title={t('outlineCard.coverPageTooltip')}
               >
                 {t('outlineCard.coverPage')}
@@ -161,7 +161,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder={t('outlineCard.titleLabel')}
               />
               <div>
@@ -186,7 +186,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                 <button
                   onClick={handleSave}
                   disabled={isUploading}
-                  className="px-3 py-1.5 text-sm bg-banana-500 text-black dark:text-white rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-sm bg-brand-500 text-black dark:text-white rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check size={16} className="inline mr-1" />
                   {t('common.save')}
@@ -214,7 +214,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                 e.stopPropagation();
                 setIsEditing(true);
               }}
-              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 hover:bg-banana-50 dark:hover:bg-background-hover rounded transition-colors"
+              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-background-hover rounded transition-colors"
             >
               <Edit2 size={16} />
             </button>

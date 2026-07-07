@@ -47,16 +47,16 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const t = useT(projectCardI18n);
   // 检测屏幕尺寸，只在非手机端加载图片（必须在早期返回之前声明hooks）
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
-  
+
   useEffect(() => {
     const checkScreenSize = () => {
       // sm breakpoint is 640px
       setShouldLoadImage(window.innerWidth >= 640);
     };
-    
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    
+
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
@@ -67,14 +67,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const pageCount = project.pages?.length || 0;
   const statusText = getStatusText(project);
   const statusColor = getStatusColor(project);
-  
+
   const firstPageImage = shouldLoadImage ? getFirstPageImage(project) : null;
 
   return (
     <Card
       className={`p-3 md:p-6 transition-all ${
-        isSelected 
-          ? 'border-2 border-banana-500 bg-banana-50 dark:bg-background-secondary' 
+        isSelected
+          ? 'border-2 border-brand-500 bg-brand-50 dark:bg-background-secondary'
           : 'hover:shadow-lg border border-gray-200 dark:border-border-primary'
       } ${isBatchMode ? 'cursor-default' : 'cursor-pointer'}`}
       onClick={() => onSelect(project)}
@@ -86,10 +86,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(projectId)}
-            className="w-4 h-4 text-banana-600 border-gray-300 dark:border-border-primary rounded focus:ring-banana-500 cursor-pointer"
+            className="w-4 h-4 text-brand-600 border-gray-300 dark:border-border-primary rounded focus:ring-brand-500 cursor-pointer"
           />
         </div>
-        
+
         {/* 中间：项目信息 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 md:gap-3 mb-2 flex-wrap">
@@ -101,15 +101,15 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 onKeyDown={(e) => onTitleKeyDown(e, projectId)}
                 onBlur={() => onSaveEdit(projectId)}
                 autoFocus
-                className="text-base md:text-lg font-semibold text-gray-900 dark:text-foreground-primary px-2 py-1 border border-banana-500 rounded bg-white dark:bg-background-primary focus:outline-none focus:ring-2 focus:ring-banana-500 flex-1 min-w-0"
+                className="text-base md:text-lg font-semibold text-gray-900 dark:text-foreground-primary px-2 py-1 border border-brand-500 rounded bg-white dark:bg-background-primary focus:outline-none focus:ring-2 focus:ring-brand-500 flex-1 min-w-0"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <h3 
+              <h3
                 className={`text-base md:text-lg font-semibold text-gray-900 dark:text-foreground-primary truncate flex-1 min-w-0 ${
-                  isBatchMode 
-                    ? 'cursor-default' 
-                    : 'cursor-pointer hover:text-banana-600 transition-colors'
+                  isBatchMode
+                    ? 'cursor-default'
+                    : 'cursor-pointer hover:text-brand-600 transition-colors'
                 }`}
                 onClick={(e) => onStartEdit(e, project)}
                 title={isBatchMode ? undefined : t('common.edit')}
@@ -132,7 +132,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             </span>
           </div>
         </div>
-        
+
         {/* 右侧：图片预览 */}
         <div className="hidden sm:block w-40 h-24 md:w-64 md:h-36 rounded-lg overflow-hidden bg-gray-100 dark:bg-background-secondary border border-gray-200 dark:border-border-primary flex-shrink-0">
           {firstPageImage ? (
@@ -147,7 +147,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* 右侧：操作按钮 */}
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
           <button

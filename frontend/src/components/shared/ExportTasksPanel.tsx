@@ -78,7 +78,7 @@ const TaskStatusIcon: React.FC<{ status: ExportTask['status'] }> = ({ status }) 
       return <Clock size={16} className="text-gray-400" />;
     case 'PROCESSING':
     case 'RUNNING':
-      return <Loader2 size={16} className="text-banana-500 animate-spin" />;
+      return <Loader2 size={16} className="text-brand-500 animate-spin" />;
     case 'COMPLETED':
       return <CheckCircle size={16} className="text-green-500" />;
     case 'FAILED':
@@ -242,7 +242,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
             {task.progress ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-banana-600">
+                  <span className="text-xs font-semibold text-brand-600">
                     {progressPercent > 0 ? `${progressPercent}%` : t('export.preparing')}
                   </span>
                   {task.progress.current_step && (
@@ -254,7 +254,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
                 
                 <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                   <div
-                    className="h-full bg-gradient-to-r from-banana-500 to-banana-600 transition-all duration-500 ease-out"
+                    className="h-full bg-gradient-to-r from-brand-500 to-brand-600 transition-all duration-500 ease-out"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -272,7 +272,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
             ) : (
               <div className="flex items-center gap-2">
                 <div className="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-banana-500 animate-pulse" style={{ width: '30%' }} />
+                  <div className="h-full bg-brand-500 animate-pulse" style={{ width: '30%' }} />
                 </div>
                 <span className="text-xs text-gray-500 dark:text-foreground-tertiary whitespace-nowrap">{t('common.pending')}</span>
               </div>
@@ -462,7 +462,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
             {t('export.tasks')}
           </span>
           {activeTasks.length > 0 && (
-            <span className="px-1.5 py-0.5 text-xs bg-banana-100 text-banana-700 rounded-full">
+            <span className="px-1.5 py-0.5 text-xs bg-brand-100 text-brand-700 rounded-full">
               {t('export.inProgress', { count: activeTasks.length })}
             </span>
           )}

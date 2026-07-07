@@ -135,8 +135,8 @@ export const ImportMarkdownModal: React.FC<ImportMarkdownModalProps> = ({
           <label
             className={`flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-all ${
               isDragging
-                ? 'border-banana-400 bg-banana-50/80 dark:border-banana-400 dark:bg-banana-900/20'
-                : 'border-gray-200 bg-white hover:border-banana-300 hover:bg-banana-50/40 dark:border-border-primary dark:bg-background-primary dark:hover:border-banana-500/40 dark:hover:bg-background-hover'
+                ? 'border-brand-400 bg-brand-50/80 dark:border-brand-400 dark:bg-brand-900/20'
+                : 'border-gray-200 bg-white hover:border-brand-300 hover:bg-brand-50/40 dark:border-border-primary dark:bg-background-primary dark:hover:border-brand-500/40 dark:hover:bg-background-hover'
             }`}
             onDragEnter={(e) => {
               e.preventDefault();

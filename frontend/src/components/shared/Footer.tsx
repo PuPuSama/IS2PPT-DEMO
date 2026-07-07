@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           {/* Copyright */}
           <div className="flex items-center gap-1.5">
             <span>© {currentYear}</span>
-            <span className="font-medium bg-gradient-to-r from-banana-600 to-orange-500 bg-clip-text text-transparent">
+            <span className="font-medium bg-gradient-to-r from-brand-600 to-orange-500 bg-clip-text text-transparent">
               {APP_IDENTITY.displayName}
             </span>
           </div>

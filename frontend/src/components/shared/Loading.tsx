@@ -55,8 +55,8 @@ export const Loading: React.FC<LoadingProps> = ({
     <div className="flex flex-col items-center justify-center max-w-md w-full px-4">
       {/* 加载图标 */}
       <div className="relative w-12 h-12 mb-4">
-        <div className="absolute inset-0 border-4 border-banana-100 rounded-full" />
-        <div className="absolute inset-0 border-4 border-banana-500 rounded-full border-t-transparent animate-spin" />
+        <div className="absolute inset-0 border-4 border-brand-100 rounded-full" />
+        <div className="absolute inset-0 border-4 border-brand-500 rounded-full border-t-transparent animate-spin" />
       </div>
       
       {/* 消息 */}
@@ -70,7 +70,7 @@ export const Loading: React.FC<LoadingProps> = ({
           </div>
           <div className="h-2 bg-gray-200 dark:bg-background-hover rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-banana-500 to-banana-600 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-600 transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -80,18 +80,18 @@ export const Loading: React.FC<LoadingProps> = ({
       {/* 滚动消息日志 */}
       {hasMessages && (
         <div className="w-full mt-4">
-          <div className="bg-banana-50 dark:bg-background-secondary border border-banana-200 dark:border-border-primary rounded-lg p-3 h-32 overflow-y-auto text-xs">
+          <div className="bg-brand-50 dark:bg-background-secondary border border-brand-200 dark:border-border-primary rounded-lg p-3 h-32 overflow-y-auto text-xs">
             {progress.messages!.map((msg, index) => (
               <div
                 key={index}
                 className={cn(
                   "py-0.5",
                   index === progress.messages!.length - 1
-                    ? "text-banana-700 dark:text-banana-400 font-medium"
+                    ? "text-brand-700 dark:text-brand-400 font-medium"
                     : "text-gray-500 dark:text-foreground-tertiary"
                 )}
               >
-                <span className="text-banana-400 mr-2">›</span>
+                <span className="text-brand-400 mr-2">›</span>
                 {msg}
               </div>
             ))}
@@ -109,7 +109,7 @@ export const Loading: React.FC<LoadingProps> = ({
         {onBackgroundClick && (
           <button
             onClick={onBackgroundClick}
-            className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:text-banana-600 bg-white/80 dark:bg-background-secondary/80 hover:bg-banana-50 dark:hover:bg-background-hover rounded-lg border border-gray-200 dark:border-border-primary shadow-sm transition-colors"
+            className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:text-brand-600 bg-white/80 dark:bg-background-secondary/80 hover:bg-brand-50 dark:hover:bg-background-hover rounded-lg border border-gray-200 dark:border-border-primary shadow-sm transition-colors"
           >
             <ArrowLeft size={16} />
             {defaultBackgroundLabel}
@@ -128,7 +128,7 @@ export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={cn(
-        'animate-shimmer bg-gradient-to-r from-gray-200 dark:from-background-hover via-banana-50 dark:via-background-elevated to-gray-200 dark:to-background-hover',
+        'animate-shimmer bg-gradient-to-r from-gray-200 dark:from-background-hover via-brand-50 dark:via-background-elevated to-gray-200 dark:to-background-hover',
         'bg-[length:200%_100%]',
         className
       )}

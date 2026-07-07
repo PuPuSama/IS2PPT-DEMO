@@ -132,7 +132,7 @@ type PageRenderer = (ctx: {
 
 const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
   const steps = [
-    { num: '1', bg: 'bg-banana-500', content: (
+    { num: '1', bg: 'bg-brand-500', content: (
       <div className="flex-1 space-y-2">
         <h4 className="font-semibold text-gray-800 dark:text-foreground-primary">{t('guide.s1')}</h4>
         <p className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('guide.s1d')}</p>
@@ -173,7 +173,7 @@ const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
             key={i}
             className={`flex gap-4 p-4 rounded-xl border ${
               s.highlight
-                ? 'bg-gradient-to-r from-banana-50 dark:from-background-primary to-orange-50 border-banana-200'
+                ? 'bg-gradient-to-r from-brand-50 dark:from-background-primary to-orange-50 border-brand-200'
                 : 'bg-white dark:bg-background-secondary border-gray-200 dark:border-border-primary'
             }`}
           >
@@ -191,14 +191,14 @@ const renderSetupPage: PageRenderer = ({ t, lang, navigate, onClose }) => {
           <h4 className="font-semibold text-gray-800 dark:text-foreground-primary">{t('guide.s4')}</h4>
           <p className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('guide.s4d')}</p>
         </div>
-        <a href={APP_IDENTITY.repositoryIssuesUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-banana-600 hover:text-banana-700 font-medium">
+        <a href={APP_IDENTITY.repositoryIssuesUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium">
           <ExternalLink size={14} />
           {t('guide.issueLink')}
         </a>
       </div>
 
       <div className="flex justify-center pt-2">
-        <Button onClick={() => { onClose(); navigate('/settings', { state: { from: window.location.pathname } }); }} className="bg-banana-500 hover:bg-banana-600 text-black dark:text-white shadow-lg" icon={<Settings size={18} />}>
+        <Button onClick={() => { onClose(); navigate('/settings', { state: { from: window.location.pathname } }); }} className="bg-brand-500 hover:bg-brand-600 text-black dark:text-white shadow-lg" icon={<Settings size={18} />}>
           {t('guide.settingsBtn')}
         </Button>
       </div>
@@ -219,7 +219,7 @@ const renderFeaturesPage: PageRenderer = ({ t, lang, expandedFeat, setExpandedFe
         key={f.key}
         className={`border rounded-xl transition-all cursor-pointer ${
           expandedFeat === idx
-            ? 'border-banana-300 bg-banana-50/50 shadow-sm dark:shadow-background-primary/30'
+            ? 'border-brand-300 bg-brand-50/50 shadow-sm dark:shadow-background-primary/30'
             : 'border-gray-200 dark:border-border-primary hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-background-hover'
         }`}
         onClick={() => setExpandedFeat(expandedFeat === idx ? null : idx)}
@@ -239,7 +239,7 @@ const renderFeaturesPage: PageRenderer = ({ t, lang, expandedFeat, setExpandedFe
             <div className="pl-13 space-y-2">
               {tList(lang, `guide.feat.${f.key}.items`).map((line, li) => (
                 <div key={li} className="flex items-start gap-2 text-sm text-gray-600 dark:text-foreground-tertiary">
-                  <span className="text-banana-500 mt-1">•</span>
+                  <span className="text-brand-500 mt-1">•</span>
                   <span>{line}</span>
                 </div>
               ))}
@@ -277,20 +277,20 @@ const renderGalleryPage: PageRenderer = ({ t, showcaseIdx, setShowcaseIdx }) => 
 
       <div className="flex justify-center gap-2">
         {SHOWCASES.map((_, i) => (
-          <button key={i} onClick={() => setShowcaseIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === showcaseIdx ? 'bg-banana-500 w-6' : 'bg-gray-300 hover:bg-gray-400'}`} />
+          <button key={i} onClick={() => setShowcaseIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === showcaseIdx ? 'bg-brand-500 w-6' : 'bg-gray-300 hover:bg-gray-400'}`} />
         ))}
       </div>
 
       <div className="grid grid-cols-4 gap-2 mt-4">
         {SHOWCASES.map((sc, i) => (
-          <button key={i} onClick={() => setShowcaseIdx(i)} className={`aspect-video rounded-lg overflow-hidden border-2 transition-all ${i === showcaseIdx ? 'border-banana-500 ring-2 ring-banana-200' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-500'}`}>
+          <button key={i} onClick={() => setShowcaseIdx(i)} className={`aspect-video rounded-lg overflow-hidden border-2 transition-all ${i === showcaseIdx ? 'border-brand-500 ring-2 ring-brand-200' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-500'}`}>
             <img src={sc.img} alt={t(`guide.cases.${sc.key}`)} className="w-full h-full object-cover" />
           </button>
         ))}
       </div>
 
       <div className="text-center pt-4">
-        <a href={APP_IDENTITY.repositoryShowcasesUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-banana-600 hover:text-banana-700 font-medium">
+        <a href={APP_IDENTITY.repositoryShowcasesUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium">
           <ExternalLink size={14} />
           {t('guide.galleryMore')}
         </a>
@@ -338,8 +338,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       <div className="space-y-6">
         {/* header */}
         <div className="text-center pb-4 border-b border-gray-100 dark:border-border-primary">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-banana-50 dark:from-background-primary to-orange-50 rounded-full mb-3">
-            <Palette size={18} className="text-banana-600" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-50 dark:from-background-primary to-orange-50 rounded-full mb-3">
+            <Palette size={18} className="text-brand-600" />
             <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('guide.brand')}</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-foreground-primary">{t(page.titleKey)}</h2>
@@ -352,7 +352,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             <button
               key={i}
               onClick={() => setPageIdx(i)}
-              className={`h-2 rounded-full transition-all ${i === pageIdx ? 'bg-banana-500 w-8' : 'bg-gray-300 hover:bg-gray-400 w-2'}`}
+              className={`h-2 rounded-full transition-all ${i === pageIdx ? 'bg-brand-500 w-8' : 'bg-gray-300 hover:bg-gray-400 w-2'}`}
               title={t(p.titleKey)}
             />
           ))}
@@ -380,7 +380,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
           <div className="flex items-center gap-2">
             {pageIdx < PAGES.length - 1 ? (
-              <Button onClick={() => setPageIdx(pageIdx + 1)} icon={<ChevronRight size={16} />} size="sm" className="bg-banana-500 hover:bg-banana-600 text-black dark:text-white">
+              <Button onClick={() => setPageIdx(pageIdx + 1)} icon={<ChevronRight size={16} />} size="sm" className="bg-brand-500 hover:bg-brand-600 text-black dark:text-white">
                 {t('guide.next')}
               </Button>
             ) : (

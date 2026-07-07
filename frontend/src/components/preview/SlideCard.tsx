@@ -60,7 +60,7 @@ export const SlideCard: React.FC<SlideCardProps> = ({
   return (
     <div
       className={`group cursor-pointer transition-all ${
-        isSelected ? 'ring-2 ring-banana-500' : ''
+        isSelected ? 'ring-2 ring-brand-500' : ''
       }`}
       onClick={onClick}
     >
@@ -92,7 +92,7 @@ export const SlideCard: React.FC<SlideCardProps> = ({
                   e.stopPropagation();
                   onEdit();
                 }}
-                className="p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-banana-50 dark:hover:bg-background-hover transition-colors"
+                className="p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-brand-50 dark:hover:bg-background-hover transition-colors"
               >
                 <Edit2 size={18} />
               </button>
@@ -130,14 +130,14 @@ export const SlideCard: React.FC<SlideCardProps> = ({
       <div className="flex items-center gap-2">
         <span
           className={`text-sm font-medium ${
-            isSelected ? 'text-banana-600' : 'text-gray-700 dark:text-foreground-secondary'
+            isSelected ? 'text-brand-600' : 'text-gray-700 dark:text-foreground-secondary'
           }`}
         >
           {index + 1}. {page.outline_content?.title}
         </span>
         {index === 0 && (
           <span
-            className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded flex-shrink-0"
+            className="text-xs px-1.5 py-0.5 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 rounded flex-shrink-0"
             title={t('slideCard.coverPageTooltip')}
           >
             {t('slideCard.coverPage')}

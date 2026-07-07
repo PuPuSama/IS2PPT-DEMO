@@ -129,7 +129,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
-          className="text-sm border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white dark:placeholder-foreground-tertiary focus:border-banana-400 dark:focus:border-banana transition-colors duration-200 pr-24"
+          className="text-sm border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white dark:placeholder-foreground-tertiary focus:border-brand-400 dark:focus:border-brand transition-colors duration-200 pr-24"
         />
         <button
           type="button"
@@ -141,7 +141,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
             setSaveColor(STYLE_COLORS[Math.floor(Math.random() * STYLE_COLORS.length)]);
             setShowSaveDialog(true);
           }}
-          className="absolute right-2 top-2 flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana rounded-md hover:bg-banana-50 dark:hover:bg-background-hover transition-colors"
+          className="absolute right-2 top-2 flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 dark:text-foreground-tertiary hover:text-brand-600 dark:hover:text-brand rounded-md hover:bg-brand-50 dark:hover:bg-background-hover transition-colors"
         >
           <Save size={12} />
           {t('saveAsTemplate')}
@@ -155,7 +155,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
             placeholder={t('styleNamePlaceholder')}
-            className="flex-1 px-2 py-1 text-sm border border-gray-200 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary dark:text-white focus:outline-none focus:border-banana-400 dark:focus:border-banana"
+            className="flex-1 px-2 py-1 text-sm border border-gray-200 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary dark:text-white focus:outline-none focus:border-brand-400 dark:focus:border-brand"
             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
             autoFocus
           />
@@ -165,7 +165,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                 key={c}
                 type="button"
                 onClick={() => setSaveColor(c)}
-                className={`w-5 h-5 rounded-full ring-1 ring-black/10 transition-transform ${saveColor === c ? 'scale-125 ring-2 ring-banana-400 dark:ring-banana' : ''}`}
+                className={`w-5 h-5 rounded-full ring-1 ring-black/10 transition-transform ${saveColor === c ? 'scale-125 ring-2 ring-brand-400 dark:ring-brand' : ''}`}
                 style={{ backgroundColor: c }}
               />
             ))}
@@ -174,7 +174,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
             type="button"
             onClick={handleSave}
             disabled={isSaving || !saveName.trim()}
-            className="px-3 py-1 text-xs font-medium text-white bg-banana-500 hover:bg-banana-600 rounded-md disabled:opacity-50 transition-colors"
+            className="px-3 py-1 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-md disabled:opacity-50 transition-colors"
           >
             {isSaving ? <Loader2 size={12} className="animate-spin" /> : t('saveStyle')}
           </button>
@@ -201,7 +201,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                   onClick={() => onChange(style.description)}
                   onMouseEnter={() => setHoveredUserStyleId(style.id)}
                   onMouseLeave={() => setHoveredUserStyleId(null)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-banana-200 dark:border-banana/30 text-banana-700 dark:text-banana bg-banana-50 dark:bg-banana/10 hover:border-banana-400 dark:hover:border-banana hover:bg-banana-100 dark:hover:bg-banana/20 transition-all duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-brand-200 dark:border-brand/30 text-brand-700 dark:text-brand bg-brand-50 dark:bg-brand/10 hover:border-brand-400 dark:hover:border-brand hover:bg-brand-100 dark:hover:bg-brand/20 transition-all duration-200"
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10"
@@ -246,7 +246,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                 onClick={() => onChange(t(preset.descriptionKey))}
                 onMouseEnter={() => setHoveredPresetId(preset.id)}
                 onMouseLeave={() => setHoveredPresetId(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-gray-200 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-gray-200 dark:border-border-primary dark:text-foreground-secondary hover:border-brand-400 dark:hover:border-brand hover:bg-brand-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none"
               >
                 <span
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10"
@@ -256,7 +256,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
               </button>
               {hoveredPresetId === preset.id && preset.previewImage && (
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                  <div className="bg-white dark:bg-background-secondary rounded-lg shadow-2xl dark:shadow-none border-2 border-banana-400 dark:border-banana p-2.5 w-72">
+                  <div className="bg-white dark:bg-background-secondary rounded-lg shadow-2xl dark:shadow-none border-2 border-brand-400 dark:border-brand p-2.5 w-72">
                     <img
                       src={preset.previewImage}
                       alt={t(preset.nameKey)}
@@ -268,7 +268,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                     </p>
                   </div>
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                    <div className="w-3 h-3 bg-white dark:bg-background-secondary border-r-2 border-b-2 border-banana-400 dark:border-banana transform rotate-45" />
+                    <div className="w-3 h-3 bg-white dark:bg-background-secondary border-r-2 border-b-2 border-brand-400 dark:border-brand transform rotate-45" />
                   </div>
                 </div>
               )}
@@ -279,7 +279,7 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
             type="button"
             onClick={() => styleImageInputRef.current?.click()}
             disabled={isExtractingStyle}
-            className="px-3 py-1.5 text-xs font-medium rounded-full border-2 border-dashed border-gray-300 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-medium rounded-full border-2 border-dashed border-gray-300 dark:border-border-primary dark:text-foreground-secondary hover:border-brand-400 dark:hover:border-brand hover:bg-brand-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none flex items-center gap-1"
           >
             {isExtractingStyle ? (
               <><Loader2 size={12} className="animate-spin" />{t('extracting')}</>

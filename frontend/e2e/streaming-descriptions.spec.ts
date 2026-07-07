@@ -93,7 +93,7 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
 
     // Also mock the settings to return streaming mode (cached in sessionStorage)
     await page.evaluate(() => {
-      sessionStorage.setItem('banana-settings', JSON.stringify({
+      sessionStorage.setItem('is2ppt-settings', JSON.stringify({
         description_generation_mode: 'streaming',
       }));
     });
@@ -178,7 +178,7 @@ test.describe('Streaming Descriptions - Mock Tests', () => {
 
     // Set parallel mode in sessionStorage
     await page.evaluate(() => {
-      sessionStorage.setItem('banana-settings', JSON.stringify({
+      sessionStorage.setItem('is2ppt-settings', JSON.stringify({
         description_generation_mode: 'parallel',
       }));
     });

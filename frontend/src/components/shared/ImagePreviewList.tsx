@@ -77,7 +77,7 @@ export const ImagePreviewList: React.FC<ImagePreviewListProps> = ({
               className="relative flex-shrink-0 group"
             >
               {/* 图片容器 */}
-              <div className="relative w-32 h-32 bg-gray-100 dark:bg-background-secondary rounded-lg overflow-hidden border-2 border-gray-200 dark:border-border-primary hover:border-banana-400 transition-colors">
+              <div className="relative w-32 h-32 bg-gray-100 dark:bg-background-secondary rounded-lg overflow-hidden border-2 border-gray-200 dark:border-border-primary hover:border-brand-400 transition-colors">
                 <img
                   src={imgSrc}
                   alt={image.alt}
@@ -98,7 +98,7 @@ export const ImagePreviewList: React.FC<ImagePreviewListProps> = ({
                 {/* 上传中遮罩 */}
                 {uploading && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-banana-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
 

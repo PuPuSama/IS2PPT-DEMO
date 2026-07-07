@@ -119,12 +119,12 @@ export const Modal: React.FC<ModalProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           {/* 顶部光晕效果 */}
-          <div className="absolute -top-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-banana-400/50 to-transparent" />
+          <div className="absolute -top-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-brand-400/50 to-transparent" />
 
           {/* 内部光晕 */}
           <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-            <div className="absolute -top-32 -left-32 w-64 h-64 bg-banana-400/10 dark:bg-banana-400/5 rounded-full blur-3xl" />
-            <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-banana-300/10 dark:bg-banana-300/5 rounded-full blur-3xl" />
+            <div className="absolute -top-32 -left-32 w-64 h-64 bg-brand-400/10 dark:bg-brand-400/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-brand-300/10 dark:bg-brand-300/5 rounded-full blur-3xl" />
           </div>
 
           {/* 标题栏 */}
@@ -166,7 +166,7 @@ export const Modal: React.FC<ModalProps> = ({
                 'hover:bg-gray-100/80 dark:hover:bg-white/10',
                 'active:scale-95',
                 'transition-all duration-150',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-banana-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1a1a24]',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1a1a24]',
                 title ? 'top-5 right-5' : 'top-4 right-4'
               )}
               aria-label="关闭"

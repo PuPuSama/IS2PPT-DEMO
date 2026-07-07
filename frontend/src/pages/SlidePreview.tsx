@@ -262,7 +262,7 @@ export const SlidePreview: React.FC = () => {
     pageGeneratingTasks,
     warningMessage,
   } = useProjectStore();
-  
+
   const { addTask, pollTask: pollExportTask, tasks: exportTasks, restoreActiveTasks } = useExportTasksStore();
 
   // 页面挂载时恢复正在进行的导出任务（页面刷新后）
@@ -376,7 +376,7 @@ export const SlidePreview: React.FC = () => {
       // 直接使用 projectId 同步项目数据
       syncProject(projectId);
     }
-    
+
     // 加载用户模板列表（用于按需获取File）
     const loadTemplates = async () => {
       try {
@@ -411,7 +411,7 @@ export const SlidePreview: React.FC = () => {
     if (currentProject) {
       // 检查是否是新项目
       const isNewProject = lastProjectId.current !== currentProject.id;
-      
+
       if (isNewProject) {
         // 新项目，初始化额外要求和风格描述
         setExtraRequirements(currentProject.extra_requirements || '');
@@ -675,16 +675,16 @@ export const SlidePreview: React.FC = () => {
 
   const handleSwitchVersion = async (versionId: string) => {
     if (!currentProject || !selectedPage?.id || !projectId) return;
-    
+
     try {
       await setCurrentImageVersion(projectId, selectedPage.id, versionId);
       await syncProject(projectId);
       setShowVersionMenu(false);
       show({ message: t('slidePreview.versionSwitched'), type: 'success' });
     } catch (error: any) {
-      show({ 
+      show({
         message: t('slidePreview.versionSwitchFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error' 
+        type: 'error'
       });
     }
   };
@@ -692,7 +692,7 @@ export const SlidePreview: React.FC = () => {
   // 从描述内容中提取图片URL
   const extractImageUrlsFromDescription = (descriptionContent: DescriptionContent | undefined): string[] => {
     if (!descriptionContent) return [];
-    
+
     // 处理两种格式
     let text: string = '';
     if ('text' in descriptionContent) {
@@ -700,14 +700,14 @@ export const SlidePreview: React.FC = () => {
     } else if ('text_content' in descriptionContent && Array.isArray(descriptionContent.text_content)) {
       text = descriptionContent.text_content.join('\n');
     }
-    
+
     if (!text) return [];
-    
+
     // 匹配 markdown 图片语法: ![](url) 或 ![alt](url)
     const pattern = /!\[.*?\]\((.*?)\)/g;
     const matches: string[] = [];
     let match: RegExpExecArray | null;
-    
+
     while ((match = pattern.exec(text)) !== null) {
       const url = match[1]?.trim();
       // 只保留有效的HTTP/HTTPS URL
@@ -715,7 +715,7 @@ export const SlidePreview: React.FC = () => {
         matches.push(url);
       }
     }
-    
+
     return matches;
   };
 
@@ -777,7 +777,7 @@ export const SlidePreview: React.FC = () => {
     if (!page?.id) return;
 
     const updates: Partial<Page> = {};
-    
+
     // 检查大纲是否有变化
     const originalTitle = page.outline_content?.title || '';
     const originalPoints = page.outline_content?.points?.join('\n') || '';
@@ -787,7 +787,7 @@ export const SlidePreview: React.FC = () => {
         points: editOutlinePoints.split('\n').filter((p) => p.trim()),
       };
     }
-    
+
     // 检查描述是否有变化
     const descContent = page.description_content;
     let originalDesc = '';
@@ -803,7 +803,7 @@ export const SlidePreview: React.FC = () => {
         text: editDescription,
       } as DescriptionContent;
     }
-    
+
     // 如果有修改，保存更新
     if (Object.keys(updates).length > 0) {
       updatePageLocal(page.id, updates);
@@ -813,7 +813,7 @@ export const SlidePreview: React.FC = () => {
 
   const handleSubmitEdit = useCallback(async () => {
     if (!currentProject || !editPrompt.trim()) return;
-    
+
     const page = currentProject.pages[selectedIndex];
     if (!page.id) return;
 
@@ -827,8 +827,8 @@ export const SlidePreview: React.FC = () => {
       {
         useTemplate: selectedContextImages.useTemplate,
         descImageUrls: selectedContextImages.descImageUrls,
-        uploadedFiles: selectedContextImages.uploadedFiles.length > 0 
-          ? selectedContextImages.uploadedFiles 
+        uploadedFiles: selectedContextImages.uploadedFiles.length > 0
+          ? selectedContextImages.uploadedFiles
           : undefined,
       }
     );
@@ -1091,12 +1091,12 @@ export const SlidePreview: React.FC = () => {
           status: 'PROCESSING',
           pageIds: pageIds,
         });
-        
+
         show({ message: t('slidePreview.exportStarted'), type: 'success' });
-        
+
         const response = await apiExportEditablePPTX(projectId, undefined, pageIds);
         const taskId = response.data?.task_id;
-        
+
         if (taskId) {
           // Update task with real taskId
           addTask({
@@ -1107,7 +1107,7 @@ export const SlidePreview: React.FC = () => {
             status: 'PROCESSING',
             pageIds: pageIds,
           });
-          
+
           // Start polling in background (non-blocking)
           pollExportTask(exportTaskId, projectId, taskId);
         }
@@ -1159,9 +1159,9 @@ export const SlidePreview: React.FC = () => {
       await syncProject(targetProjectId);
       show({ message: t('slidePreview.refreshSuccess'), type: 'success' });
     } catch (error: any) {
-      show({ 
+      show({
         message: error.message || t('slidePreview.refreshFailed'),
-        type: 'error' 
+        type: 'error'
       });
     } finally {
       setIsRefreshing(false);
@@ -1170,7 +1170,7 @@ export const SlidePreview: React.FC = () => {
 
   const handleSaveExtraRequirements = useCallback(async () => {
     if (!currentProject || !projectId) return;
-    
+
     setIsSavingRequirements(true);
     try {
       await updateProject(projectId, { extra_requirements: extraRequirements || '' });
@@ -1180,9 +1180,9 @@ export const SlidePreview: React.FC = () => {
       await syncProject(projectId);
       show({ message: t('slidePreview.extraRequirementsSaved'), type: 'success' });
     } catch (error: any) {
-      show({ 
+      show({
         message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error' 
+        type: 'error'
       });
     } finally {
       setIsSavingRequirements(false);
@@ -1191,7 +1191,7 @@ export const SlidePreview: React.FC = () => {
 
   const handleSaveTemplateStyle = useCallback(async () => {
     if (!currentProject || !projectId) return;
-    
+
     setIsSavingTemplateStyle(true);
     try {
       await updateProject(projectId, { template_style: templateStyle || '' });
@@ -1201,9 +1201,9 @@ export const SlidePreview: React.FC = () => {
       await syncProject(projectId);
       show({ message: t('slidePreview.styleDescSaved'), type: 'success' });
     } catch (error: any) {
-      show({ 
+      show({
         message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error' 
+        type: 'error'
       });
     } finally {
       setIsSavingTemplateStyle(false);
@@ -1251,7 +1251,7 @@ export const SlidePreview: React.FC = () => {
 
   const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
     if (!projectId) return;
-    
+
     // 如果有templateId，按需加载File
     let file = templateFile;
     if (templateId && !file) {
@@ -1261,19 +1261,19 @@ export const SlidePreview: React.FC = () => {
         return;
       }
     }
-    
+
     if (!file) {
       // 如果没有文件也没有 ID，可能是取消选择
       return;
     }
-    
+
     setIsUploadingTemplate(true);
     try {
       await uploadTemplate(projectId, file);
       await syncProject(projectId);
       setIsTemplateModalOpen(false);
       show({ message: t('slidePreview.templateChanged'), type: 'success' });
-      
+
       // 更新选择状态
       if (templateId) {
         // 判断是用户模板还是预设模板（短ID通常是预设模板）
@@ -1286,9 +1286,9 @@ export const SlidePreview: React.FC = () => {
         }
       }
     } catch (error: any) {
-      show({ 
+      show({
         message: t('slidePreview.templateChangeFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error' 
+        type: 'error'
       });
     } finally {
       setIsUploadingTemplate(false);
@@ -1317,7 +1317,7 @@ export const SlidePreview: React.FC = () => {
       }
       // 不再显示 "处理中 (X/Y)..." 格式，百分比已在进度条显示
     }
-    
+
     return (
       <Loading
         fullscreen
@@ -1387,7 +1387,7 @@ export const SlidePreview: React.FC = () => {
               ) : (
                 <span
                   title="当前生成路线：生图（位图）"
-                  className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-banana-100 text-banana-700 dark:bg-banana-900/30 dark:text-banana-400"
+                  className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
                 >
                   生图
                 </span>
@@ -1432,7 +1432,7 @@ export const SlidePreview: React.FC = () => {
             >
               <span className="hidden lg:inline">{t('preview.refresh')}</span>
             </Button>
-          
+
           {/* 导出任务按钮 — 始终显示，面板内部决定是否有内容 */}
           <div className="relative">
               <Button
@@ -1445,7 +1445,7 @@ export const SlidePreview: React.FC = () => {
                 className="relative"
               >
                 {exportTasks.filter(t => t.projectId === projectId && (t.status === 'PROCESSING' || t.status === 'RUNNING' || t.status === 'PENDING')).length > 0 ? (
-                  <Loader2 size={16} className="animate-spin text-banana-500" />
+                  <Loader2 size={16} className="animate-spin text-brand-500" />
                 ) : (
                   <FileText size={16} />
                 )}
@@ -1465,7 +1465,7 @@ export const SlidePreview: React.FC = () => {
                 </div>
               )}
             </div>
-          
+
           <div className="relative">
             <Button
               variant="primary"
@@ -1480,13 +1480,13 @@ export const SlidePreview: React.FC = () => {
               className="text-xs md:text-sm"
             >
               <span className="hidden sm:inline">
-                {isMultiSelectMode && selectedPageIds.size > 0 
-                  ? `${t('preview.export')} (${selectedPageIds.size})` 
+                {isMultiSelectMode && selectedPageIds.size > 0
+                  ? `${t('preview.export')} (${selectedPageIds.size})`
                   : t('preview.export')}
               </span>
               <span className="sm:hidden">
-                {isMultiSelectMode && selectedPageIds.size > 0 
-                  ? `(${selectedPageIds.size})` 
+                {isMultiSelectMode && selectedPageIds.size > 0
+                  ? `(${selectedPageIds.size})`
                   : t('preview.export')}
               </span>
             </Button>
@@ -1550,7 +1550,7 @@ export const SlidePreview: React.FC = () => {
                   type="checkbox"
                   checked={pptxTransitionsEnabled}
                   onChange={e => setPptxTransitionsEnabled(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded border-gray-300 text-banana-500 focus:ring-banana-500"
+                  className="w-4 h-4 mt-0.5 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium">{t('preview.pptxTransitionToggle')}</div>
@@ -1567,7 +1567,7 @@ export const SlidePreview: React.FC = () => {
                         key={option.value}
                         className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
                           checked
-                            ? 'border-banana-400 bg-banana-50 text-banana-700 dark:border-banana-500 dark:bg-banana-500/10 dark:text-banana-300'
+                            ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/10 dark:text-brand-300'
                             : 'border-gray-200 dark:border-border-primary hover:bg-gray-50 dark:hover:bg-background-hover'
                         }`}
                       >
@@ -1582,7 +1582,7 @@ export const SlidePreview: React.FC = () => {
                               return prev.filter(effect => effect !== option.value);
                             });
                           }}
-                          className="w-4 h-4 rounded border-gray-300 text-banana-500 focus:ring-banana-500"
+                          className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
                         />
                         <span>{t(`preview.${option.labelKey}`)}</span>
                       </label>
@@ -1614,7 +1614,7 @@ export const SlidePreview: React.FC = () => {
                   });
                 }}
                 disabled={pptxTransitionsEnabled && pptxTransitionEffects.length === 0}
-                className="px-4 py-2 text-sm bg-banana-500 text-white rounded-lg hover:bg-banana-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {t('preview.pptxStartExport')}
               </button>
@@ -1665,7 +1665,7 @@ export const SlidePreview: React.FC = () => {
                   setShowEditablePptxDialog(false);
                   handleExport('editable-pptx');
                 }}
-                className="px-4 py-2 text-sm bg-banana-500 text-white rounded-lg hover:bg-banana-600 transition-colors"
+                className="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
               >
                 {t('preview.editablePptxStartExport')}
               </button>
@@ -1691,7 +1691,7 @@ export const SlidePreview: React.FC = () => {
                 : t('preview.batchGenerate', { count: currentProject.pages.length })}
             </Button>
           </div>
-          
+
           {/* 缩略图列表：桌面端垂直，移动端横向滚动 */}
           <div className="flex-1 overflow-y-auto md:overflow-y-auto overflow-x-auto md:overflow-x-visible p-3 md:p-4 min-h-0">
             {/* 多选模式切换 - 紧凑布局 */}
@@ -1699,8 +1699,8 @@ export const SlidePreview: React.FC = () => {
               <button
                 onClick={toggleMultiSelectMode}
                 className={`px-2 py-1 rounded transition-colors flex items-center gap-1 ${
-                  isMultiSelectMode 
-                    ? 'bg-banana-100 dark:bg-banana-500/20 text-banana-700 dark:text-banana-300 hover:bg-banana-200 dark:hover:bg-banana-500/30' 
+                  isMultiSelectMode
+                    ? 'bg-brand-100 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-500/30'
                     : 'text-gray-500 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
@@ -1711,12 +1711,12 @@ export const SlidePreview: React.FC = () => {
                 <>
                   <button
                     onClick={selectedPageIds.size === pagesWithImages.length ? deselectAllPages : selectAllPages}
-                    className="text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana-300 transition-colors"
+                    className="text-gray-500 dark:text-foreground-tertiary hover:text-brand-600 dark:hover:text-brand-300 transition-colors"
                   >
                     {selectedPageIds.size === pagesWithImages.length ? t('common.deselectAll') : t('common.selectAll')}
                   </button>
                   {selectedPageIds.size > 0 && (
-                    <span className="text-banana-600 font-medium">
+                    <span className="text-brand-600 font-medium">
                       ({selectedPageIds.size}{t('preview.pagesUnit')})
                     </span>
                   )}
@@ -1738,9 +1738,9 @@ export const SlidePreview: React.FC = () => {
                       }}
                       className={`w-20 h-14 rounded border-2 transition-all ${
                         selectedIndex === index
-                          ? 'border-banana-500 shadow-md'
+                          ? 'border-brand-500 shadow-md'
                           : 'border-gray-200 dark:border-border-primary'
-                      } ${isMultiSelectMode && page.id && selectedPageIds.has(page.id) ? 'ring-2 ring-banana-400' : ''}`}
+                      } ${isMultiSelectMode && page.id && selectedPageIds.has(page.id) ? 'ring-2 ring-brand-400' : ''}`}
                     >
                       {page.generated_image_path ? (
                         <img
@@ -1763,7 +1763,7 @@ export const SlidePreview: React.FC = () => {
                         }}
                         className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center transition-all ${
                           selectedPageIds.has(page.id)
-                            ? 'bg-banana-500 text-white'
+                            ? 'bg-brand-500 text-white'
                             : 'bg-white dark:bg-background-secondary border-2 border-gray-300 dark:border-border-primary'
                         }`}
                       >
@@ -1782,8 +1782,8 @@ export const SlidePreview: React.FC = () => {
                         }}
                         className={`absolute top-2 left-2 z-10 w-6 h-6 rounded flex items-center justify-center transition-all ${
                           selectedPageIds.has(page.id)
-                            ? 'bg-banana-500 text-white shadow-md'
-                            : 'bg-white/90 border-2 border-gray-300 dark:border-border-primary hover:border-banana-400'
+                            ? 'bg-brand-500 text-white shadow-md'
+                            : 'bg-white/90 border-2 border-gray-300 dark:border-border-primary hover:border-brand-400'
                         }`}
                       >
                         {selectedPageIds.has(page.id) && <Check size={14} />}
@@ -1816,7 +1816,7 @@ export const SlidePreview: React.FC = () => {
         </aside>
 
         {/* 右侧：大图预览 */}
-        <main className="flex-1 flex flex-col bg-gradient-to-br from-banana-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary min-w-0 overflow-hidden">
+        <main className="flex-1 flex flex-col bg-gradient-to-br from-brand-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary min-w-0 overflow-hidden">
           {currentProject.pages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center overflow-y-auto">
               <div className="text-center">
@@ -1963,7 +1963,7 @@ export const SlidePreview: React.FC = () => {
                                 key={version.version_id}
                                 onClick={() => handleSwitchVersion(version.version_id)}
                                 className={`w-full px-3 md:px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors flex items-center justify-between text-xs md:text-sm ${
-                                  version.is_current ? 'bg-banana-50 dark:bg-background-secondary' : ''
+                                  version.is_current ? 'bg-brand-50 dark:bg-background-secondary' : ''
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
@@ -1971,7 +1971,7 @@ export const SlidePreview: React.FC = () => {
                                     {t('preview.version')} {version.version_number}
                                   </span>
                                   {version.is_current && (
-                                    <span className="text-xs text-banana-600 font-medium">
+                                    <span className="text-xs text-brand-600 font-medium">
                                       ({t('preview.current')})
                                     </span>
                                   )}
@@ -2052,7 +2052,7 @@ export const SlidePreview: React.FC = () => {
                     setSelectionRect(null);
                     setIsSelectingRegion(false);
                   }}
-                  className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
+                  className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
                 >
                   <Sparkles size={12} />
                   <span>{isRegionSelectionMode ? t('preview.endRegionSelect') : t('preview.regionSelect')}</span>
@@ -2064,7 +2064,7 @@ export const SlidePreview: React.FC = () => {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setSvgEditorOpen(true); }}
-                    className="absolute top-2 right-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
+                    className="absolute top-2 right-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
                   >
                     <Sparkles size={12} />
                     <span>编辑 SVG</span>
@@ -2093,7 +2093,7 @@ export const SlidePreview: React.FC = () => {
                 )}
                 {selectionRect && (
                   <div
-                    className="absolute border-2 border-banana-500 bg-banana-400/10 pointer-events-none"
+                    className="absolute border-2 border-brand-500 bg-brand-400/10 pointer-events-none"
                     style={{
                       left: selectionRect.left,
                       top: selectionRect.top,
@@ -2127,7 +2127,7 @@ export const SlidePreview: React.FC = () => {
                     type="text"
                     value={editOutlineTitle}
                     onChange={(e) => setEditOutlineTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                     placeholder={t('preview.enterTitle')}
                   />
                 </div>
@@ -2137,7 +2137,7 @@ export const SlidePreview: React.FC = () => {
                     value={editOutlinePoints}
                     onChange={(e) => setEditOutlinePoints(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 resize-none"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                     placeholder={t('preview.enterPointsPerLine')}
                   />
                 </div>
@@ -2164,7 +2164,7 @@ export const SlidePreview: React.FC = () => {
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={8}
-                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-700 bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 resize-none"
+                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-700 bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                   placeholder={t('preview.enterDescription')}
                 />
               </div>
@@ -2174,7 +2174,7 @@ export const SlidePreview: React.FC = () => {
           {/* 上下文图片选择 */}
           <div className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary p-4 space-y-4">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary mb-3">{t('preview.selectContextImages')}</h4>
-            
+
             {/* Template图片选择 */}
             {currentProject?.template_image_path && (
               <div className="flex items-center gap-3">
@@ -2188,7 +2188,7 @@ export const SlidePreview: React.FC = () => {
                       useTemplate: e.target.checked,
                     }))
                   }
-                  className="w-4 h-4 text-banana-600 rounded focus:ring-banana-500"
+                  className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
                 />
                 <label htmlFor="use-template" className="flex items-center gap-2 cursor-pointer">
                   <ImageIcon size={16} className="text-gray-500 dark:text-foreground-tertiary" />
@@ -2219,7 +2219,7 @@ export const SlidePreview: React.FC = () => {
                           className="w-full h-20 object-cover rounded border-2 border-gray-300 dark:border-border-primary cursor-pointer transition-all"
                           style={{
                             borderColor: selectedContextImages.descImageUrls.includes(url)
-                              ? 'var(--banana-yellow)'
+                              ? 'var(--brand-yellow)'
                               : 'var(--border-primary)',
                           }}
                           onClick={() => {
@@ -2235,8 +2235,8 @@ export const SlidePreview: React.FC = () => {
                           }}
                         />
                         {selectedContextImages.descImageUrls.includes(url) && (
-                          <div className="absolute inset-0 bg-banana-500/20 border-2 border-banana-500 rounded flex items-center justify-center">
-                            <div className="w-6 h-6 bg-banana-500 rounded-full flex items-center justify-center">
+                          <div className="absolute inset-0 bg-brand-500/20 border-2 border-brand-500 rounded flex items-center justify-center">
+                            <div className="w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center">
                               <span className="text-white text-xs font-bold">✓</span>
                             </div>
                           </div>
@@ -2269,7 +2269,7 @@ export const SlidePreview: React.FC = () => {
                     </button>
                   </div>
                 ))}
-                <label className="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-border-primary rounded flex flex-col items-center justify-center cursor-pointer hover:border-banana-500 transition-colors">
+                <label className="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-border-primary rounded flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-colors">
                   <Upload size={20} className="text-gray-400 mb-1" />
                   <span className="text-xs text-gray-500 dark:text-foreground-tertiary">{t('preview.upload')}</span>
                   <input
@@ -2293,8 +2293,8 @@ export const SlidePreview: React.FC = () => {
             rows={4}
           />
           <div className="flex justify-between gap-3">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               onClick={() => {
                 handleSaveOutlineAndDescription();
                 setIsEditModalOpen(false);
@@ -2319,7 +2319,7 @@ export const SlidePreview: React.FC = () => {
       </Modal>
       <ToastContainer />
       {ConfirmDialog}
-      
+
       {/* 模板选择 Modal */}
       <Modal
         isOpen={isTemplateModalOpen}
@@ -2343,7 +2343,7 @@ export const SlidePreview: React.FC = () => {
                 onChange={(e) => setUseTextStyleMode(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 dark:peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
             </div>
           </label>
           {useTextStyleMode ? (
@@ -2463,7 +2463,7 @@ export const SlidePreview: React.FC = () => {
               type="checkbox"
               checked={skip1KWarningChecked}
               onChange={(e) => setSkip1KWarningChecked(e.target.checked)}
-              className="w-4 h-4 text-banana-600 rounded focus:ring-banana-500"
+              className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
             />
             <span className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('preview.dontShowAgain')}</span>
           </label>

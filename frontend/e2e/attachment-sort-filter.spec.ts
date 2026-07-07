@@ -64,7 +64,7 @@ test.describe('Attachment Sorting and Filtering', () => {
             files: [
               { id: '1', filename: 'zebra.pdf', created_at: '2024-01-01T00:00:00Z', file_size: 1000, parse_status: 'completed' },
               { id: '2', filename: 'apple.pdf', created_at: '2024-01-01T00:00:00Z', file_size: 2000, parse_status: 'completed' },
-              { id: '3', filename: 'banana.pdf', created_at: '2024-01-01T00:00:00Z', file_size: 1500, parse_status: 'completed' }
+              { id: '3', filename: 'brand.pdf', created_at: '2024-01-01T00:00:00Z', file_size: 1500, parse_status: 'completed' }
             ]
           }
         })
@@ -77,7 +77,7 @@ test.describe('Attachment Sorting and Filtering', () => {
 
     const fileItems = page.locator('.divide-y > div');
     await expect(fileItems.nth(0)).toContainText('apple.pdf');
-    await expect(fileItems.nth(1)).toContainText('banana.pdf');
+    await expect(fileItems.nth(1)).toContainText('brand.pdf');
     await expect(fileItems.nth(2)).toContainText('zebra.pdf');
   });
 

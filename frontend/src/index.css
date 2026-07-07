@@ -4,10 +4,10 @@
 
 :root {
   /* 主色 - 黄色系 */
-  --banana-yellow: #FFD700;
-  --banana-yellow-light: #FFE44D;
-  --banana-yellow-dark: #FFC700;
-  --banana-yellow-pale: #FFF9E6;
+  --brand-yellow: #FFD700;
+  --brand-yellow-light: #FFE44D;
+  --brand-yellow-dark: #FFC700;
+  --brand-yellow-pale: #FFF9E6;
 
   /* 中性色 - 黑白灰 */
   --black: #1A1A1A;
@@ -47,10 +47,10 @@
 
 .dark {
   /* 主色 - 黄色系（深色模式下稍微调亮） */
-  --banana-yellow: #F5A623;
-  --banana-yellow-light: #FFD700;
-  --banana-yellow-dark: #E6930E;
-  --banana-yellow-pale: #2A2520;
+  --brand-yellow: #F5A623;
+  --brand-yellow-light: #FFD700;
+  --brand-yellow-dark: #E6930E;
+  --brand-yellow-pale: #2A2520;
 
   /* 中性色 - 深色模式 */
   --black: #F5F5F5;
@@ -110,12 +110,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--banana-yellow);
+  background: var(--brand-yellow);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--banana-yellow-dark);
+  background: var(--brand-yellow-dark);
 }
 
 /* 描述卡片极轻滚动条 */

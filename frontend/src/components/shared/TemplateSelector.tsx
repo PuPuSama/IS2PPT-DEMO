@@ -152,8 +152,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   onClick={() => handleSelectUserTemplate(template)}
                   className={`aspect-[4/3] rounded-lg border-2 cursor-pointer transition-all relative group ${
                     selectedTemplateId === template.template_id
-                      ? 'border-banana-500 ring-2 ring-banana-200'
-                      : 'border-gray-200 dark:border-border-primary hover:border-banana-300'
+                      ? 'border-brand-500 ring-2 ring-brand-200'
+                      : 'border-gray-200 dark:border-border-primary hover:border-brand-300'
                   }`}
                 >
                   <img
@@ -175,7 +175,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                     </button>
                   )}
                   {selectedTemplateId === template.template_id && (
-                    <div className="absolute inset-0 bg-banana-500 bg-opacity-20 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-brand-500 bg-opacity-20 flex items-center justify-center pointer-events-none">
                       <span className="text-white font-semibold text-sm">{t('template.templateSelected')}</span>
                     </div>
                   )}
@@ -194,8 +194,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 onClick={() => template.preview && handleSelectPresetTemplate(template.id, template.preview)}
                 className={`aspect-[4/3] rounded-lg border-2 cursor-pointer transition-all bg-gray-100 dark:bg-background-secondary flex items-center justify-center relative ${
                   selectedPresetTemplateId === template.id
-                    ? 'border-banana-500 ring-2 ring-banana-200'
-                    : 'border-gray-200 dark:border-border-primary hover:border-banana-500'
+                    ? 'border-brand-500 ring-2 ring-brand-200'
+                    : 'border-gray-200 dark:border-border-primary hover:border-brand-500'
                 }`}
               >
                 {template.preview ? (
@@ -206,7 +206,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                     {selectedPresetTemplateId === template.id && (
-                      <div className="absolute inset-0 bg-banana-500 bg-opacity-20 flex items-center justify-center pointer-events-none">
+                      <div className="absolute inset-0 bg-brand-500 bg-opacity-20 flex items-center justify-center pointer-events-none">
                         <span className="text-white font-semibold text-sm">{t('template.templateSelected')}</span>
                       </div>
                     )}
@@ -217,7 +217,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </div>
             ))}
 
-            <label className="aspect-[4/3] rounded-lg border-2 border-dashed border-gray-300 dark:border-border-primary hover:border-banana-500 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+            <label className="aspect-[4/3] rounded-lg border-2 border-dashed border-gray-300 dark:border-border-primary hover:border-brand-500 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
               <span className="text-2xl">+</span>
               <span className="text-sm text-gray-500 dark:text-foreground-tertiary">{t('template.uploadTemplate')}</span>
               <input
@@ -237,7 +237,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                   type="checkbox"
                   checked={saveToLibrary}
                   onChange={(e) => setSaveToLibrary(e.target.checked)}
-                  className="w-4 h-4 text-banana-500 border-gray-300 dark:border-border-primary rounded focus:ring-banana-500"
+                  className="w-4 h-4 text-brand-500 border-gray-300 dark:border-border-primary rounded focus:ring-brand-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-foreground-secondary">
                   {t('template.saveToLibraryOnUpload')}

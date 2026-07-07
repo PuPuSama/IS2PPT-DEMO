@@ -75,7 +75,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           <button
             key={page}
             className={cn(buttonBase, btnSize, 'font-medium', {
-              'bg-banana-500 text-black shadow-sm': page === currentPage,
+              'bg-brand-500 text-black shadow-sm': page === currentPage,
               'text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover':
                 page !== currentPage,
             })}
@@ -105,7 +105,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="ml-3 h-9 px-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary cursor-pointer focus:outline-none focus:ring-1 focus:ring-banana-500"
+          className="ml-3 h-9 px-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>{size} {pageSizeLabel}</option>

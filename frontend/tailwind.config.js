@@ -9,11 +9,11 @@ export default {
     extend: {
       colors: {
         // 品牌色 - 使用 CSS 变量
-        'banana': {
-          DEFAULT: 'var(--banana-yellow)',
-          light: 'var(--banana-yellow-light)',
-          dark: 'var(--banana-yellow-dark)',
-          pale: 'var(--banana-yellow-pale)',
+        'brand': {
+          DEFAULT: 'var(--brand-yellow)',
+          light: 'var(--brand-yellow-light)',
+          dark: 'var(--brand-yellow-dark)',
+          pale: 'var(--brand-yellow-pale)',
           // 保留静态色用于渐变等特殊场景
           50: '#FFF9E6',
           100: '#FFE44D',
@@ -22,6 +22,9 @@ export default {
           400: '#FFCA00',
           500: '#FFD700',
           600: '#FFC700',
+          700: '#D99A00',
+          800: '#A86F00',
+          900: '#5F3F00',
         },
         // 背景色 - 语义化 token
         'background': {

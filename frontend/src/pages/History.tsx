@@ -372,12 +372,12 @@ export const History: React.FC = () => {
   }, [handleSaveEdit, handleCancelEdit]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-banana-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary">
       {/* 导航栏 */}
       <nav className="h-14 md:h-16 bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-100 dark:border-border-primary">
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-banana-500 to-banana-600 rounded-lg flex items-center justify-center text-xl md:text-2xl">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center text-xl md:text-2xl">
               🍌
             </div>
             <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('home.title')}</span>
@@ -397,7 +397,7 @@ export const History: React.FC = () => {
             {/* 语言切换按钮 */}
             <button
               onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
-              className="px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+              className="px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-brand-100/60 dark:hover:bg-background-hover rounded-md transition-all"
               title={t('settings.language.label')}
             >
               {i18n.language?.startsWith('zh') ? 'EN' : '中'}
@@ -405,7 +405,7 @@ export const History: React.FC = () => {
             {/* 主题切换按钮 */}
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+              className="p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-brand-100/60 dark:hover:bg-background-hover rounded-md transition-all"
               title={isDark ? t('settings.theme.light') : t('settings.theme.dark')}
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
@@ -483,7 +483,7 @@ export const History: React.FC = () => {
                     type="checkbox"
                     checked={selectedProjects.size === projects.length && projects.length > 0}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 text-banana-600 border-gray-300 dark:border-border-primary rounded focus:ring-banana-500"
+                    className="w-4 h-4 text-brand-600 border-gray-300 dark:border-border-primary rounded focus:ring-brand-500"
                   />
                   <span className="text-sm text-gray-700 dark:text-foreground-secondary">
                     {selectedProjects.size === projects.length ? t('common.deselectAll') : t('common.selectAll')}

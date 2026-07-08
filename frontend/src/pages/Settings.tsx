@@ -22,11 +22,11 @@ import {
   initialSettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
+import { SettingsFieldControl } from '@/components/settings/SettingsFieldControl';
 import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
 import type {
   ServiceTestStatus,
   ServiceTestState,
-  SettingsFieldConfig,
   SettingsModelConfigItem,
 } from '@/types/settingsPage';
 
@@ -347,143 +347,6 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const renderField = (field: SettingsFieldConfig) => {
-    const value = formData[field.key] as string | number | boolean;
-
-    if (field.type === 'buttons' && field.options) {
-      return (
-        <div key={field.key}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-            {field.label}
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {field.options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleFieldChange(field.key, option.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  value === option.value
-                    ? option.value === 'openai'
-                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md'
-                      : option.value === 'lazyllm'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md'
-                        : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md'
-                    : 'bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          {field.description && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-foreground-tertiary">{field.description}</p>
-          )}
-        </div>
-      );
-    }
-
-    if (field.type === 'select' && field.options) {
-      return (
-        <div key={field.key}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-            {field.label}
-          </label>
-          <select
-            value={value as string}
-            onChange={(e) => handleFieldChange(field.key, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-          >
-            {!(value as string) && (
-              <option value="" disabled>
-                {field.placeholder || t('settings.fields.selectPlaceholder')}
-              </option>
-            )}
-            {field.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {field.description && (
-            <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{field.description}</p>
-          )}
-        </div>
-      );
-    }
-
-    // switch 类型 - 开关切换
-    if (field.type === 'switch') {
-      const isEnabled = Boolean(value);
-      return (
-        <div key={field.key}>
-          <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-              {field.label}
-            </label>
-            <button
-              type="button"
-              onClick={() => handleFieldChange(field.key, !isEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                isEnabled ? 'bg-brand-500' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-background-secondary transition-transform ${
-                  isEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-          {field.description && (
-            <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{field.description}</p>
-          )}
-        </div>
-      );
-    }
-
-    // text, password, number 类型
-    const placeholder = field.sensitiveField && settings && field.lengthKey && (settings[field.lengthKey] as number) > 0
-      ? t('settings.fields.apiKeySet', { length: settings[field.lengthKey] as string | number })
-      : field.placeholder || '';
-
-    // 判断是否禁用（思考负载字段在对应开关关闭时禁用）
-    let isDisabled = false;
-    if (field.key === 'text_thinking_budget') {
-      isDisabled = !formData.enable_text_reasoning;
-    } else if (field.key === 'image_thinking_budget') {
-      isDisabled = !formData.enable_image_reasoning;
-    }
-
-    return (
-      <div key={field.key} className={isDisabled ? 'opacity-50' : ''}>
-        <Input
-          label={field.label}
-          type={field.type === 'number' ? 'number' : field.type}
-          placeholder={placeholder}
-          value={value as string | number}
-          onChange={(e) => {
-            const newValue = field.type === 'number' 
-              ? parseInt(e.target.value) || (field.min ?? 0)
-              : e.target.value;
-            handleFieldChange(field.key, newValue);
-          }}
-          min={field.min}
-          max={field.max}
-          disabled={isDisabled}
-        />
-        {(field.description || field.link) && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
-            {field.description}
-            {field.link && (
-              <a href={field.link} target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">{t('settings.fields.applyLink')}</a>
-            )}
-          </p>
-        )}
-      </div>
-    );
-  };
-
   const modelConfigItems = createSettingsModelItems(t);
 
   // 渲染单个模型配置组（模型名 + 提供商选择 + 条件凭证）
@@ -759,7 +622,16 @@ export const Settings: React.FC = () => {
                 <span className="ml-2">{section.title}</span>
               </h2>
               <div className="space-y-4">
-                {section.fields.map((field) => renderField(field))}
+                {section.fields.map((field) => (
+                  <SettingsFieldControl
+                    key={field.key}
+                    field={field}
+                    formData={formData}
+                    settings={settings}
+                    t={t}
+                    onChange={handleFieldChange}
+                  />
+                ))}
               </div>
             </div>
           ))}
@@ -870,7 +742,16 @@ export const Settings: React.FC = () => {
                     <span className="ml-2">{section.title}</span>
                   </h2>
                   <div className="space-y-4">
-                    {section.fields.map((field) => renderField(field))}
+                    {section.fields.map((field) => (
+                      <SettingsFieldControl
+                        key={field.key}
+                        field={field}
+                        formData={formData}
+                        settings={settings}
+                        t={t}
+                        onChange={handleFieldChange}
+                      />
+                    ))}
                   </div>
                 </div>
               ))}

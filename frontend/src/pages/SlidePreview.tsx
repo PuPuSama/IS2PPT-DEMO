@@ -34,7 +34,7 @@ import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useExportTasksStore, type ExportTaskType } from '@/store/useExportTasksStore';
 import { getImageUrl } from '@/api/client';
-import { getPageImageVersions, setCurrentImageVersion } from '@/api/endpoints';
+import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
 import { exportPPTX as apiExportPPTX, exportPDF as apiExportPDF, exportImages as apiExportImages, exportEditablePPTX as apiExportEditablePPTX } from '@/api/exportsApi';
 import { updateProject, uploadTemplate } from '@/api/projectsApi';
 import { getSettings } from '@/api/settingsApi';

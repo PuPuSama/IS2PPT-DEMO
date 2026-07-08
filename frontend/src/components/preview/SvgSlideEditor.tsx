@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Code2, Eye, Group as GroupIcon, Loader2, Minus, Plus, RotateCcw, Save, Ungroup as UngroupIcon, X } from 'lucide-react';
-import { getPageSvg, savePageSvg } from '@/api/endpoints';
+import { getPageSvg, savePageSvg } from '@/api/pagesApi';
 
 /**
  * In-frontend slide editor for SVG-generation-mode pages.

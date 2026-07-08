@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
+import { useOpenAIConnection } from '@/hooks/useOpenAIConnection';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
@@ -37,97 +38,24 @@ export const Settings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(initialSettingsFormData);
   const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
-  const [oauthConnecting, setOauthConnecting] = useState(false);
-  const [manualCallbackUrl, setManualCallbackUrl] = useState('');
-  const [manualCallbackOpen, setManualCallbackOpen] = useState(false);
-  const [manualCallbackSubmitting, setManualCallbackSubmitting] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const handleOAuthLogin = async () => {
-    setOauthConnecting(true);
-    try {
-      const resp = await api.getOpenAIOAuthUrl();
-      if (resp.success && resp.data?.auth_url) {
-        if (resp.data.callback_server_available === false) {
-          setManualCallbackOpen(true);
-          show({ message: t('settings.openaiOAuth.callbackPortBusy'), type: 'warning' });
-        }
-        const popup = window.open(resp.data.auth_url, 'openai-oauth', 'width=600,height=700');
-        const onMessage = async (event: MessageEvent) => {
-          if (event.data?.type === 'openai-oauth-callback') {
-            window.removeEventListener('message', onMessage);
-            setOauthConnecting(false);
-            if (event.data.success) {
-              const statusResp = await api.getOpenAIOAuthStatus();
-      if (statusResp.success && statusResp.data) {
-        setSettings(prev => prev ? {
-          ...prev,
-          openai_oauth_connected: statusResp.data!.connected,
-          openai_oauth_account_id: statusResp.data!.account_id || null,
-        } : prev);
-      }
-            } else {
-              show({ message: t('settings.openaiOAuth.connectFailed'), type: 'error' });
-            }
-          }
-        };
-        window.addEventListener('message', onMessage);
-        const checkClosed = setInterval(() => {
-          if (popup?.closed) {
-            clearInterval(checkClosed);
-            setOauthConnecting(false);
-            window.removeEventListener('message', onMessage);
-          }
-        }, 1000);
-      }
-    } catch {
-      setOauthConnecting(false);
-      show({ message: t('settings.openaiOAuth.connectFailed'), type: 'error' });
-    }
-  };
-
-  const handleOAuthDisconnect = async () => {
-    try {
-      const resp = await api.disconnectOpenAIOAuth();
-      if (resp.success) {
-        setSettings(prev => prev ? {
-          ...prev,
-          openai_oauth_connected: false,
-          openai_oauth_account_id: null,
-        } : prev);
-        show({ message: t('settings.openaiOAuth.disconnectSuccess'), type: 'success' });
-      }
-    } catch {
-      show({ message: t('settings.openaiOAuth.disconnectFailed'), type: 'error' });
-    }
-  };
-
-  const handleManualCallback = async () => {
-    if (!manualCallbackUrl.trim()) return;
-    setManualCallbackSubmitting(true);
-    try {
-      const resp = await api.submitOAuthManualCallback(manualCallbackUrl.trim());
-      if (resp.success) {
-        setManualCallbackUrl('');
-        setManualCallbackOpen(false);
-        const statusResp = await api.getOpenAIOAuthStatus();
-        if (statusResp.success && statusResp.data) {
-          setSettings(prev => prev ? {
-            ...prev,
-            openai_oauth_connected: statusResp.data!.connected,
-            openai_oauth_account_id: statusResp.data!.account_id || null,
-          } : prev);
-        }
-        show({ message: t('settings.openaiOAuth.manualCallbackSuccess'), type: 'success' });
-      } else {
-        show({ message: t('settings.openaiOAuth.connectFailed'), type: 'error' });
-      }
-    } catch {
-      show({ message: t('settings.openaiOAuth.connectFailed'), type: 'error' });
-    } finally {
-      setManualCallbackSubmitting(false);
-    }
-  };
+  const {
+    oauthConnecting,
+    manualCallbackUrl,
+    manualCallbackOpen,
+    manualCallbackSubmitting,
+    setManualCallbackUrl,
+    handleOAuthLogin,
+    handleOAuthDisconnect,
+    handleManualCallback,
+    markOpenAIOAuthDisconnected,
+    toggleManualCallback,
+  } = useOpenAIConnection({
+    t,
+    setSettings,
+    notify: (message, type) => show({ message, type }),
+  });
 
   const settingsSections = createSettingsSections(t);
   const serviceTestItems = createSettingsServiceTests(t);
@@ -154,19 +82,6 @@ export const Settings: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const markOpenAIOAuthDisconnected = () => {
-    setSettings(prev => {
-      if (!prev) return prev;
-      const next = {
-        ...prev,
-        openai_oauth_connected: false,
-        openai_oauth_account_id: null,
-      };
-      projectSession.saveSettingsSnapshot(next);
-      return next;
-    });
   };
 
   const handleSave = async () => {
@@ -395,7 +310,7 @@ export const Settings: React.FC = () => {
           onToggle={() => setAdvancedOpen((value) => !value)}
           onOAuthLogin={handleOAuthLogin}
           onOAuthDisconnect={handleOAuthDisconnect}
-          onManualCallbackToggle={() => setManualCallbackOpen((value) => !value)}
+          onManualCallbackToggle={toggleManualCallback}
           onManualCallbackUrlChange={setManualCallbackUrl}
           onManualCallbackSubmit={handleManualCallback}
           onFieldChange={handleFieldChange}

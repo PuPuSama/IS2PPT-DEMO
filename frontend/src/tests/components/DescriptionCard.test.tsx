@@ -9,8 +9,9 @@ import type { Page } from '@/types'
 
 // Mock uploadMaterial
 const mockUploadMaterial = vi.fn()
-vi.mock('@/api/endpoints', () => ({
+vi.mock('@/api/materialsApi', () => ({
   uploadMaterial: (...args: any[]) => mockUploadMaterial(...args),
+  getMaterialByUrl: vi.fn(),
 }))
 
 // Mock MarkdownTextarea as a plain textarea so getByDisplayValue works

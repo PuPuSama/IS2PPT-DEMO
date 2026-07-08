@@ -4,7 +4,7 @@
 
 - Repo: `D:\PPT rebase\IS2PPT-1`
 - Branch: `main`
-- Remote: `origin git@github.com:PuPuSama/IS2PPT-DEMO.git`
+- Remote: see `git remote -v` for the currently configured upstream.
 - Real Python venv: `D:\PPT rebase\IS2PPT-1\.venv`
 - Do not use `backend/.venv`; its dependencies may be incomplete.
 - Local ports normally used by this worktree:

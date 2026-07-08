@@ -17,7 +17,7 @@ The repository currently contains:
 
 - React 18 + Vite frontend under `frontend/`.
 - Flask backend under `backend/`.
-- Python CLI under `cli/banana_cli/`.
+- Python CLI under `cli/is2ppt_cli/`.
 - Docker, docs, skills, tests, migrations, and deployment scripts.
 - Frontend business logic concentrated in large files:
   - `frontend/src/pages/SlidePreview.tsx`

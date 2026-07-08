@@ -24,6 +24,18 @@ export interface SettingsSectionConfig {
   fields: SettingsFieldConfig[];
 }
 
+export interface SettingsModelConfigItem {
+  modelKey: keyof SettingsFormData;
+  sourceKey: keyof SettingsFormData;
+  apiKeyKey: keyof SettingsFormData;
+  apiBaseKey: keyof SettingsFormData;
+  apiKeyLengthKey: keyof SettingsType;
+  label: string;
+  placeholder: string;
+  description: string;
+  sourceLabel: string;
+}
+
 export type ServiceTestStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface ServiceTestState {

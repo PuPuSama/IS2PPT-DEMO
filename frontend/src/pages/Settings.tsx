@@ -7,6 +7,7 @@ import { Button, Input, Card, Loading, useToast, useConfirm } from '@/components
 import * as api from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
+import { createSettingsModelItems } from '@/config/settingsModelItems';
 import { createSettingsSections } from '@/config/settingsSections';
 import {
   ALL_PROVIDER_SOURCES,
@@ -17,7 +18,6 @@ import {
 import {
   formDataFromSettings,
   initialSettingsFormData,
-  type SettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
@@ -25,6 +25,7 @@ import type {
   ServiceTestStatus,
   ServiceTestState,
   SettingsFieldConfig,
+  SettingsModelConfigItem,
 } from '@/types/settingsPage';
 
 // Settings 组件 - 纯嵌入模式（可复用）
@@ -522,45 +523,10 @@ export const Settings: React.FC = () => {
     );
   };
 
-  // 模型配置项定义：每种模型类型的 key、source key、api key/base key、标签等
-  const modelConfigItems = [
-    {
-      modelKey: 'text_model' as keyof SettingsFormData,
-      sourceKey: 'text_model_source' as keyof SettingsFormData,
-      apiKeyKey: 'text_api_key' as keyof SettingsFormData,
-      apiBaseKey: 'text_api_base_url' as keyof SettingsFormData,
-      apiKeyLengthKey: 'text_api_key_length' as keyof SettingsType,
-      label: t('settings.fields.textModel'),
-      placeholder: t('settings.fields.textModelPlaceholder'),
-      description: t('settings.fields.textModelDesc'),
-      sourceLabel: t('settings.fields.textModelSource'),
-    },
-    {
-      modelKey: 'image_model' as keyof SettingsFormData,
-      sourceKey: 'image_model_source' as keyof SettingsFormData,
-      apiKeyKey: 'image_api_key' as keyof SettingsFormData,
-      apiBaseKey: 'image_api_base_url' as keyof SettingsFormData,
-      apiKeyLengthKey: 'image_api_key_length' as keyof SettingsType,
-      label: t('settings.fields.imageModel'),
-      placeholder: t('settings.fields.imageModelPlaceholder'),
-      description: t('settings.fields.imageModelDesc'),
-      sourceLabel: t('settings.fields.imageModelSource'),
-    },
-    {
-      modelKey: 'image_caption_model' as keyof SettingsFormData,
-      sourceKey: 'image_caption_model_source' as keyof SettingsFormData,
-      apiKeyKey: 'image_caption_api_key' as keyof SettingsFormData,
-      apiBaseKey: 'image_caption_api_base_url' as keyof SettingsFormData,
-      apiKeyLengthKey: 'image_caption_api_key_length' as keyof SettingsType,
-      label: t('settings.fields.imageCaptionModel'),
-      placeholder: t('settings.fields.imageCaptionModelPlaceholder'),
-      description: t('settings.fields.imageCaptionModelDesc'),
-      sourceLabel: t('settings.fields.imageCaptionModelSource'),
-    },
-  ];
+  const modelConfigItems = createSettingsModelItems(t);
 
   // 渲染单个模型配置组（模型名 + 提供商选择 + 条件凭证）
-  const renderModelConfigGroup = (item: typeof modelConfigItems[0]) => {
+  const renderModelConfigGroup = (item: SettingsModelConfigItem) => {
     const sourceValue = formData[item.sourceKey] as string;
     const isApiKeyProvider = API_KEY_PROVIDERS.has(sourceValue);
     const isLazyllm = sourceValue && isLazyllmVendor(sourceValue);

@@ -14,7 +14,6 @@ import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
 import {
   ALL_PROVIDER_SOURCES,
   API_KEY_PROVIDERS,
-  LAZYLLM_SOURCES,
   isLazyllmVendor,
 } from '@/config/settingsProviders';
 import {
@@ -23,11 +22,11 @@ import {
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { SettingsFieldControl } from '@/components/settings/SettingsFieldControl';
+import { SettingsModelConfigGroup } from '@/components/settings/SettingsModelConfigGroup';
 import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
 import type {
   ServiceTestStatus,
   ServiceTestState,
-  SettingsModelConfigItem,
 } from '@/types/settingsPage';
 
 // Settings 组件 - 纯嵌入模式（可复用）
@@ -278,6 +277,13 @@ export const Settings: React.FC = () => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleVendorApiKeyChange = (vendor: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      lazyllm_api_keys: { ...prev.lazyllm_api_keys, [vendor]: value },
+    }));
+  };
+
   const updateServiceTest = (key: string, nextState: ServiceTestState) => {
     setServiceTestStates(prev => ({ ...prev, [key]: nextState }));
   };
@@ -348,135 +354,6 @@ export const Settings: React.FC = () => {
   };
 
   const modelConfigItems = createSettingsModelItems(t);
-
-  // 渲染单个模型配置组（模型名 + 提供商选择 + 条件凭证）
-  const renderModelConfigGroup = (item: SettingsModelConfigItem) => {
-    const sourceValue = formData[item.sourceKey] as string;
-    const isApiKeyProvider = API_KEY_PROVIDERS.has(sourceValue);
-    const isLazyllm = sourceValue && isLazyllmVendor(sourceValue);
-    // 'openai' in source dropdown means OpenAI format (API key provider), not lazyllm openai vendor
-    // lazyllm openai vendor is handled separately
-
-    return (
-      <div key={item.modelKey} className="pb-6 border-b border-gray-200 dark:border-border-primary last:border-b-0 last:pb-0 space-y-3">
-        {/* 模型名称 */}
-        <Input
-          label={item.label}
-          type="text"
-          placeholder={item.placeholder}
-          value={formData[item.modelKey] as string}
-          onChange={(e) => handleFieldChange(item.modelKey, e.target.value)}
-        />
-        {item.description && (
-          <p className="-mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{item.description}</p>
-        )}
-
-        {/* 提供商选择 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-            {item.sourceLabel}
-          </label>
-          <select
-            value={sourceValue}
-            onChange={(e) => handleFieldChange(item.sourceKey, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-          >
-            <option value="">{t('settings.fields.modelProviderPlaceholder')}</option>
-            {ALL_PROVIDER_SOURCES.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-                disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
-              >
-                {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
-            {t('settings.fields.modelProviderDesc')}
-          </p>
-        </div>
-
-        {/* Gemini/OpenAI 提供商：显示 API Base URL + API Key */}
-        {isApiKeyProvider && (
-          <div className="space-y-3 pl-3 border-l-2 border-brand-300 dark:border-brand-600">
-            <Input
-              label={t('settings.fields.perModelApiBaseUrl')}
-              type="text"
-              placeholder={t('settings.fields.perModelApiBaseUrlPlaceholder')}
-              value={formData[item.apiBaseKey] as string}
-              onChange={(e) => handleFieldChange(item.apiBaseKey, e.target.value)}
-            />
-            <div>
-              <Input
-                label={t('settings.fields.perModelApiKey')}
-                type="password"
-                placeholder={
-                  settings && (settings[item.apiKeyLengthKey] as number) > 0
-                    ? t('settings.fields.perModelApiKeySet', { length: settings[item.apiKeyLengthKey] as number })
-                    : t('settings.fields.perModelApiKeyPlaceholder')
-                }
-                value={formData[item.apiKeyKey] as string}
-                onChange={(e) => handleFieldChange(item.apiKeyKey, e.target.value)}
-              />
-              <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
-                {t('settings.fields.perModelApiKeyDesc')}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Image API Protocol: for image model when effective provider is openai */}
-        {item.sourceKey === 'image_model_source' && (sourceValue === 'openai' || (!sourceValue && formData.ai_provider_format === 'openai')) && (
-          <div className="pl-3 border-l-2 border-brand-300 dark:border-brand-600">
-            <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-              {t('settings.fields.imageApiProtocol')}
-            </label>
-            <select
-              value={formData.openai_image_api_protocol}
-              onChange={(e) => handleFieldChange('openai_image_api_protocol', e.target.value)}
-              className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            >
-              <option value="auto">{t('settings.fields.imageApiProtocolAuto')}</option>
-              <option value="images">{t('settings.fields.imageApiProtocolImages')}</option>
-              <option value="chat">{t('settings.fields.imageApiProtocolChat')}</option>
-            </select>
-            <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
-              {t('settings.fields.imageApiProtocolDesc')}
-            </p>
-          </div>
-        )}
-
-        {/* LazyLLM 厂商：显示厂商 API Key */}
-        {isLazyllm && (() => {
-          const vendorLabel = LAZYLLM_SOURCES.find(s => s.value === sourceValue)?.label || sourceValue.toUpperCase();
-          const keyLength = settings?.lazyllm_api_keys_info?.[sourceValue] || 0;
-          const placeholder = keyLength > 0
-            ? t('settings.fields.vendorApiKeySet', { length: keyLength })
-            : t('settings.fields.vendorApiKeyPlaceholder', { vendor: vendorLabel });
-          return (
-            <div className="pl-3 border-l-2 border-amber-300 dark:border-amber-600">
-              <Input
-                label={t('settings.fields.vendorApiKey', { vendor: vendorLabel })}
-                type="password"
-                placeholder={placeholder}
-                value={formData.lazyllm_api_keys[sourceValue] || ''}
-                onChange={(e) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    lazyllm_api_keys: { ...prev.lazyllm_api_keys, [sourceValue]: e.target.value }
-                  }));
-                }}
-              />
-              <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
-                {t('settings.fields.vendorApiKeyDesc')}
-              </p>
-            </div>
-          );
-        })()}
-      </div>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -605,7 +482,17 @@ export const Settings: React.FC = () => {
             <span className="ml-2">{t('settings.sections.modelConfig')}</span>
           </h2>
           <div className="space-y-4">
-            {modelConfigItems.map(renderModelConfigGroup)}
+            {modelConfigItems.map((item) => (
+              <SettingsModelConfigGroup
+                key={item.modelKey}
+                item={item}
+                formData={formData}
+                settings={settings}
+                t={t}
+                onFieldChange={handleFieldChange}
+                onVendorKeyChange={handleVendorApiKeyChange}
+              />
+            ))}
           </div>
         </div>
 

@@ -60,9 +60,9 @@ import {
   deleteReferenceFile,
   getReferenceFile,
   triggerFileParse,
-  listProjects,
   type ReferenceFile,
 } from '@/api/endpoints';
+import { listProjects } from '@/api/projectsApi';
 import type { Project } from '@/types';
 
 interface ReferenceFileSelectorProps {

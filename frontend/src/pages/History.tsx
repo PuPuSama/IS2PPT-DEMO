@@ -7,7 +7,7 @@ import { ProjectCard } from '@/components/history/ProjectCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useT } from '@/hooks/useT';
-import * as api from '@/api/endpoints';
+import * as api from '@/api/projectsApi';
 import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import { projectSession } from '@/shared/storage/projectSession';

@@ -13,7 +13,7 @@ import requests
 
 from app_identity import APP_NAME
 
-DOCKER_NAMESPACE = os.getenv("DOCKERHUB_NAMESPACE") or "pupusama"
+DOCKER_NAMESPACE = os.getenv("DOCKERHUB_NAMESPACE") or "is2ppt"
 DOCKER_REPOSITORY = os.getenv("DOCKERHUB_REPOSITORY") or APP_NAME
 DOCKER_HUB_TAGS_URL = "https://hub.docker.com/v2/repositories/{namespace}/{repository}/tags"
 SOURCE_REMOTE = os.getenv("APP_SOURCE_REMOTE") or "origin"

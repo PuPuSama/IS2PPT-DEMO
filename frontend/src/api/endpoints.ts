@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { Task, ApiResponse, Page, Material, SvgReasoningEffort } from '@/types';
+import type { ApiResponse, Page, Material, SvgReasoningEffort } from '@/types';
 import { accessCodeSession } from '@/shared/auth/accessCodeSession';
 import { getStoredOutputLanguage, type OutputLanguage } from './settingsApi';
 
@@ -58,6 +58,7 @@ export {
   deletePage,
   addPage,
 } from './pagesApi';
+export { getTaskStatus } from './tasksApi';
 export {
   OUTPUT_LANGUAGE_OPTIONS,
   getDefaultOutputLanguage,
@@ -183,7 +184,6 @@ export const generateOutlineStream = async (
     readResult = await reader.read();
   }
 };
-
 // ===== 描述生成 =====
 
 /**
@@ -481,14 +481,4 @@ export const editPageImage = async (
     );
     return response.data;
   }
-};
-
-// ===== 任务查询 =====
-
-/**
- * 查询任务状态
- */
-export const getTaskStatus = async (projectId: string, taskId: string): Promise<ApiResponse<Task>> => {
-  const response = await apiClient.get<ApiResponse<Task>>(`/api/projects/${projectId}/tasks/${taskId}`);
-  return response.data;
 };

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import * as api from '@/api/endpoints';
+import { getTaskStatus } from '@/api/tasksApi';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { normalizeErrorMessage } from '@/utils';
@@ -118,7 +118,7 @@ export const useExportTasksStore = create<ExportTasksState>()(
       pollTask: async (id, projectId, taskId) => {
         const poll = async () => {
           try {
-            const response = await api.getTaskStatus(projectId, taskId);
+            const response = await getTaskStatus(projectId, taskId);
             const task = response.data;
 
             if (!task) {

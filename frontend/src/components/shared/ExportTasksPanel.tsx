@@ -6,40 +6,7 @@ import type { Page } from '@/types';
 import { Button } from './Button';
 import { cn } from '@/utils';
 import { listExports } from '@/api/exportsApi';
-
-// Export 组件自包含翻译
-const exportI18n = {
-  zh: {
-    export: {
-      tasks: "导出任务", inProgress: "{{count}} 进行中", clearHistory: "清除",
-      exportPptx: "PPTX", exportPdf: "PDF", exportEditablePptx: "可编辑 PPTX", exportImages: "图片",
-      allPages: "全部", pageRange: "第{{start}}-{{end}}页", singlePage: "第{{num}}页", pagesCount: "{{count}}页",
-      warnings: "{{count}} 条警告", clickToView: "点击查看", warningsTitle: "导出警告",
-      warningsCount: "导出警告 ({{count}} 条)", detailInfo: "详细信息",
-      styleExtractionFailed: "转换失败 ({{count}} 个)", textRenderFailed: "文本渲染失败 ({{count}} 个)",
-      moreItems: "... 还有 {{count}} 条", exportFailed: "导出失败", preparing: "准备中...",
-      settingsTip: "可在「项目设置 → 导出设置」中调整配置或开启「返回半成品」选项",
-      codexReconnectTip: "如果是 Codex 登录过期或连接中断，也可以前往设置重新登录 OpenAI 账号后再试",
-      exportedFiles: "已导出文件",
-    },
-    shared: { historyRecords: "历史记录" }
-  },
-  en: {
-    export: {
-      tasks: "Export Tasks", inProgress: "{{count}} in progress", clearHistory: "Clear",
-      exportPptx: "PPTX", exportPdf: "PDF", exportEditablePptx: "Editable PPTX", exportImages: "Images",
-      allPages: "All", pageRange: "Pages {{start}}-{{end}}", singlePage: "Page {{num}}", pagesCount: "{{count}} pages",
-      warnings: "{{count}} warnings", clickToView: "Click to view", warningsTitle: "Export Warnings",
-      warningsCount: "Export Warnings ({{count}})", detailInfo: "Details",
-      styleExtractionFailed: "Conversion failed ({{count}})", textRenderFailed: "Text render failed ({{count}})",
-      moreItems: "... {{count}} more", exportFailed: "Export Failed", preparing: "Preparing...",
-      settingsTip: "Adjust settings in \"Project Settings → Export Settings\" or enable \"Allow Partial Results\"",
-      codexReconnectTip: "If Codex login expired or the connection was interrupted, reconnect your OpenAI account in Settings and try again.",
-      exportedFiles: "Exported Files",
-    },
-    shared: { historyRecords: "History Records" }
-  }
-};
+import { exportTasksPanelI18n } from '@/config/exportTasksPanelI18n';
 
 const getPageRangeText = (pageIds: string[] | undefined, pages: Page[], t: (key: string, options?: any) => string): string => {
   if (!pageIds || pageIds.length === 0) {
@@ -94,7 +61,7 @@ const WarningsModal: React.FC<{
   warnings: string[];
   warningDetails?: any;
 }> = ({ isOpen, onClose, warnings, warningDetails }) => {
-  const t = useT(exportI18n);
+  const t = useT(exportTasksPanelI18n);
   
   if (!isOpen) return null;
   
@@ -187,7 +154,7 @@ const WarningsModal: React.FC<{
 };
 
 const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void }> = ({ task, pages, onRemove }) => {
-  const t = useT(exportI18n);
+  const t = useT(exportTasksPanelI18n);
   const [showWarningsModal, setShowWarningsModal] = useState(false);
   
   const taskTypeLabels: Record<ExportTaskType, string> = {
@@ -408,7 +375,7 @@ const formatFileSize = (bytes: number): string => {
 };
 
 export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, pages = [], className }) => {
-  const t = useT(exportI18n);
+  const t = useT(exportTasksPanelI18n);
   const [isExpanded, setIsExpanded] = useState(true);
   const { tasks, removeTask, clearCompleted, restoreActiveTasks } = useExportTasksStore();
   const [exportedFiles, setExportedFiles] = useState<ExportedFile[]>([]);

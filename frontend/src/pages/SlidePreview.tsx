@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
+import { PPTX_TRANSITION_OPTIONS, type PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
 import {
   Home,
@@ -37,27 +38,6 @@ import { getPageImageVersions, setCurrentImageVersion, updateProject, uploadTemp
 import type { ImageVersion, DescriptionContent, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
-
-type PptxTransitionEffect =
-  | 'fade'
-  | 'page_turn'
-  | 'push'
-  | 'wipe'
-  | 'split'
-  | 'blinds'
-  | 'checker'
-  | 'wheel';
-
-const PPTX_TRANSITION_OPTIONS: { value: PptxTransitionEffect; labelKey: string }[] = [
-  { value: 'fade', labelKey: 'pptxTransitionFade' },
-  { value: 'page_turn', labelKey: 'pptxTransitionPageTurn' },
-  { value: 'push', labelKey: 'pptxTransitionPush' },
-  { value: 'wipe', labelKey: 'pptxTransitionWipe' },
-  { value: 'split', labelKey: 'pptxTransitionSplit' },
-  { value: 'blinds', labelKey: 'pptxTransitionBlinds' },
-  { value: 'checker', labelKey: 'pptxTransitionChecker' },
-  { value: 'wheel', labelKey: 'pptxTransitionWheel' },
-];
 
 export const SlidePreview: React.FC = () => {
   const navigate = useNavigate();

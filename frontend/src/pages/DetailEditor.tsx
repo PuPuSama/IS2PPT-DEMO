@@ -19,7 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
 import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
-import { refineDescriptions } from '@/api/endpoints';
+import { refineDescriptions } from '@/api/descriptionApi';
 import { addPage } from '@/api/pagesApi';
 import { getTaskStatus } from '@/api/tasksApi';
 import { updateProject } from '@/api/projectsApi';

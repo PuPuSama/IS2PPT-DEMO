@@ -5,7 +5,7 @@ import { useT } from '@/hooks/useT';
 import type { Page } from '@/types';
 import { Button } from './Button';
 import { cn } from '@/utils';
-import * as api from '@/api/endpoints';
+import * as api from '@/api/exportsApi';
 
 // Export 组件自包含翻译
 const exportI18n = {

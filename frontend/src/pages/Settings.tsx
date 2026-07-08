@@ -16,10 +16,10 @@ import {
   initialSettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
-import { SettingsFieldControl } from '@/components/settings/SettingsFieldControl';
 import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalApiSection';
 import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
 import { SettingsOAuthPanel } from '@/components/settings/SettingsOAuthPanel';
+import { SettingsSectionList } from '@/components/settings/SettingsSectionList';
 import { SettingsServiceTestPanel } from '@/components/settings/SettingsServiceTestPanel';
 import type {
   ServiceTestState,
@@ -334,6 +334,13 @@ export const Settings: React.FC = () => {
   };
 
   const modelConfigItems = createSettingsModelItems(t);
+  const advancedSectionTitles = new Set([
+    t('settings.sections.performanceConfig'),
+    t('settings.sections.textReasoning'),
+    t('settings.sections.imageReasoning'),
+  ]);
+  const mainSections = settingsSections.filter((section) => !advancedSectionTitles.has(section.title));
+  const advancedSections = settingsSections.filter((section) => advancedSectionTitles.has(section.title));
 
   if (isLoading) {
     return (
@@ -366,33 +373,13 @@ export const Settings: React.FC = () => {
           onVendorKeyChange={handleVendorApiKeyChange}
         />
 
-        {/* 其余配置区块（配置驱动，排除性能配置和推理模式） */}
-        <div className="space-y-8">
-          {settingsSections.filter((section) =>
-            section.title !== t('settings.sections.performanceConfig') &&
-            section.title !== t('settings.sections.textReasoning') &&
-            section.title !== t('settings.sections.imageReasoning')
-          ).map((section) => (
-            <div key={section.title}>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
-                {section.icon}
-                <span className="ml-2">{section.title}</span>
-              </h2>
-              <div className="space-y-4">
-                {section.fields.map((field) => (
-                  <SettingsFieldControl
-                    key={field.key}
-                    field={field}
-                    formData={formData}
-                    settings={settings}
-                    t={t}
-                    onChange={handleFieldChange}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <SettingsSectionList
+          sections={mainSections}
+          formData={formData}
+          settings={settings}
+          t={t}
+          onChange={handleFieldChange}
+        />
 
         {/* 高级设置（折叠区域） */}
         <div className="border-t border-gray-200 dark:border-border-primary pt-2">
@@ -425,31 +412,13 @@ export const Settings: React.FC = () => {
                 onManualCallbackSubmit={handleManualCallback}
               />
 
-              {/* 并发性能配置 + 推理模式 */}
-              {settingsSections.filter((section) =>
-                section.title === t('settings.sections.performanceConfig') ||
-                section.title === t('settings.sections.textReasoning') ||
-                section.title === t('settings.sections.imageReasoning')
-              ).map((section) => (
-                <div key={section.title}>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
-                    {section.icon}
-                    <span className="ml-2">{section.title}</span>
-                  </h2>
-                  <div className="space-y-4">
-                    {section.fields.map((field) => (
-                      <SettingsFieldControl
-                        key={field.key}
-                        field={field}
-                        formData={formData}
-                        settings={settings}
-                        t={t}
-                        onChange={handleFieldChange}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <SettingsSectionList
+                sections={advancedSections}
+                formData={formData}
+                settings={settings}
+                t={t}
+                onChange={handleFieldChange}
+              />
             </div>
           )}
         </div>

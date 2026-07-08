@@ -306,6 +306,13 @@ import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
+import {
+  ALL_PROVIDER_SOURCES,
+  API_KEY_PROVIDERS,
+  LAZYLLM_SOURCES,
+  isLazyllmVendor,
+  resolveLazyllmVendor,
+} from '@/config/settingsProviders';
 
 // 配置项类型定义
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
@@ -337,33 +344,6 @@ interface ServiceTestState {
   message?: string;
   detail?: string;
 }
-
-// LazyLLM 支持的厂商列表
-const LAZYLLM_SOURCES = [
-  { value: 'qwen', label: 'Qwen (通义千问)' },
-  { value: 'doubao', label: 'Doubao (豆包)' },
-  { value: 'deepseek', label: 'DeepSeek' },
-  { value: 'glm', label: 'GLM (智谱)' },
-  { value: 'siliconflow', label: 'SiliconFlow' },
-  { value: 'sensenova', label: 'SenseNova (商汤)' },
-  { value: 'minimax', label: 'MiniMax' },
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'kimi', label: 'Kimi' },
-];
-
-// 所有可用的提供商选项（Gemini/OpenAI/Codex + LazyLLM 厂商）
-const ALL_PROVIDER_SOURCES = [
-  { value: 'gemini', label: 'Gemini' },
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'codex', label: 'Codex (OpenAI OAuth)' },
-  ...LAZYLLM_SOURCES.filter(s => s.value !== 'openai'), // avoid duplicate 'openai'
-];
-
-// 需要 API Key + Base URL 的提供商（非 LazyLLM 厂商）
-const API_KEY_PROVIDERS = new Set(['gemini', 'openai']);
-
-// LazyLLM 厂商名集合
-const LAZYLLM_VENDOR_SET = new Set(LAZYLLM_SOURCES.map(s => s.value));
 
 // 初始表单数据
 const initialFormData = {
@@ -399,19 +379,6 @@ const initialFormData = {
   image_caption_api_key: '',
   image_caption_api_base_url: '',
   openai_image_api_protocol: 'auto',
-};
-
-const isLazyllmVendor = (vendor: string) =>
-  LAZYLLM_VENDOR_SET.has(vendor) && vendor !== 'openai';
-
-// When backend returns "lazyllm", infer specific vendor from configured keys
-const resolveLazyllmVendor = (format: string, keysInfo?: Record<string, number>): string => {
-  if (format !== 'lazyllm') return format;
-  if (keysInfo) {
-    const vendor = LAZYLLM_SOURCES.find(s => isLazyllmVendor(s.value) && keysInfo[s.value]);
-    if (vendor) return vendor.value;
-  }
-  return LAZYLLM_SOURCES.find(s => isLazyllmVendor(s.value))?.value || 'deepseek';
 };
 
 const GlobalVendorKeyInput: React.FC<{

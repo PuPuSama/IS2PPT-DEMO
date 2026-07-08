@@ -22,7 +22,7 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPage, updateProject, getSettings, updateSettings } from '@/api/endpoints';
 import { exportProjectToMarkdown, parseMarkdownPages } from '@/utils/projectUtils';
 import { detailGenerationPreferences } from '@/shared/storage/detailGenerationPreferences';
-import { extraFieldCatalog, getDefaultDescriptionFields } from '@/shared/storage/extraFieldCatalog';
+import { DEFAULT_DESCRIPTION_FIELDS, extraFieldCatalog, getDefaultDescriptionFields, getDefaultImagePromptFields } from '@/shared/storage/extraFieldCatalog';
 import { projectSession } from '@/shared/storage/projectSession';
 import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 
@@ -34,7 +34,7 @@ import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 // };
 // const DetailLevelIcon: React.FC<{ level: string }> = ({ level }) => ( ... );
 
-const PRESET_EXTRA_FIELDS = new Set(['视觉元素', '视觉焦点', '排版布局', '演讲者备注']);
+const PRESET_EXTRA_FIELDS = new Set<string>(DEFAULT_DESCRIPTION_FIELDS);
 
 // 可拖拽排序的额外字段胶囊
 const SortableFieldPill: React.FC<{
@@ -124,7 +124,7 @@ export const DetailEditor: React.FC = () => {
   const [svgEffort, setSvgEffort] = useState<SvgReasoningEffort>('high');
   const [enableWebResearch, setEnableWebResearch] = useState(false);
   const [extraFieldNames, setExtraFieldNames] = useState<string[]>(() => getDefaultDescriptionFields());
-  const [imagePromptFields, setImagePromptFields] = useState<string[]>(['视觉元素', '视觉焦点', '排版布局']);
+  const [imagePromptFields, setImagePromptFields] = useState<string[]>(() => getDefaultImagePromptFields());
   const [availableFields, setAvailableFields] = useState<string[]>(() => extraFieldCatalog.read());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);

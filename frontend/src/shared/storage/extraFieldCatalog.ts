@@ -1,8 +1,10 @@
 import { STORAGE_KEYS } from './storageKeys';
 
 export const DEFAULT_DESCRIPTION_FIELDS = ['视觉元素', '视觉焦点', '排版布局', '演讲者备注'] as const;
+export const DEFAULT_IMAGE_PROMPT_FIELDS = ['视觉元素', '视觉焦点', '排版布局'] as const;
 
 export const getDefaultDescriptionFields = () => [...DEFAULT_DESCRIPTION_FIELDS];
+export const getDefaultImagePromptFields = () => [...DEFAULT_IMAGE_PROMPT_FIELDS];
 
 const normalizeFields = (value: unknown) => {
   if (!Array.isArray(value)) return [];

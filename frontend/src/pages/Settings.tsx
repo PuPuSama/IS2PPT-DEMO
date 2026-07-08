@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Save, RotateCcw, ArrowUp } from 'lucide-react';
+import { Home, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
@@ -16,6 +16,7 @@ import {
   initialSettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAdvancedPanel } from '@/components/settings/SettingsAdvancedPanel';
+import { SettingsActionBar } from '@/components/settings/SettingsActionBar';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalApiSection';
 import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
@@ -407,25 +408,12 @@ export const Settings: React.FC = () => {
           onRun={(item) => handleServiceTest(item.key, item.action, item.formatDetail)}
         />
 
-        {/* 操作按钮 */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-border-primary">
-          <Button
-            variant="secondary"
-            icon={<RotateCcw size={18} />}
-            onClick={handleReset}
-            disabled={isSaving}
-          >
-            {t('settings.actions.resetToDefault')}
-          </Button>
-          <Button
-            variant="primary"
-            icon={<Save size={18} />}
-            onClick={handleSave}
-            loading={isSaving}
-          >
-            {isSaving ? t('settings.actions.saving') : t('settings.actions.save')}
-          </Button>
-        </div>
+        <SettingsActionBar
+          isSaving={isSaving}
+          t={t}
+          onReset={handleReset}
+          onSave={handleSave}
+        />
 
         <SettingsAbout t={t} />
       </div>

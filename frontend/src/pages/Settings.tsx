@@ -301,7 +301,7 @@ const settingsI18n = {
 };
 import { Button, Input, Card, Loading, Modal, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
-import type { OutputLanguage, UpdateCheckInfo } from '@/api/endpoints';
+import type { UpdateCheckInfo } from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -311,14 +311,18 @@ import {
   API_KEY_PROVIDERS,
   LAZYLLM_SOURCES,
   isLazyllmVendor,
-  resolveLazyllmVendor,
 } from '@/config/settingsProviders';
+import {
+  formDataFromSettings,
+  initialSettingsFormData,
+  type SettingsFormData,
+} from '@/config/settingsFormData';
 
 // 配置项类型定义
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
 
 interface FieldConfig {
-  key: keyof typeof initialFormData;
+  key: keyof SettingsFormData;
   label: string;
   type: FieldType;
   placeholder?: string;
@@ -345,45 +349,9 @@ interface ServiceTestState {
   detail?: string;
 }
 
-// 初始表单数据
-const initialFormData = {
-  ai_provider_format: 'gemini' as string,
-  api_base_url: '',
-  api_key: '',
-  text_model: '',
-  image_model: '',
-  image_caption_model: '',
-  mineru_api_base: '',
-  mineru_token: '',
-  generation_mode: 'image' as 'image' | 'svg',
-  image_resolution: '2K',
-  max_description_workers: 5,
-  max_image_workers: 8,
-  output_language: 'zh' as OutputLanguage,
-  // 推理模式配置（分别控制文本和图像）
-  enable_text_reasoning: false,
-  text_thinking_budget: 1024,
-  enable_image_reasoning: false,
-  image_thinking_budget: 1024,
-  baidu_api_key: '',
-  // LazyLLM 配置
-  text_model_source: '',
-  image_model_source: '',
-  image_caption_model_source: '',
-  lazyllm_api_keys: {} as Record<string, string>,
-  // Per-model API credentials (for gemini/openai per-model overrides)
-  text_api_key: '',
-  text_api_base_url: '',
-  image_api_key: '',
-  image_api_base_url: '',
-  image_caption_api_key: '',
-  image_caption_api_base_url: '',
-  openai_image_api_protocol: 'auto',
-};
-
 const GlobalVendorKeyInput: React.FC<{
-  vendor: string; formData: typeof initialFormData;
-  setFormData: React.Dispatch<React.SetStateAction<typeof initialFormData>>;
+  vendor: string; formData: SettingsFormData;
+  setFormData: React.Dispatch<React.SetStateAction<SettingsFormData>>;
   settings: SettingsType | null; t: ReturnType<typeof useT>;
 }> = ({ vendor, formData, setFormData, settings, t }) => {
   const vendorLabel = LAZYLLM_SOURCES.find(s => s.value === vendor)?.label || vendor.toUpperCase();
@@ -539,38 +507,6 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
   );
 };
 
-const formDataFromSettings = (data: SettingsType): typeof initialFormData => ({
-  ai_provider_format: resolveLazyllmVendor(data.ai_provider_format || 'gemini', data.lazyllm_api_keys_info),
-  api_base_url: data.api_base_url || '',
-  api_key: '',
-  generation_mode: data.generation_mode || 'image',
-  image_resolution: data.image_resolution || '2K',
-  max_description_workers: data.max_description_workers || 5,
-  max_image_workers: data.max_image_workers || 8,
-  text_model: data.text_model || '',
-  image_model: data.image_model || '',
-  mineru_api_base: data.mineru_api_base || '',
-  mineru_token: '',
-  image_caption_model: data.image_caption_model || '',
-  output_language: data.output_language || 'zh',
-  enable_text_reasoning: data.enable_text_reasoning || false,
-  text_thinking_budget: data.text_thinking_budget || 1024,
-  enable_image_reasoning: data.enable_image_reasoning || false,
-  image_thinking_budget: data.image_thinking_budget || 1024,
-  baidu_api_key: '',
-  text_model_source: data.text_model_source || '',
-  image_model_source: data.image_model_source || '',
-  image_caption_model_source: data.image_caption_model_source || '',
-  lazyllm_api_keys: {},
-  text_api_key: '',
-  text_api_base_url: data.text_api_base_url || '',
-  image_api_key: '',
-  image_api_base_url: data.image_api_base_url || '',
-  image_caption_api_key: '',
-  image_caption_api_base_url: data.image_caption_api_base_url || '',
-  openai_image_api_protocol: data.openai_image_api_protocol || 'auto',
-});
-
 // Settings 组件 - 纯嵌入模式（可复用）
 export const Settings: React.FC = () => {
   const t = useT(settingsI18n);
@@ -596,7 +532,7 @@ export const Settings: React.FC = () => {
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState(initialSettingsFormData);
   const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
   const [oauthConnecting, setOauthConnecting] = useState(false);
   const [manualCallbackUrl, setManualCallbackUrl] = useState('');
@@ -1203,10 +1139,10 @@ export const Settings: React.FC = () => {
   // 模型配置项定义：每种模型类型的 key、source key、api key/base key、标签等
   const modelConfigItems = [
     {
-      modelKey: 'text_model' as keyof typeof initialFormData,
-      sourceKey: 'text_model_source' as keyof typeof initialFormData,
-      apiKeyKey: 'text_api_key' as keyof typeof initialFormData,
-      apiBaseKey: 'text_api_base_url' as keyof typeof initialFormData,
+      modelKey: 'text_model' as keyof SettingsFormData,
+      sourceKey: 'text_model_source' as keyof SettingsFormData,
+      apiKeyKey: 'text_api_key' as keyof SettingsFormData,
+      apiBaseKey: 'text_api_base_url' as keyof SettingsFormData,
       apiKeyLengthKey: 'text_api_key_length' as keyof SettingsType,
       label: t('settings.fields.textModel'),
       placeholder: t('settings.fields.textModelPlaceholder'),
@@ -1214,10 +1150,10 @@ export const Settings: React.FC = () => {
       sourceLabel: t('settings.fields.textModelSource'),
     },
     {
-      modelKey: 'image_model' as keyof typeof initialFormData,
-      sourceKey: 'image_model_source' as keyof typeof initialFormData,
-      apiKeyKey: 'image_api_key' as keyof typeof initialFormData,
-      apiBaseKey: 'image_api_base_url' as keyof typeof initialFormData,
+      modelKey: 'image_model' as keyof SettingsFormData,
+      sourceKey: 'image_model_source' as keyof SettingsFormData,
+      apiKeyKey: 'image_api_key' as keyof SettingsFormData,
+      apiBaseKey: 'image_api_base_url' as keyof SettingsFormData,
       apiKeyLengthKey: 'image_api_key_length' as keyof SettingsType,
       label: t('settings.fields.imageModel'),
       placeholder: t('settings.fields.imageModelPlaceholder'),
@@ -1225,10 +1161,10 @@ export const Settings: React.FC = () => {
       sourceLabel: t('settings.fields.imageModelSource'),
     },
     {
-      modelKey: 'image_caption_model' as keyof typeof initialFormData,
-      sourceKey: 'image_caption_model_source' as keyof typeof initialFormData,
-      apiKeyKey: 'image_caption_api_key' as keyof typeof initialFormData,
-      apiBaseKey: 'image_caption_api_base_url' as keyof typeof initialFormData,
+      modelKey: 'image_caption_model' as keyof SettingsFormData,
+      sourceKey: 'image_caption_model_source' as keyof SettingsFormData,
+      apiKeyKey: 'image_caption_api_key' as keyof SettingsFormData,
+      apiBaseKey: 'image_caption_api_base_url' as keyof SettingsFormData,
       apiKeyLengthKey: 'image_caption_api_key_length' as keyof SettingsType,
       label: t('settings.fields.imageCaptionModel'),
       placeholder: t('settings.fields.imageCaptionModelPlaceholder'),

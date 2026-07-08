@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Input } from '@/components/shared';
+import { Input } from '@/components/shared/Input';
 import type { SettingsFormData } from '@/config/settingsFormData';
 import {
   ALL_PROVIDER_SOURCES,

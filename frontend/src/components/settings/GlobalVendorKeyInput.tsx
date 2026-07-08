@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Input } from '@/components/shared';
+import { Input } from '@/components/shared/Input';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';
 import { LAZYLLM_SOURCES } from '@/config/settingsProviders';

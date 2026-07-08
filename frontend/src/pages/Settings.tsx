@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { settingsI18n } from '@/config/settingsI18n';
-import { Button, Card } from '@/components/shared';
+import { Button } from '@/components/shared/Button';
+import { Card } from '@/components/shared/Card';
 import { SettingsWorkspace } from '@/components/settings/SettingsWorkspace';
 
 // SettingsPage 组件 - 完整页面包装

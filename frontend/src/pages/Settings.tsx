@@ -298,7 +298,7 @@ const settingsI18n = {
     }
   }
 };
-import { Button, Input, Card, Loading, Modal, useToast, useConfirm } from '@/components/shared';
+import { Button, Input, Card, Loading, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
 import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
@@ -316,37 +316,12 @@ import {
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
-
-// 配置项类型定义
-type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
-
-interface FieldConfig {
-  key: keyof SettingsFormData;
-  label: string;
-  type: FieldType;
-  placeholder?: string;
-  description?: string;
-  sensitiveField?: boolean;  // 是否为敏感字段（如 API Key）
-  lengthKey?: keyof SettingsType;  // 用于显示已有长度的 key（如 api_key_length）
-  options?: { value: string; label: string }[];  // select 类型的选项
-  min?: number;
-  max?: number;
-  link?: string;  // 申请链接 URL
-}
-
-interface SectionConfig {
-  title: string;
-  icon: React.ReactNode;
-  fields: FieldConfig[];
-}
-
-type TestStatus = 'idle' | 'loading' | 'success' | 'error';
-
-interface ServiceTestState {
-  status: TestStatus;
-  message?: string;
-  detail?: string;
-}
+import type {
+  ServiceTestStatus,
+  ServiceTestState,
+  SettingsFieldConfig,
+  SettingsSectionConfig,
+} from '@/types/settingsPage';
 
 // Settings 组件 - 纯嵌入模式（可复用）
 export const Settings: React.FC = () => {
@@ -468,7 +443,7 @@ export const Settings: React.FC = () => {
   };
 
   // 配置驱动的表单区块定义（使用翻译）
-  const settingsSections: SectionConfig[] = [
+  const settingsSections: SettingsSectionConfig[] = [
     // Global API config & Model config are rendered separately above
     {
       title: t('settings.sections.mineruConfig'),
@@ -840,7 +815,7 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const renderField = (field: FieldConfig) => {
+  const renderField = (field: SettingsFieldConfig) => {
     const value = formData[field.key] as string | number | boolean;
 
     if (field.type === 'buttons' && field.options) {
@@ -1471,7 +1446,7 @@ export const Settings: React.FC = () => {
                 formatDetail: (data: any) => (data?.content_preview ? t('settings.serviceTest.results.parsePreview', { preview: data.content_preview }) : data?.message || ''),
               },
             ].map((item) => {
-              const testState = serviceTestStates[item.key] || { status: 'idle' as TestStatus };
+              const testState = serviceTestStates[item.key] || { status: 'idle' as ServiceTestStatus };
               const isLoadingTest = testState.status === 'loading';
               return (
                 <div

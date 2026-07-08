@@ -3,10 +3,10 @@ export const APP_IDENTITY = {
   displayName: 'is2ppt',
   frontendPackageName: 'is2ppt-frontend',
   storagePrefix: 'is2ppt',
-  repository: 'PuPuSama/IS2PPT-DEMO',
-  repositoryUrl: 'https://github.com/PuPuSama/IS2PPT-DEMO',
-  repositoryIssuesUrl: 'https://github.com/PuPuSama/IS2PPT-DEMO/issues',
-  repositoryShowcasesUrl: 'https://github.com/PuPuSama/IS2PPT-DEMO/issues',
+  repository: 'is2ppt/is2ppt',
+  repositoryUrl: 'https://github.com/is2ppt/is2ppt',
+  repositoryIssuesUrl: 'https://github.com/is2ppt/is2ppt/issues',
+  repositoryShowcasesUrl: 'https://github.com/is2ppt/is2ppt/issues',
 } as const;
 
 export const getRepositoryApiUrl = () =>

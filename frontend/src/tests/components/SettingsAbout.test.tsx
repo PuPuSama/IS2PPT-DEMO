@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
-import { SettingsAbout } from '@/pages/Settings';
+import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
 vi.mock('@/utils/appVersion', () => ({
@@ -31,10 +31,11 @@ const labels: Record<string, string> = {
   'settings.about.close': '关闭',
 };
 
-const t = (key: string, vars?: Record<string, string>) => {
+const t = (key: string, defaultOrParams?: string | Record<string, string | number>) => {
   let value = labels[key] || key;
+  const vars = typeof defaultOrParams === 'object' ? defaultOrParams : undefined;
   Object.entries(vars || {}).forEach(([varKey, varValue]) => {
-    value = value.replace(`{{${varKey}}}`, varValue);
+    value = value.replace(`{{${varKey}}}`, String(varValue));
   });
   return value;
 };
@@ -55,12 +56,12 @@ describe('SettingsAbout', () => {
         status: 'update_available',
         update_available: true,
         message: 'A newer Docker image is available.',
-        repository: 'PuPuSama/IS2PPT-DEMO',
+        repository: APP_IDENTITY.repository,
         current: { short_sha: '1111111', is_docker: true },
         latest: {
           tag: 'latest',
           sha: '2222222333333333344444444444555555555555',
-          image: 'pupusama/is2ppt-demo:latest',
+          image: 'is2ppt/is2ppt-frontend:latest',
           last_updated: '2026-06-01T08:11:22Z',
         },
       },
@@ -88,12 +89,12 @@ describe('SettingsAbout', () => {
         status: 'up_to_date',
         update_available: false,
         message: 'Current image is up to date.',
-        repository: 'PuPuSama/IS2PPT-DEMO',
+        repository: APP_IDENTITY.repository,
         current: { short_sha: '2222222', is_docker: true },
         latest: {
           tag: 'latest',
           sha: '2222222',
-          image: 'pupusama/is2ppt-demo:latest',
+          image: 'is2ppt/is2ppt-frontend:latest',
           last_updated: '2026-06-01T08:11:22Z',
         },
       },

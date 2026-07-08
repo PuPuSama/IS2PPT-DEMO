@@ -1,8 +1,4 @@
-import { apiClient } from './client';
-import type { ApiResponse, Material } from '@/types';
-import { getStoredOutputLanguage, type OutputLanguage } from './settingsApi';
-
-export type { Material };
+export type { Material } from '@/types';
 export { checkAccessCode, verifyAccessCode } from './accessCodeApi';
 export {
   createProject,
@@ -45,7 +41,10 @@ export {
   getMaterialCaption,
   getMaterialByUrl,
 } from './materialsApi';
-export { createPptRenovationProject } from './renovationApi';
+export {
+  createPptRenovationProject,
+  regenerateRenovationPage,
+} from './renovationApi';
 export {
   getPageImageVersions,
   setCurrentImageVersion,
@@ -111,20 +110,3 @@ export type {
   TestSettingsOverride,
   UpdateCheckInfo,
 } from './settingsApi';
-
-/**
- * 重新生成 PPT 翻新项目的单页（重新解析原 PDF 并提取内容）
- */
-export const regenerateRenovationPage = async (
-  projectId: string,
-  pageId: string,
-  keepLayout: boolean = false,
-  language?: OutputLanguage
-): Promise<ApiResponse> => {
-  const lang = language || await getStoredOutputLanguage();
-  const response = await apiClient.post<ApiResponse>(
-    `/api/projects/${projectId}/pages/${pageId}/regenerate-renovation`,
-    { keep_layout: keepLayout, language: lang }
-  );
-  return response.data;
-};

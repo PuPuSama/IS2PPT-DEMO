@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Save, RotateCcw, FileText, ArrowUp, ChevronDown } from 'lucide-react';
+import { Home, Save, RotateCcw, ArrowUp, ChevronDown } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
@@ -18,7 +18,7 @@ import {
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { SettingsFieldControl } from '@/components/settings/SettingsFieldControl';
 import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalApiSection';
-import { SettingsModelConfigGroup } from '@/components/settings/SettingsModelConfigGroup';
+import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
 import { SettingsOAuthPanel } from '@/components/settings/SettingsOAuthPanel';
 import { SettingsServiceTestPanel } from '@/components/settings/SettingsServiceTestPanel';
 import type {
@@ -357,26 +357,14 @@ export const Settings: React.FC = () => {
           onLinkCopied={() => show({ message: '链接已复制到剪贴板', type: 'success' })}
         />
 
-        {/* 模型配置区块 */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
-            <FileText size={20} />
-            <span className="ml-2">{t('settings.sections.modelConfig')}</span>
-          </h2>
-          <div className="space-y-4">
-            {modelConfigItems.map((item) => (
-              <SettingsModelConfigGroup
-                key={item.modelKey}
-                item={item}
-                formData={formData}
-                settings={settings}
-                t={t}
-                onFieldChange={handleFieldChange}
-                onVendorKeyChange={handleVendorApiKeyChange}
-              />
-            ))}
-          </div>
-        </div>
+        <SettingsModelConfigSection
+          items={modelConfigItems}
+          formData={formData}
+          settings={settings}
+          t={t}
+          onFieldChange={handleFieldChange}
+          onVendorKeyChange={handleVendorApiKeyChange}
+        />
 
         {/* 其余配置区块（配置驱动，排除性能配置和推理模式） */}
         <div className="space-y-8">

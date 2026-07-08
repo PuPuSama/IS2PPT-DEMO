@@ -97,7 +97,7 @@ export const SettingsWorkspace: React.FC = () => {
           t={t}
           onFieldChange={handleFieldChange}
           onVendorKeyChange={handleVendorApiKeyChange}
-          onLinkCopied={() => show({ message: '链接已复制到剪贴板', type: 'success' })}
+          onLinkCopied={() => show({ message: t('settings.messages.linkCopied'), type: 'success' })}
         />
 
         <SettingsModelConfigSection

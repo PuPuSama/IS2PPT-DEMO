@@ -124,7 +124,7 @@ export const SettingsGlobalApiSection: FC<SettingsGlobalApiSectionProps> = ({
       <div className="mt-3 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
         <p className="text-sm text-gray-700 dark:text-foreground-secondary">
           {t('settings.apiKeyTip.before')}
-          <a href={AIHUBMIX_URL} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">AIHubmix 申请 API key</a>
+          <a href={AIHUBMIX_URL} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">{t('settings.apiKeyTip.linkText')}</a>
         </p>
       </div>
 
@@ -143,13 +143,13 @@ export const SettingsGlobalApiSection: FC<SettingsGlobalApiSectionProps> = ({
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline font-medium"
               >
-                点击此处访问 AIHubmix →
+                {t('settings.apiKeyHelp.visitLink')}
               </a>
               <button
                 onClick={copyAffiliateLink}
                 className="text-xs px-2 py-0.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition-colors"
               >
-                复制链接
+                {t('settings.apiKeyHelp.copyLink')}
               </button>
             </span>
             {t('settings.apiKeyHelp.step1', { link: '{{link}}' }).split('{{link}}')[1]}

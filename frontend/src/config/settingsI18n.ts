@@ -114,8 +114,10 @@ export const settingsI18n = {
         step2: "点击顶栏「充值」，根据需要充值一定的额度",
         step3: "点击顶栏「密钥」",
         step4: "点击「创建 key」生成新的 API Key",
+        visitLink: "点击此处访问 AIHubmix →",
+        copyLink: "复制链接",
       },
-      apiKeyTip: { before: "若需快速配置或稳定高并发生图，可选择 ", after: "" },
+      apiKeyTip: { before: "若需快速配置或稳定高并发生图，可选择 ", linkText: "AIHubmix 申请 API key", after: "" },
       serviceTest: {
         title: "服务测试", description: "提前验证关键服务配置是否可用，避免使用期间异常。",
         tip: "提示：图像生成测试可能需要数分钟（取决于模型），请耐心等待。",
@@ -141,7 +143,7 @@ export const settingsI18n = {
         resetTitle: "确认重置为默认配置", resetSuccess: "设置已重置", resetFailed: "重置设置失败",
         testServiceTip: "建议在本页底部进行服务测试，验证关键配置",
         resetConfirmBtn: "确定重置", resetCancelBtn: "取消", unknownError: "未知错误",
-        testSuccess: "测试成功"
+        testSuccess: "测试成功", linkCopied: "链接已复制到剪贴板"
       }
     }
   },
@@ -260,8 +262,10 @@ export const settingsI18n = {
         step2: "Click \"Recharge\" in the top navigation bar and add credits as needed",
         step3: "Click \"Keys\" in the top navigation bar",
         step4: "Click \"Create Key\" to generate a new API Key",
+        visitLink: "Visit AIHubmix →",
+        copyLink: "Copy link",
       },
-      apiKeyTip: { before: "For quick setup or stable high-concurrency image generation, get an API key from ", after: "" },
+      apiKeyTip: { before: "For quick setup or stable high-concurrency image generation, get an API key from ", linkText: "AIHubmix", after: "" },
       serviceTest: {
         title: "Service Test", description: "Verify key service configurations before use to avoid issues.",
         tip: "Tip: Image generation tests may take several minutes depending on the model, please be patient.",
@@ -287,7 +291,7 @@ export const settingsI18n = {
         resetTitle: "Confirm Reset to Default", resetSuccess: "Settings reset successfully", resetFailed: "Failed to reset settings",
         testServiceTip: "It's recommended to test services at the bottom of this page to verify configurations",
         resetConfirmBtn: "Confirm Reset", resetCancelBtn: "Cancel", unknownError: "Unknown error",
-        testSuccess: "Test passed"
+        testSuccess: "Test passed", linkCopied: "Link copied to clipboard"
       }
     }
   }

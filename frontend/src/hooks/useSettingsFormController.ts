@@ -104,7 +104,7 @@ export const useSettingsFormController = ({
         projectSession.saveSettingsSnapshot(response.data);
       }
     } catch (error: any) {
-      console.error('加载设置失败:', error);
+      console.error('Failed to load settings:', error);
       notify(
         t('settings.messages.loadFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
         'error'
@@ -130,7 +130,7 @@ export const useSettingsFormController = ({
         setFormData((prev) => clearSensitiveFields(prev));
       }
     } catch (error: any) {
-      console.error('保存设置失败:', error);
+      console.error('Failed to save settings:', error);
       notify(
         t('settings.messages.saveFailed') + ': ' + (error?.response?.data?.error?.message || error?.message || t('settings.messages.unknownError')),
         'error'
@@ -153,7 +153,7 @@ export const useSettingsFormController = ({
             notify(t('settings.messages.resetSuccess'), 'success');
           }
         } catch (error: any) {
-          console.error('重置设置失败:', error);
+          console.error('Failed to reset settings:', error);
           notify(
             t('settings.messages.resetFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
             'error'

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Key, Save, RotateCcw, FileText, ArrowUp, HelpCircle, ChevronDown } from 'lucide-react';
+import { Home, Save, RotateCcw, FileText, ArrowUp, ChevronDown } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { settingsI18n } from '@/config/settingsI18n';
-import { Button, Input, Card, Loading, useToast, useConfirm } from '@/components/shared';
+import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
 import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -12,20 +12,15 @@ import { createSettingsSections } from '@/config/settingsSections';
 import { createSettingsServiceTests } from '@/config/settingsServiceTests';
 import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
 import {
-  ALL_PROVIDER_SOURCES,
-  API_KEY_PROVIDERS,
-  isLazyllmVendor,
-} from '@/config/settingsProviders';
-import {
   formDataFromSettings,
   initialSettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { SettingsFieldControl } from '@/components/settings/SettingsFieldControl';
+import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalApiSection';
 import { SettingsModelConfigGroup } from '@/components/settings/SettingsModelConfigGroup';
 import { SettingsOAuthPanel } from '@/components/settings/SettingsOAuthPanel';
 import { SettingsServiceTestPanel } from '@/components/settings/SettingsServiceTestPanel';
-import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
 import type {
   ServiceTestState,
 } from '@/types/settingsPage';
@@ -35,22 +30,6 @@ export const Settings: React.FC = () => {
   const t = useT(settingsI18n);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
-
-  const copyToClipboard = (text: string) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-    } else {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-    show({ message: '链接已复制到剪贴板', type: 'success' });
-  };
 
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -369,112 +348,14 @@ export const Settings: React.FC = () => {
       <ToastContainer />
       {ConfirmDialog}
       <div className="space-y-8">
-        {/* 默认 API 配置区块 */}
-        <div data-testid="global-api-config-section">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
-            <Key size={20} />
-            <span className="ml-2">{t('settings.sections.apiConfig')}</span>
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-foreground-tertiary mb-4">{t('settings.sections.apiConfigDesc')}</p>
-          <div className="space-y-3">
-            {/* 提供商下拉 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
-                {t('settings.fields.aiProviderFormat')}
-              </label>
-              <select
-                value={formData.ai_provider_format}
-                onChange={(e) => handleFieldChange('ai_provider_format', e.target.value)}
-                className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-              >
-                {ALL_PROVIDER_SOURCES.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
-                  >
-                    {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.aiProviderFormatDesc')}</p>
-            </div>
-
-            {/* Gemini/OpenAI: API Base URL + API Key */}
-            {API_KEY_PROVIDERS.has(formData.ai_provider_format) && (
-              <div className="space-y-3 pl-3 border-l-2 border-brand-300 dark:border-brand-600">
-                <Input
-                  label={t('settings.fields.apiBaseUrl')}
-                  type="text"
-                  placeholder={t('settings.fields.apiBaseUrlPlaceholder')}
-                  value={formData.api_base_url}
-                  onChange={(e) => handleFieldChange('api_base_url', e.target.value)}
-                />
-                <p className="-mt-2 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.apiBaseUrlDesc')}</p>
-                <div>
-                  <Input
-                    label={t('settings.fields.apiKey')}
-                    type="password"
-                    placeholder={
-                      settings && (settings.api_key_length as number) > 0
-                        ? t('settings.fields.apiKeySet', { length: settings.api_key_length })
-                        : t('settings.fields.apiKeyPlaceholder')
-                    }
-                    value={formData.api_key}
-                    onChange={(e) => handleFieldChange('api_key', e.target.value)}
-                  />
-                  <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.apiKeyDesc')}</p>
-                </div>
-              </div>
-            )}
-
-            {/* LazyLLM 厂商: 厂商 API Key */}
-            {isLazyllmVendor(formData.ai_provider_format) && (
-              <GlobalVendorKeyInput vendor={formData.ai_provider_format} formData={formData} setFormData={setFormData} settings={settings} t={t} />
-            )}
-          </div>
-
-          {/* AIHubmix 提示 */}
-          <div className="mt-3 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
-            <p className="text-sm text-gray-700 dark:text-foreground-secondary">
-              {t('settings.apiKeyTip.before')}
-              <a href={['https://', 'aihubmix', '.com/?', 'aff=17EC'].join('')} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">AIHubmix 申请 API key</a>
-            </p>
-          </div>
-
-          {/* API Key 获取指南 */}
-          <div className="mt-2 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
-            <p className="text-sm font-medium text-gray-800 dark:text-foreground-primary flex items-center gap-1.5 mb-2">
-              <HelpCircle size={15} className="text-blue-500" />
-              {t('settings.apiKeyHelp.title')}
-            </p>
-            <ol className="text-sm text-gray-700 dark:text-foreground-secondary space-y-1 list-decimal list-inside ml-1">
-              <li>
-                {t('settings.apiKeyHelp.step1', { link: '{{link}}' }).split('{{link}}')[0]}
-                <span className="inline-flex items-center gap-2">
-                  <a
-                    href={['https://', 'aihubmix', '.com/?', 'aff=17EC'].join('')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    点击此处访问 AIHubmix →
-                  </a>
-                  <button
-                    onClick={() => copyToClipboard('https://aihubmix.com/?aff=17EC')}
-                    className="text-xs px-2 py-0.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition-colors"
-                  >
-                    复制链接
-                  </button>
-                </span>
-                {t('settings.apiKeyHelp.step1', { link: '{{link}}' }).split('{{link}}')[1]}
-              </li>
-              <li>{t('settings.apiKeyHelp.step2')}</li>
-              <li>{t('settings.apiKeyHelp.step3')}</li>
-              <li>{t('settings.apiKeyHelp.step4')}</li>
-            </ol>
-          </div>
-        </div>
+        <SettingsGlobalApiSection
+          formData={formData}
+          settings={settings}
+          t={t}
+          onFieldChange={handleFieldChange}
+          onVendorKeyChange={handleVendorApiKeyChange}
+          onLinkCopied={() => show({ message: '链接已复制到剪贴板', type: 'success' })}
+        />
 
         {/* 模型配置区块 */}
         <div>

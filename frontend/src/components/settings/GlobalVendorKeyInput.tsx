@@ -1,26 +1,25 @@
-import React from 'react';
+import type { FC } from 'react';
 import { Input } from '@/components/shared';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';
 import { LAZYLLM_SOURCES } from '@/config/settingsProviders';
-import type { SettingsFormData } from '@/config/settingsFormData';
 
 type SettingsTranslator = ReturnType<typeof useT>;
 
 interface GlobalVendorKeyInputProps {
   vendor: string;
-  formData: SettingsFormData;
-  setFormData: React.Dispatch<React.SetStateAction<SettingsFormData>>;
+  value: string;
   settings: SettingsType | null;
   t: SettingsTranslator;
+  onChange: (value: string) => void;
 }
 
-export const GlobalVendorKeyInput: React.FC<GlobalVendorKeyInputProps> = ({
+export const GlobalVendorKeyInput: FC<GlobalVendorKeyInputProps> = ({
   vendor,
-  formData,
-  setFormData,
+  value,
   settings,
   t,
+  onChange,
 }) => {
   const vendorLabel = LAZYLLM_SOURCES.find(s => s.value === vendor)?.label || vendor.toUpperCase();
   const keyLength = settings?.lazyllm_api_keys_info?.[vendor] || 0;
@@ -34,13 +33,8 @@ export const GlobalVendorKeyInput: React.FC<GlobalVendorKeyInputProps> = ({
         label={t('settings.fields.vendorApiKey', { vendor: vendorLabel })}
         type="password"
         placeholder={placeholder}
-        value={formData.lazyllm_api_keys[vendor] || ''}
-        onChange={(e) => {
-          setFormData(prev => ({
-            ...prev,
-            lazyllm_api_keys: { ...prev.lazyllm_api_keys, [vendor]: e.target.value }
-          }));
-        }}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
       />
       <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.vendorApiKeyDesc')}</p>
     </div>

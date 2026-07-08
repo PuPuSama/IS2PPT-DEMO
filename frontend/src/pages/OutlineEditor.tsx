@@ -26,7 +26,7 @@ import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal,
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { OutlineCard } from '@/components/outline/OutlineCard';
 import { useProjectStore } from '@/store/useProjectStore';
-import { refineOutline } from '@/api/endpoints';
+import { refineOutline } from '@/api/outlineApi';
 import { addPage } from '@/api/pagesApi';
 import { updateProject } from '@/api/projectsApi';
 import { useImagePaste } from '@/hooks/useImagePaste';

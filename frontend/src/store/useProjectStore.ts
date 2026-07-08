@@ -43,74 +43,9 @@ import {
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
+import { projectStoreI18n } from './projectStoreI18n';
 
-const storeI18n = {
-  zh: {
-    store: {
-      createFailed: '创建项目失败',
-      createNoId: '项目创建失败：未返回项目ID',
-      syncFailed: '同步项目失败',
-      projectNotFound: '项目不存在，可能已被删除',
-      requestFailed: '请求失败',
-      requestFailedStatus: '请求失败: {{status}}',
-      networkError: '网络错误，请检查后端服务是否启动',
-      updateOrderFailed: '更新顺序失败',
-      newPage: '新页面',
-      addPageFailed: '添加页面失败',
-      deletePageFailed: '删除页面失败',
-      taskStartFailed: '任务启动失败',
-      taskFailed: '任务失败',
-      unknownTaskStatus: '未知任务状态: {{status}}',
-      taskQueryFailed: '任务查询失败',
-      generateOutlineFailed: '生成大纲失败',
-      generateFromDescFailed: '从描述生成失败',
-      projectIdMissing: '项目ID不存在',
-      noTaskId: '未收到任务ID',
-      generateDescFailed: '生成描述失败',
-      generateDescTimeout: '生成描述失败：轮询超时',
-      startGenerationFailed: '启动生成任务失败',
-      regenerateFailed: '重新生成失败',
-      batchGenerateFailed: '批量生成失败',
-      editImageFailed: '编辑图片失败',
-      exportLinkFailed: '导出链接获取失败',
-      exportFailed: '导出失败',
-      exportEditableFailed: '导出可编辑PPTX失败',
-    }
-  },
-  en: {
-    store: {
-      createFailed: 'Failed to create project',
-      createNoId: 'Project creation failed: no project ID returned',
-      syncFailed: 'Failed to sync project',
-      projectNotFound: 'Project not found, it may have been deleted',
-      requestFailed: 'Request failed',
-      requestFailedStatus: 'Request failed: {{status}}',
-      networkError: 'Network error, please check if the backend service is running',
-      updateOrderFailed: 'Failed to update page order',
-      newPage: 'New Page',
-      addPageFailed: 'Failed to add page',
-      deletePageFailed: 'Failed to delete page',
-      taskStartFailed: 'Failed to start task',
-      taskFailed: 'Task failed',
-      unknownTaskStatus: 'Unknown task status: {{status}}',
-      taskQueryFailed: 'Failed to query task',
-      generateOutlineFailed: 'Failed to generate outline',
-      generateFromDescFailed: 'Failed to generate from description',
-      projectIdMissing: 'Project ID not found',
-      noTaskId: 'No task ID received',
-      generateDescFailed: 'Failed to generate description',
-      generateDescTimeout: 'Failed to generate description: polling timeout',
-      startGenerationFailed: 'Failed to start generation task',
-      regenerateFailed: 'Failed to regenerate',
-      batchGenerateFailed: 'Batch generation failed',
-      editImageFailed: 'Failed to edit image',
-      exportLinkFailed: 'Failed to get export link',
-      exportFailed: 'Export failed',
-      exportEditableFailed: 'Failed to export editable PPTX',
-    }
-  }
-};
-const t = getT(storeI18n);
+const t = getT(projectStoreI18n);
 
 interface ProjectState {
   // 状态

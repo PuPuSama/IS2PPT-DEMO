@@ -17,7 +17,7 @@ const mockUploadTemplate = vi.fn()
 const mockGenerateFromDescription = vi.fn()
 const mockGenerateOutline = vi.fn()
 
-vi.mock('@/api/endpoints', () => ({
+vi.mock('@/api/projectsApi', () => ({
   createProject: (...args: any[]) => {
     callOrder.push('createProject')
     return mockCreateProject(...args)
@@ -26,32 +26,64 @@ vi.mock('@/api/endpoints', () => ({
     callOrder.push('getProject')
     return mockGetProject(...args)
   },
-  associateFileToProject: (...args: any[]) => {
-    callOrder.push('associateFileToProject')
-    return mockAssociateFileToProject(...args)
-  },
   uploadTemplate: (...args: any[]) => {
     callOrder.push('uploadTemplate')
     return mockUploadTemplate(...args)
   },
+  updatePagesOrder: vi.fn(),
+}))
+
+vi.mock('@/api/referenceFilesApi', () => ({
+  associateFileToProject: (...args: any[]) => {
+    callOrder.push('associateFileToProject')
+    return mockAssociateFileToProject(...args)
+  },
+}))
+
+vi.mock('@/api/descriptionApi', () => ({
   generateFromDescription: (...args: any[]) => {
     callOrder.push('generateFromDescription')
     return mockGenerateFromDescription(...args)
   },
+  generateDescriptions: vi.fn(),
+  generateDescriptionsStream: vi.fn(),
+  generatePageDescription: vi.fn(),
+}))
+
+vi.mock('@/api/outlineApi', () => ({
   generateOutline: (...args: any[]) => {
     callOrder.push('generateOutline')
     return mockGenerateOutline(...args)
   },
-  // Other mocks needed by the store
+  generateOutlineStream: vi.fn(),
+}))
+
+vi.mock('@/api/pagesApi', () => ({
   updatePage: vi.fn(),
   updatePageDescription: vi.fn(),
   updatePageOutline: vi.fn(),
-  generateDescriptions: vi.fn(),
-  generateImages: vi.fn(),
+  addPage: vi.fn(),
+  deletePage: vi.fn(),
+}))
+
+vi.mock('@/api/tasksApi', () => ({
   getTaskStatus: vi.fn(),
+}))
+
+vi.mock('@/api/imageGenerationApi', () => ({
+  generateImages: vi.fn(),
+  generatePageImage: vi.fn(),
+  editPageImage: vi.fn(),
+}))
+
+vi.mock('@/api/renovationApi', () => ({
+  regenerateRenovationPage: vi.fn(),
+}))
+
+vi.mock('@/api/exportsApi', () => ({
   exportPPTX: vi.fn(),
   exportPDF: vi.fn(),
-  getStoredOutputLanguage: vi.fn().mockResolvedValue('zh'),
+  exportEditablePPTX: vi.fn(),
 }))
 
 vi.mock('@/api/auth', () => ({

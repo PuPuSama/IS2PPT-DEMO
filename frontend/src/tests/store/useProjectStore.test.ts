@@ -8,19 +8,56 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useProjectStore } from '@/store/useProjectStore'
 
-// Mock API模块
-vi.mock('@/api/endpoints', () => ({
+// Mock API modules
+vi.mock('@/api/projectsApi', () => ({
   createProject: vi.fn(),
   getProject: vi.fn(),
+  updatePagesOrder: vi.fn(),
+  uploadTemplate: vi.fn(),
+}))
+
+vi.mock('@/api/referenceFilesApi', () => ({
+  associateFileToProject: vi.fn(),
+}))
+
+vi.mock('@/api/pagesApi', () => ({
   updatePage: vi.fn(),
   updatePageDescription: vi.fn(),
   updatePageOutline: vi.fn(),
+  addPage: vi.fn(),
+  deletePage: vi.fn(),
+}))
+
+vi.mock('@/api/outlineApi', () => ({
   generateOutline: vi.fn(),
+  generateOutlineStream: vi.fn(),
+}))
+
+vi.mock('@/api/descriptionApi', () => ({
+  generateFromDescription: vi.fn(),
   generateDescriptions: vi.fn(),
+  generateDescriptionsStream: vi.fn(),
+  generatePageDescription: vi.fn(),
+}))
+
+vi.mock('@/api/imageGenerationApi', () => ({
   generateImages: vi.fn(),
+  generatePageImage: vi.fn(),
+  editPageImage: vi.fn(),
+}))
+
+vi.mock('@/api/tasksApi', () => ({
   getTaskStatus: vi.fn(),
+}))
+
+vi.mock('@/api/renovationApi', () => ({
+  regenerateRenovationPage: vi.fn(),
+}))
+
+vi.mock('@/api/exportsApi', () => ({
   exportPPTX: vi.fn(),
   exportPDF: vi.fn(),
+  exportEditablePPTX: vi.fn(),
 }))
 
 describe('useProjectStore', () => {

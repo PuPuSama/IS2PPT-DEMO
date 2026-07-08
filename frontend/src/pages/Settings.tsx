@@ -9,6 +9,7 @@ import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
 import { createSettingsModelItems } from '@/config/settingsModelItems';
 import { createSettingsSections } from '@/config/settingsSections';
+import { createSettingsServiceTests } from '@/config/settingsServiceTests';
 import {
   ALL_PROVIDER_SOURCES,
   API_KEY_PROVIDERS,
@@ -148,6 +149,7 @@ export const Settings: React.FC = () => {
   };
 
   const settingsSections = createSettingsSections(t);
+  const serviceTestItems = createSettingsServiceTests(t);
 
   useEffect(() => {
     loadSettings();
@@ -932,56 +934,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
           <div className="space-y-4">
-            {[
-              {
-                key: 'baidu-ocr',
-                titleKey: 'settings.serviceTest.tests.baiduOcr.title',
-                descriptionKey: 'settings.serviceTest.tests.baiduOcr.description',
-                resultKey: 'settings.serviceTest.results.recognizedText',
-                action: api.testBaiduOcr,
-                formatDetail: (data: any) => (data?.recognized_text ? t('settings.serviceTest.results.recognizedText', { text: data.recognized_text }) : ''),
-              },
-              {
-                key: 'text-model',
-                titleKey: 'settings.serviceTest.tests.textModel.title',
-                descriptionKey: 'settings.serviceTest.tests.textModel.description',
-                resultKey: 'settings.serviceTest.results.modelReply',
-                action: api.testTextModel,
-                formatDetail: (data: any) => (data?.reply ? t('settings.serviceTest.results.modelReply', { reply: data.reply }) : ''),
-              },
-              {
-                key: 'caption-model',
-                titleKey: 'settings.serviceTest.tests.captionModel.title',
-                descriptionKey: 'settings.serviceTest.tests.captionModel.description',
-                resultKey: 'settings.serviceTest.results.captionDesc',
-                action: api.testCaptionModel,
-                formatDetail: (data: any) => (data?.caption ? t('settings.serviceTest.results.captionDesc', { caption: data.caption }) : ''),
-              },
-              {
-                key: 'baidu-inpaint',
-                titleKey: 'settings.serviceTest.tests.baiduInpaint.title',
-                descriptionKey: 'settings.serviceTest.tests.baiduInpaint.description',
-                resultKey: 'settings.serviceTest.results.imageSize',
-                action: api.testBaiduInpaint,
-                formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
-              },
-              {
-                key: 'image-model',
-                titleKey: 'settings.serviceTest.tests.imageModel.title',
-                descriptionKey: 'settings.serviceTest.tests.imageModel.description',
-                resultKey: 'settings.serviceTest.results.imageSize',
-                action: api.testImageModel,
-                formatDetail: (data: any) => (data?.image_size ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] }) : ''),
-              },
-              {
-                key: 'mineru-pdf',
-                titleKey: 'settings.serviceTest.tests.mineruPdf.title',
-                descriptionKey: 'settings.serviceTest.tests.mineruPdf.description',
-                resultKey: 'settings.serviceTest.results.parsePreview',
-                action: api.testMineruPdf,
-                formatDetail: (data: any) => (data?.content_preview ? t('settings.serviceTest.results.parsePreview', { preview: data.content_preview }) : data?.message || ''),
-              },
-            ].map((item) => {
+            {serviceTestItems.map((item) => {
               const testState = serviceTestStates[item.key] || { status: 'idle' as ServiceTestStatus };
               const isLoadingTest = testState.status === 'loading';
               return (

@@ -36,6 +36,14 @@ export interface SettingsModelConfigItem {
   sourceLabel: string;
 }
 
+export interface SettingsServiceTestItem {
+  key: string;
+  titleKey: string;
+  descriptionKey: string;
+  action: (settings?: any) => Promise<any>;
+  formatDetail: (data: any) => string;
+}
+
 export type ServiceTestStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface ServiceTestState {

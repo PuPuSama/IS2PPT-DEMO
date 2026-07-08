@@ -315,6 +315,7 @@ import {
   type SettingsFormData,
 } from '@/config/settingsFormData';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
+import { GlobalVendorKeyInput } from '@/components/settings/GlobalVendorKeyInput';
 
 // 配置项类型定义
 type FieldType = 'text' | 'password' | 'number' | 'select' | 'buttons' | 'switch';
@@ -346,35 +347,6 @@ interface ServiceTestState {
   message?: string;
   detail?: string;
 }
-
-const GlobalVendorKeyInput: React.FC<{
-  vendor: string; formData: SettingsFormData;
-  setFormData: React.Dispatch<React.SetStateAction<SettingsFormData>>;
-  settings: SettingsType | null; t: ReturnType<typeof useT>;
-}> = ({ vendor, formData, setFormData, settings, t }) => {
-  const vendorLabel = LAZYLLM_SOURCES.find(s => s.value === vendor)?.label || vendor.toUpperCase();
-  const keyLength = settings?.lazyllm_api_keys_info?.[vendor] || 0;
-  const placeholder = keyLength > 0
-    ? t('settings.fields.vendorApiKeySet', { length: keyLength })
-    : t('settings.fields.vendorApiKeyPlaceholder', { vendor: vendorLabel });
-  return (
-    <div className="pl-3 border-l-2 border-amber-300 dark:border-amber-600">
-      <Input
-        label={t('settings.fields.vendorApiKey', { vendor: vendorLabel })}
-        type="password"
-        placeholder={placeholder}
-        value={formData.lazyllm_api_keys[vendor] || ''}
-        onChange={(e) => {
-          setFormData(prev => ({
-            ...prev,
-            lazyllm_api_keys: { ...prev.lazyllm_api_keys, [vendor]: e.target.value }
-          }));
-        }}
-      />
-      <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.vendorApiKeyDesc')}</p>
-    </div>
-  );
-};
 
 // Settings 组件 - 纯嵌入模式（可复用）
 export const Settings: React.FC = () => {

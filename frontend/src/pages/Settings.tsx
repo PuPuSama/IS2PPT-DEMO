@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Save, RotateCcw, ArrowUp, ChevronDown } from 'lucide-react';
+import { Home, Save, RotateCcw, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
@@ -15,10 +15,10 @@ import {
   formDataFromSettings,
   initialSettingsFormData,
 } from '@/config/settingsFormData';
+import { SettingsAdvancedPanel } from '@/components/settings/SettingsAdvancedPanel';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
 import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalApiSection';
 import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
-import { SettingsOAuthPanel } from '@/components/settings/SettingsOAuthPanel';
 import { SettingsSectionList } from '@/components/settings/SettingsSectionList';
 import { SettingsServiceTestPanel } from '@/components/settings/SettingsServiceTestPanel';
 import type {
@@ -381,47 +381,24 @@ export const Settings: React.FC = () => {
           onChange={handleFieldChange}
         />
 
-        {/* 高级设置（折叠区域） */}
-        <div className="border-t border-gray-200 dark:border-border-primary pt-2">
-          <button
-            type="button"
-            onClick={() => setAdvancedOpen(!advancedOpen)}
-            className="w-full flex items-center justify-between px-0 py-3 text-left hover:opacity-80 transition-opacity"
-          >
-            <span className="text-lg font-semibold text-gray-900 dark:text-foreground-primary">
-              {t('settings.sections.advancedSettings')}
-            </span>
-            <ChevronDown
-              size={20}
-              className={`text-gray-500 dark:text-foreground-tertiary transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {advancedOpen && (
-            <div className="pb-4 space-y-8">
-              <SettingsOAuthPanel
-                settings={settings}
-                oauthConnecting={oauthConnecting}
-                manualCallbackOpen={manualCallbackOpen}
-                manualCallbackUrl={manualCallbackUrl}
-                manualCallbackSubmitting={manualCallbackSubmitting}
-                t={t}
-                onLogin={handleOAuthLogin}
-                onDisconnect={handleOAuthDisconnect}
-                onManualCallbackToggle={() => setManualCallbackOpen((value) => !value)}
-                onManualCallbackUrlChange={setManualCallbackUrl}
-                onManualCallbackSubmit={handleManualCallback}
-              />
-
-              <SettingsSectionList
-                sections={advancedSections}
-                formData={formData}
-                settings={settings}
-                t={t}
-                onChange={handleFieldChange}
-              />
-            </div>
-          )}
-        </div>
+        <SettingsAdvancedPanel
+          open={advancedOpen}
+          settings={settings}
+          oauthConnecting={oauthConnecting}
+          manualCallbackOpen={manualCallbackOpen}
+          manualCallbackUrl={manualCallbackUrl}
+          manualCallbackSubmitting={manualCallbackSubmitting}
+          sections={advancedSections}
+          formData={formData}
+          t={t}
+          onToggle={() => setAdvancedOpen((value) => !value)}
+          onOAuthLogin={handleOAuthLogin}
+          onOAuthDisconnect={handleOAuthDisconnect}
+          onManualCallbackToggle={() => setManualCallbackOpen((value) => !value)}
+          onManualCallbackUrlChange={setManualCallbackUrl}
+          onManualCallbackSubmit={handleManualCallback}
+          onFieldChange={handleFieldChange}
+        />
 
         <SettingsServiceTestPanel
           items={serviceTestItems}

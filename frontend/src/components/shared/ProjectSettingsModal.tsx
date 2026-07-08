@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, FileText, Settings as SettingsIcon, Download, AlertTriangle, HelpCircle } from 'lucide-react';
 import { Button, Textarea } from '@/components/shared';
 import { useT } from '@/hooks/useT';
-import { Settings } from '@/pages/Settings';
+import { SettingsWorkspace } from '@/components/settings/SettingsWorkspace';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 
 // ProjectSettings 组件自包含翻译
@@ -333,7 +333,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     {t('projectSettings.globalConfigDesc')}
                   </p>
                 </div>
-                <Settings />
+                <SettingsWorkspace />
               </div>
             )}
           </div>

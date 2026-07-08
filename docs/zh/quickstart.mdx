@@ -5,7 +5,7 @@ description: "立即体验或在本地部署 is2ppt"
 
 ## 项目入口
 
-当前项目入口为 GitHub 仓库：[PuPuSama/IS2PPT-DEMO](https://github.com/PuPuSama/IS2PPT-DEMO)。
+当前项目入口为 GitHub 仓库：[is2ppt/is2ppt](https://github.com/is2ppt/is2ppt)。
 
 ---
 
@@ -30,8 +30,8 @@ description: "立即体验或在本地部署 is2ppt"
 
 ```bash
 mkdir is2ppt && cd is2ppt && \
-curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/docker-compose.prod.yml && \
-curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/.env.example && \
+curl -O https://raw.githubusercontent.com/is2ppt/is2ppt/main/docker-compose.prod.yml && \
+curl -O https://raw.githubusercontent.com/is2ppt/is2ppt/main/.env.example && \
 cp .env.example .env
 ```
 
@@ -85,7 +85,7 @@ docker logs -f --tail 100 is2ppt-backend
 ### 后端
 
 ```bash
-git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+git clone https://github.com/is2ppt/is2ppt is2ppt
 cd is2ppt
 cp .env.example .env  # 编辑 .env 填入 API 密钥
 cd backend

@@ -23,7 +23,7 @@ When you open a Pull Request, the PR template includes a CLA checkbox. Simply ch
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/PuPuSama/IS2PPT-DEMO/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/is2ppt/is2ppt/issues)
 2. If not, create a new issue with:
    - A clear, descriptive title
    - Steps to reproduce the bug
@@ -63,7 +63,7 @@ When you open a Pull Request, the PR template includes a CLA checkbox. Simply ch
 
 ```bash
 # 克隆代码仓库
-git clone https://github.com/PuPuSama/IS2PPT-DEMO.git is2ppt
+git clone https://github.com/is2ppt/is2ppt.git is2ppt
 cd is2ppt
 
 # 安装 uv（如果尚未安装）

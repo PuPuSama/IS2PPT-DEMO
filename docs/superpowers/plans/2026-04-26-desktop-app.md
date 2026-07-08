@@ -243,7 +243,7 @@ git commit -m "feat(backend): add PyInstaller packaging spec"
   "version": "0.3.0",
   "description": "is2ppt Desktop App",
   "main": "main.js",
-  "author": "PuPuSama",
+  "author": "is2ppt",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -501,8 +501,8 @@ const semver = require('semver');
 const { app } = require('electron');
 const log = require('electron-log');
 
-const REPO_OWNER = 'PuPuSama';
-const REPO_NAME = 'IS2PPT-DEMO';
+const REPO_OWNER = 'is2ppt';
+const REPO_NAME = 'is2ppt';
 
 function checkForUpdates() {
   return new Promise((resolve, reject) => {
@@ -1235,7 +1235,7 @@ git commit -m "feat(frontend): adapt for desktop mode
 - [ ] **Step 1: Create desktop/electron-builder.yml**
 
 ```yaml
-appId: com.pupusama.is2ppt
+appId: com.is2ppt.is2ppt
 productName: is2ppt
 
 directories:

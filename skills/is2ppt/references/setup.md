@@ -5,8 +5,8 @@ Full documentation: see the docs directory in this repository.
 ## Install and Start Backend
 
 ```bash
-git clone https://github.com/PuPuSama/IS2PPT-DEMO
-cd IS2PPT-DEMO
+git clone https://github.com/is2ppt/is2ppt
+cd is2ppt
 cp .env.example .env
 # Edit .env — at minimum set an AI provider key (see below)
 cd backend

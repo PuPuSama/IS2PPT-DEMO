@@ -9,14 +9,14 @@
   <a href="README_EN.md"><b>English</b></a>
 </p>
 <p>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/stargazers"><img src="https://img.shields.io/github/stars/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Stars"></a>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/network"><img src="https://img.shields.io/github/forks/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Forks"></a>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/watchers"><img src="https://img.shields.io/github/watchers/PuPuSama/IS2PPT-DEMO?style=flat-square&color=FFD700" alt="GitHub Watchers"></a>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO"><img src="https://img.shields.io/badge/version-v0.4.0-44cc11?style=flat-square" alt="Version"></a>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/LICENSE"><img src="https://img.shields.io/github/license/PuPuSama/IS2PPT-DEMO?color=0055aa&style=flat-square" alt="License"></a>
+  <a href="https://github.com/is2ppt/is2ppt/stargazers"><img src="https://img.shields.io/github/stars/is2ppt/is2ppt?style=flat-square&color=FFD700" alt="GitHub Stars"></a>
+  <a href="https://github.com/is2ppt/is2ppt/network"><img src="https://img.shields.io/github/forks/is2ppt/is2ppt?style=flat-square&color=FFD700" alt="GitHub Forks"></a>
+  <a href="https://github.com/is2ppt/is2ppt/watchers"><img src="https://img.shields.io/github/watchers/is2ppt/is2ppt?style=flat-square&color=FFD700" alt="GitHub Watchers"></a>
+  <a href="https://github.com/is2ppt/is2ppt"><img src="https://img.shields.io/badge/version-v0.4.0-44cc11?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/is2ppt/is2ppt/blob/main/LICENSE"><img src="https://img.shields.io/github/license/is2ppt/is2ppt?color=0055aa&style=flat-square" alt="License"></a>
   <br>
   <img src="https://img.shields.io/badge/Docker-Build-4A90D9?logo=docker&logoColor=white&style=flat-square" alt="Docker Build">
-  <a href="https://deepwiki.com/PuPuSama/IS2PPT-DEMO"><img src="./assets/badge-deepwiki-flat.svg" alt="Ask DeepWiki"></a>
+  <a href="https://deepwiki.com/is2ppt/is2ppt"><img src="./assets/badge-deepwiki-flat.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p>
@@ -24,11 +24,11 @@
   <b>在几分钟内从想法到演示文稿，无需繁琐排版、口头提出修改，迈向真正的 "Vibe PPT"</b>
 </p>
 <p>
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO"><b>项目入口</b></a>
+  <a href="https://github.com/is2ppt/is2ppt"><b>项目入口</b></a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/PuPuSama/IS2PPT-DEMO/tree/main/docs"><b>📖 文档</b></a>
+  <a href="https://github.com/is2ppt/is2ppt/tree/main/docs"><b>📖 文档</b></a>
   &nbsp;|&nbsp;
- <a href="https://github.com/PuPuSama/IS2PPT-DEMO#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><b>部署方法</b></a>
+ <a href="https://github.com/is2ppt/is2ppt#-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><b>部署方法</b></a>
 </p>
 <p>
   如果该项目对你有用，欢迎 <b>Star 🌟</b> & <b>Fork 🍴</b>
@@ -40,7 +40,7 @@
 - **[2026-04-25]**：支持通过 OpenAI 官方 OAuth 登录绑定账号，绑定后可直接使用 Codex 作为文本/图片生成 provider，无需手动填写 API Key，plus账号五小时可生成100+ 2k图（[教程](https://ziy68cvfvu3.feishu.cn/wiki/LDSOwPzkhiNonkkNTF1ct2VBnNc))（基于 OpenAI 官方 OAuth PKCE 授权流程，非逆向）
 - **[2026-04-25]**：支持保存自定义文字风格描述模板，可命名、标色、持久化复用，无需每次重新输入
 - **[2026-04-23]**：支持了 gpt-image-2 模型，提升图片生成与编辑质量
-- **[2026-04-11]**：支持了[cli操作并加入了agent skills](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/cli.mdx)
+- **[2026-04-11]**：支持了[cli操作并加入了agent skills](https://github.com/is2ppt/is2ppt/blob/main/docs/cli.mdx)
 - **[2026-03]**：加入了若干功能和优化，如额外字段、多比例设定等
 - **[2026-02-09]**： 新功能和优化
   * 新功能
@@ -96,7 +96,7 @@
 
 </div>
 
-更多可见<a href="https://github.com/PuPuSama/IS2PPT-DEMO/issues/2" > 使用案例 </a>
+更多可见<a href="https://github.com/is2ppt/is2ppt/issues/2" > 使用案例 </a>
 
 
 ## 🎯 功能介绍
@@ -176,7 +176,7 @@
 ### 部署入口
 当前推荐通过 Docker Compose 或源码方式部署，步骤见下方说明。
 
-1. [部署文档](https://github.com/PuPuSama/IS2PPT-DEMO/tree/main/docs/zh)
+1. [部署文档](https://github.com/is2ppt/is2ppt/tree/main/docs/zh)
 2. 更多托管模板入口将后续补充
 
 ### 使用 Docker Compose🐳
@@ -193,7 +193,7 @@
 
 0. **克隆代码仓库**
 ```bash
-git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+git clone https://github.com/is2ppt/is2ppt is2ppt
 cd is2ppt
 ```
 
@@ -286,8 +286,8 @@ docker compose -f docker-compose.prod.yml up -d
 ```
 
 镜像名称：
-- `pupusama/is2ppt-frontend:latest`
-- `pupusama/is2ppt-backend:latest`
+- `is2ppt/is2ppt-frontend:latest`
+- `is2ppt/is2ppt-backend:latest`
 
 启动后可在应用内进入 **设置 → 关于 → 检查更新**，应用会根据当前版本 SHA 判断是否已有可用更新；源码运行时也会用当前 Git SHA 参与判断。
 
@@ -356,7 +356,7 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-**注：感谢优秀开发者朋友 [@ShellMonster](https://github.com/ShellMonster/) 提供了[新人部署教程](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/quickstart.mdx)，专为没有任何服务器部署经验的新手设计，可[点击链接](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/quickstart.mdx)查看。**
+**注：感谢优秀开发者朋友 [@ShellMonster](https://github.com/ShellMonster/) 提供了[新人部署教程](https://github.com/is2ppt/is2ppt/blob/main/docs/zh/quickstart.mdx)，专为没有任何服务器部署经验的新手设计，可[点击链接](https://github.com/is2ppt/is2ppt/blob/main/docs/zh/quickstart.mdx)查看。**
 
 ### 从源码部署
 
@@ -375,7 +375,7 @@ docker compose up -d
 
 0. **克隆代码仓库**
 ```bash
-git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+git clone https://github.com/is2ppt/is2ppt is2ppt
 cd is2ppt
 ```
 
@@ -473,19 +473,19 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
 
 
 ## **🔧 常见问题**
-可见[项目文档](https://github.com/PuPuSama/IS2PPT-DEMO/blob/main/docs/zh/faq.mdx)
+可见[项目文档](https://github.com/is2ppt/is2ppt/blob/main/docs/zh/faq.mdx)
 
 也可以直接到 DeepWiki 提问 
-<a href="https://deepwiki.com/PuPuSama/IS2PPT-DEMO"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+<a href="https://deepwiki.com/is2ppt/is2ppt"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 
 
 
 ## 🤝 贡献指南
 
 欢迎通过
-[Issue](https://github.com/PuPuSama/IS2PPT-DEMO/issues)
+[Issue](https://github.com/is2ppt/is2ppt/issues)
 和
-[Pull Request](https://github.com/PuPuSama/IS2PPT-DEMO/pulls)
+[Pull Request](https://github.com/is2ppt/is2ppt/pulls)
 为本项目贡献力量！
 
 > **重要：** 贡献前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -527,7 +527,7 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
 
 - 项目贡献者们：
 
-[![Contributors](https://contrib.rocks/image?repo=PuPuSama/IS2PPT-DEMO)](https://github.com/PuPuSama/IS2PPT-DEMO/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=is2ppt/is2ppt)](https://github.com/is2ppt/is2ppt/graphs/contributors)
 
 - [Linux.do](https://linux.do/): 新的理想型社区
   
@@ -543,15 +543,15 @@ Python 3.10+ + Flask 3.0 + uv + SQLite
  
 ## 📈 项目统计
 
-<a href="https://www.star-history.com/#PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left">
+<a href="https://www.star-history.com/#is2ppt/is2ppt&type=Timeline&legend=top-left">
 
  <picture>
 
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=is2ppt/is2ppt&type=Timeline&theme=dark&legend=top-left" />
 
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=is2ppt/is2ppt&type=Timeline&legend=top-left" />
 
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PuPuSama/IS2PPT-DEMO&type=Timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=is2ppt/is2ppt&type=Timeline&legend=top-left" />
 
  </picture>
 

@@ -5,7 +5,7 @@ description: "Try the demo or deploy is2ppt locally"
 
 ## Project Entry
 
-Use the repository as the current project entry: [PuPuSama/IS2PPT-DEMO](https://github.com/PuPuSama/IS2PPT-DEMO).
+Use the repository as the current project entry: [is2ppt/is2ppt](https://github.com/is2ppt/is2ppt).
 
 ---
 
@@ -30,8 +30,8 @@ Create a new directory, enter it, and run the following command to download the 
 
 ```bash
 mkdir is2ppt && cd is2ppt && \
-curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/docker-compose.prod.yml && \
-curl -O https://raw.githubusercontent.com/PuPuSama/IS2PPT-DEMO/main/.env.example && \
+curl -O https://raw.githubusercontent.com/is2ppt/is2ppt/main/docker-compose.prod.yml && \
+curl -O https://raw.githubusercontent.com/is2ppt/is2ppt/main/.env.example && \
 cp .env.example .env
 ```
 
@@ -85,7 +85,7 @@ docker logs -f --tail 100 is2ppt-backend
 ### Backend
 
 ```bash
-git clone https://github.com/PuPuSama/IS2PPT-DEMO is2ppt
+git clone https://github.com/is2ppt/is2ppt is2ppt
 cd is2ppt
 cp .env.example .env  # Edit .env and add your API key
 cd backend

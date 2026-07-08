@@ -162,7 +162,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 ### 5.1 检测逻辑
 
-- 调用 GitHub API: `GET https://api.github.com/repos/PuPuSama/IS2PPT-DEMO/releases/latest`
+- 调用 GitHub API: `GET https://api.github.com/repos/is2ppt/is2ppt/releases/latest`
 - 比较 `tag_name`（semver）与当前 `app.getVersion()`
 - 如果有新版本，返回版本号、更新说明、下载链接
 
@@ -282,7 +282,7 @@ tkinter, matplotlib, scipy, IPython, jupyter, notebook — 减小体积。
 ## 12. electron-builder 配置
 
 ```yaml
-appId: com.pupusama.is2ppt
+appId: com.is2ppt.is2ppt
 productName: is2ppt
 
 directories:

@@ -12,67 +12,8 @@ import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import { projectSession } from '@/shared/storage/projectSession';
 import { historyPreferences } from '@/shared/storage/historyPreferences';
+import { historyI18n } from '@/config/historyI18n';
 import type { Project } from '@/types';
-
-// 页面特有翻译 - AI 可以直接看到所有文案
-const historyI18n = {
-  zh: {
-    home: { title: 'is2ppt', actions: { createProject: '创建新项目' } },
-    nav: { home: '主页' },
-    settings: { language: { label: '界面语言' }, theme: { light: '浅色', dark: '深色' } },
-    history: {
-      title: '历史项目',
-      subtitle: '查看和管理你的所有项目',
-      noProjects: '暂无历史项目',
-      createFirst: '创建你的第一个项目开始使用吧',
-      selectedCount: '已选择 {{count}} 项',
-      cancelSelect: '取消选择',
-      batchDelete: '批量删除',
-      confirmDelete: '确定要删除项目「{{title}}」吗？此操作不可恢复。',
-      confirmBatchDelete: '确定要删除选中的 {{count}} 个项目吗？此操作不可恢复。',
-      deleteTitle: '确认删除',
-      batchDeleteTitle: '确认批量删除',
-      deleteSuccess: '成功删除 {{count}} 个项目',
-      deletePartial: '成功删除 {{success}} 个项目，{{fail}} 个删除失败',
-      deleteCurrentProject: '已删除项目，包括当前打开的项目',
-      deleteFailed: '删除项目失败',
-      openFailed: '打开项目失败',
-      loadFailed: '加载历史项目失败',
-      perPage: '条/页',
-      titleEmpty: '项目名称不能为空',
-      titleUpdated: '项目名称已更新',
-      titleUpdateFailed: '更新项目名称失败',
-    },
-  },
-  en: {
-    home: { title: 'is2ppt', actions: { createProject: 'Create New Project' } },
-    nav: { home: 'Home' },
-    settings: { language: { label: 'Interface Language' }, theme: { light: 'Light', dark: 'Dark' } },
-    history: {
-      title: 'Project History',
-      subtitle: 'View and manage all your projects',
-      noProjects: 'No projects yet',
-      createFirst: 'Create your first project to get started',
-      selectedCount: '{{count}} selected',
-      cancelSelect: 'Cancel Selection',
-      batchDelete: 'Batch Delete',
-      confirmDelete: 'Are you sure you want to delete project "{{title}}"? This action cannot be undone.',
-      confirmBatchDelete: 'Are you sure you want to delete {{count}} selected project(s)? This action cannot be undone.',
-      deleteTitle: 'Confirm Delete',
-      batchDeleteTitle: 'Confirm Batch Delete',
-      deleteSuccess: 'Successfully deleted {{count}} project(s)',
-      deletePartial: 'Deleted {{success}} project(s), {{fail}} failed',
-      deleteCurrentProject: 'Deleted projects including the currently open one',
-      deleteFailed: 'Failed to delete project',
-      openFailed: 'Failed to open project',
-      loadFailed: 'Failed to load project history',
-      perPage: '/ page',
-      titleEmpty: 'Project name cannot be empty',
-      titleUpdated: 'Project name updated',
-      titleUpdateFailed: 'Failed to update project name',
-    },
-  },
-};
 
 export const History: React.FC = () => {
   const navigate = useNavigate();

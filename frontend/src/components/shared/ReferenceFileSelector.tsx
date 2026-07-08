@@ -61,7 +61,7 @@ import {
   getReferenceFile,
   triggerFileParse,
   type ReferenceFile,
-} from '@/api/endpoints';
+} from '@/api/referenceFilesApi';
 import { listProjects } from '@/api/projectsApi';
 import type { Project } from '@/types';
 

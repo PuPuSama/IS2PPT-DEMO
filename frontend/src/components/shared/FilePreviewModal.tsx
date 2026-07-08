@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Markdown, Loading, useToast } from '@/components/shared';
 import { useT } from '@/hooks/useT';
-import { getReferenceFile, type ReferenceFile } from '@/api/endpoints';
+import { getReferenceFile, type ReferenceFile } from '@/api/referenceFilesApi';
 
 // FilePreviewModal 组件自包含翻译
 const filePreviewI18n = {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ReferenceFileCard } from '@/components/shared';
 import { useT } from '@/hooks/useT';
-import { listProjectReferenceFiles, type ReferenceFile } from '@/api/endpoints';
+import { listProjectReferenceFiles, type ReferenceFile } from '@/api/referenceFilesApi';
 
 // ReferenceFileList 组件自包含翻译
 const referenceFileListI18n = {

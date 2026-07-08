@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, FileText } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { listProjectReferenceFiles, type ReferenceFile } from '@/api/endpoints';
+import { listProjectReferenceFiles, type ReferenceFile } from '@/api/referenceFilesApi';
 import { ReferenceFileCard } from './ReferenceFileCard';
 
 const projectResourcesI18n = {

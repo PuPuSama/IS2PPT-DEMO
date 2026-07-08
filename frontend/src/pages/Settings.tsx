@@ -10,6 +10,7 @@ import { projectSession } from '@/shared/storage/projectSession';
 import { createSettingsModelItems } from '@/config/settingsModelItems';
 import { createSettingsSections } from '@/config/settingsSections';
 import { createSettingsServiceTests } from '@/config/settingsServiceTests';
+import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
 import {
   ALL_PROVIDER_SOURCES,
   API_KEY_PROVIDERS,
@@ -288,49 +289,7 @@ export const Settings: React.FC = () => {
   ) => {
     updateServiceTest(key, { status: 'loading' });
     try {
-      // 准备测试时要使用的设置（包括未保存的修改）
-      const testSettings: any = {};
-
-      // 只传递用户已填写的非空值
-      if (formData.api_key) testSettings.api_key = formData.api_key;
-      if (formData.api_base_url) testSettings.api_base_url = formData.api_base_url;
-      if (formData.ai_provider_format) {
-        testSettings.ai_provider_format = formData.ai_provider_format;
-      }
-      if (formData.text_model) testSettings.text_model = formData.text_model;
-      if (formData.image_model) testSettings.image_model = formData.image_model;
-      if (formData.image_caption_model) testSettings.image_caption_model = formData.image_caption_model;
-      if (formData.mineru_api_base) testSettings.mineru_api_base = formData.mineru_api_base;
-      if (formData.mineru_token) testSettings.mineru_token = formData.mineru_token;
-      if (formData.baidu_api_key) testSettings.baidu_api_key = formData.baidu_api_key;
-      if (formData.image_resolution) testSettings.image_resolution = formData.image_resolution;
-
-      // Per-model provider source overrides (always send, even empty, to clear saved values)
-      testSettings.text_model_source = formData.text_model_source || '';
-      testSettings.image_model_source = formData.image_model_source || '';
-      testSettings.image_caption_model_source = formData.image_caption_model_source || '';
-
-      // Per-model API credentials
-      if (formData.text_api_key) testSettings.text_api_key = formData.text_api_key;
-      if (formData.text_api_base_url) testSettings.text_api_base_url = formData.text_api_base_url;
-      if (formData.image_api_key) testSettings.image_api_key = formData.image_api_key;
-      if (formData.image_api_base_url) testSettings.image_api_base_url = formData.image_api_base_url;
-      if (formData.image_caption_api_key) testSettings.image_caption_api_key = formData.image_caption_api_key;
-      if (formData.image_caption_api_base_url) testSettings.image_caption_api_base_url = formData.image_caption_api_base_url;
-
-      // 推理模式设置
-      if (formData.enable_text_reasoning !== undefined) {
-        testSettings.enable_text_reasoning = formData.enable_text_reasoning;
-      }
-      if (formData.text_thinking_budget !== undefined) {
-        testSettings.text_thinking_budget = formData.text_thinking_budget;
-      }
-      if (formData.enable_image_reasoning !== undefined) {
-        testSettings.enable_image_reasoning = formData.enable_image_reasoning;
-      }
-      if (formData.image_thinking_budget !== undefined) {
-        testSettings.image_thinking_budget = formData.image_thinking_budget;
-      }
+      const testSettings = buildSettingsTestPayload(formData);
 
       // 启动异步测试，获取任务ID
       const response = await action(testSettings);

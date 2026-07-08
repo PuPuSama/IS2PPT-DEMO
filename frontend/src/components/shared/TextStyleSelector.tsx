@@ -10,7 +10,7 @@ import {
   createUserStyleTemplate,
   deleteUserStyleTemplate,
   type UserStyleTemplate,
-} from '@/api/endpoints';
+} from '@/api/templatesApi';
 
 const STYLE_COLORS = [
   '#EF4444', '#F97316', '#EAB308', '#22C55E',

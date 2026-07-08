@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
-import { listUserTemplates, type UserTemplate } from '@/api/endpoints';
+import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
 import { SlideCard } from '@/components/preview/SlideCard';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';

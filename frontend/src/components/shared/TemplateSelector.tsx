@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/shared';
 import { useT } from '@/hooks/useT';
 import { getImageUrl } from '@/api/client';
-import { listUserTemplates, uploadUserTemplate, deleteUserTemplate, type UserTemplate } from '@/api/endpoints';
+import { listUserTemplates, uploadUserTemplate, deleteUserTemplate, type UserTemplate } from '@/api/templatesApi';
 import { X } from 'lucide-react';
 
 // Template 组件自包含翻译

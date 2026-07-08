@@ -32,6 +32,16 @@ export {
 } from './referenceFilesApi';
 export type { ReferenceFile } from './referenceFilesApi';
 export {
+  uploadUserTemplate,
+  listUserTemplates,
+  deleteUserTemplate,
+  createUserStyleTemplate,
+  listUserStyleTemplates,
+  deleteUserStyleTemplate,
+  extractStyleFromImage,
+} from './templatesApi';
+export type { UserTemplate, UserStyleTemplate } from './templatesApi';
+export {
   OUTPUT_LANGUAGE_OPTIONS,
   getDefaultOutputLanguage,
   getStoredOutputLanguage,
@@ -75,7 +85,6 @@ export const generateOutline = async (projectId: string, language?: OutputLangua
   );
   return response.data;
 };
-
 /**
  * 流式生成大纲（SSE）
  * 返回 ReadableStream，每个 page 事件包含一个页面对象
@@ -177,7 +186,6 @@ export const generateFromDescription = async (projectId: string, descriptionText
   );
   return response.data;
 };
-
 /**
  * 批量生成描述（并行模式）
  * @param projectId 项目ID
@@ -643,87 +651,6 @@ export const getMaterialByUrl = async (url: string): Promise<ApiResponse<Materia
   return response.data;
 };
 
-// ===== 用户模板 =====
-
-export interface UserTemplate {
-  template_id: string;
-  name?: string;
-  template_image_url: string;
-  thumb_url?: string;  // Thumbnail URL for faster loading
-  created_at?: string;
-  updated_at?: string;
-}
-
-/**
- * 上传用户模板
- */
-export const uploadUserTemplate = async (
-  templateImage: File,
-  name?: string
-): Promise<ApiResponse<UserTemplate>> => {
-  const formData = new FormData();
-  formData.append('template_image', templateImage);
-  if (name) {
-    formData.append('name', name);
-  }
-
-  const response = await apiClient.post<ApiResponse<UserTemplate>>(
-    '/api/user-templates',
-    formData
-  );
-  return response.data;
-};
-
-/**
- * 获取用户模板列表
- */
-export const listUserTemplates = async (): Promise<ApiResponse<{ templates: UserTemplate[] }>> => {
-  const response = await apiClient.get<ApiResponse<{ templates: UserTemplate[] }>>(
-    '/api/user-templates'
-  );
-  return response.data;
-};
-
-/**
- * 删除用户模板
- */
-export const deleteUserTemplate = async (templateId: string): Promise<ApiResponse> => {
-  const response = await apiClient.delete<ApiResponse>(`/api/user-templates/${templateId}`);
-  return response.data;
-};
-
-// ===== 参考文件相关 API =====
-
-export interface UserStyleTemplate {
-  id: string;
-  name: string;
-  description: string;
-  color?: string;
-  created_at?: string;
-}
-
-export const createUserStyleTemplate = async (
-  data: { name: string; description: string; color?: string }
-): Promise<ApiResponse<UserStyleTemplate>> => {
-  const response = await apiClient.post<ApiResponse<UserStyleTemplate>>(
-    '/api/user-style-templates',
-    data
-  );
-  return response.data;
-};
-
-export const listUserStyleTemplates = async (): Promise<ApiResponse<{ templates: UserStyleTemplate[] }>> => {
-  const response = await apiClient.get<ApiResponse<{ templates: UserStyleTemplate[] }>>(
-    '/api/user-style-templates'
-  );
-  return response.data;
-};
-
-export const deleteUserStyleTemplate = async (id: string): Promise<ApiResponse> => {
-  const response = await apiClient.delete<ApiResponse>(`/api/user-style-templates/${id}`);
-  return response.data;
-};
-
 // ===== PPT 翻新相关 API =====
 
 /**
@@ -752,22 +679,6 @@ export const createPptRenovationProject = async (
 
   const response = await apiClient.post<ApiResponse<{ project_id: string; task_id: string; page_count: number }>>(
     '/api/projects/renovation',
-    formData
-  );
-  return response.data;
-};
-
-/**
- * 从图片提取风格描述（通用，不绑定项目）
- */
-export const extractStyleFromImage = async (
-  imageFile: File
-): Promise<ApiResponse<{ style_description: string }>> => {
-  const formData = new FormData();
-  formData.append('image', imageFile);
-
-  const response = await apiClient.post<ApiResponse<{ style_description: string }>>(
-    '/api/extract-style',
     formData
   );
   return response.data;

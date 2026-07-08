@@ -4,13 +4,12 @@ import { Home, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { useOpenAIConnection } from '@/hooks/useOpenAIConnection';
 import { useSettingsFormController } from '@/hooks/useSettingsFormController';
+import { useSettingsServiceRunner } from '@/hooks/useSettingsServiceRunner';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
-import * as api from '@/api/endpoints';
 import { createSettingsModelItems } from '@/config/settingsModelItems';
 import { createSettingsSections } from '@/config/settingsSections';
 import { createSettingsServiceTests } from '@/config/settingsServiceTests';
-import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
 import { SettingsAdvancedPanel } from '@/components/settings/SettingsAdvancedPanel';
 import { SettingsActionBar } from '@/components/settings/SettingsActionBar';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
@@ -18,9 +17,6 @@ import { SettingsGlobalApiSection } from '@/components/settings/SettingsGlobalAp
 import { SettingsModelConfigSection } from '@/components/settings/SettingsModelConfigSection';
 import { SettingsSectionList } from '@/components/settings/SettingsSectionList';
 import { SettingsServiceTestPanel } from '@/components/settings/SettingsServiceTestPanel';
-import type {
-  ServiceTestState,
-} from '@/types/settingsPage';
 
 // Settings 组件 - 纯嵌入模式（可复用）
 export const Settings: React.FC = () => {
@@ -28,7 +24,6 @@ export const Settings: React.FC = () => {
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const {
     settings,
@@ -62,78 +57,18 @@ export const Settings: React.FC = () => {
     setSettings,
     notify: (message, type) => show({ message, type }),
   });
+  const {
+    serviceTestStates,
+    runServiceTest,
+  } = useSettingsServiceRunner({
+    formData,
+    t,
+    notify: (message, type) => show({ message, type }),
+    onOpenAIDisconnected: markOpenAIOAuthDisconnected,
+  });
 
   const settingsSections = createSettingsSections(t);
   const serviceTestItems = createSettingsServiceTests(t);
-
-  const updateServiceTest = (key: string, nextState: ServiceTestState) => {
-    setServiceTestStates(prev => ({ ...prev, [key]: nextState }));
-  };
-
-  const handleServiceTest = async (
-    key: string,
-    action: (settings?: any) => Promise<any>,
-    formatDetail: (data: any) => string
-  ) => {
-    updateServiceTest(key, { status: 'loading' });
-    try {
-      const testSettings = buildSettingsTestPayload(formData);
-
-      // 启动异步测试，获取任务ID
-      const response = await action(testSettings);
-      const taskId = response.data.task_id;
-
-      // isActive tracks whether this test round is still pending — avoids stale closure
-      let isActive = true;
-      // eslint-disable-next-line prefer-const
-      let pollInterval: ReturnType<typeof setInterval>;
-      const finish = (nextState: ServiceTestState, toastMsg: string, toastType: 'success' | 'error') => {
-        if (!isActive) return;
-        isActive = false;
-        clearInterval(pollInterval);
-        updateServiceTest(key, nextState);
-        show({ message: toastMsg, type: toastType });
-      };
-
-      // 开始轮询任务状态
-      pollInterval = setInterval(async () => {
-        try {
-          const statusResponse = await api.getTestStatus(taskId);
-          const statusData = statusResponse?.data;
-          if (!statusData) {
-            throw new Error(t('settings.serviceTest.testFailed'));
-          }
-          const taskStatus = statusData.status;
-
-          if (taskStatus === 'COMPLETED') {
-            const detail = formatDetail(statusData.result || {});
-            const message = statusData.message || t('settings.messages.testSuccess');
-            finish({ status: 'success', message, detail }, message, 'success');
-          } else if (taskStatus === 'FAILED') {
-            const errorMessage = statusData.error || t('settings.serviceTest.testFailed');
-            if (statusData.openai_oauth_disconnected) {
-              markOpenAIOAuthDisconnected();
-            }
-            finish({ status: 'error', message: errorMessage }, `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, 'error');
-          }
-          // 如果是 PENDING 或 PROCESSING，继续轮询
-        } catch (pollError: any) {
-          const errorMessage = pollError?.response?.data?.error?.message || pollError?.message || t('settings.serviceTest.testFailed');
-          finish({ status: 'error', message: errorMessage }, `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, 'error');
-        }
-      }, 2000); // 每2秒轮询一次
-
-      // 设置最大轮询时间（2分钟）
-      setTimeout(() => {
-        finish({ status: 'error', message: t('settings.serviceTest.testTimeout') }, t('settings.serviceTest.testTimeout'), 'error');
-      }, 600000); // 10 分钟，覆盖 gpt-image-2 等慢模型的生成时间
-
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || error?.message || t('common.unknownError');
-      updateServiceTest(key, { status: 'error', message: errorMessage });
-      show({ message: `${t('settings.serviceTest.testFailed')}: ${errorMessage}`, type: 'error' });
-    }
-  };
 
   const modelConfigItems = createSettingsModelItems(t);
   const advancedSectionTitles = new Set([
@@ -206,7 +141,7 @@ export const Settings: React.FC = () => {
           items={serviceTestItems}
           states={serviceTestStates}
           t={t}
-          onRun={(item) => handleServiceTest(item.key, item.action, item.formatDetail)}
+          onRun={runServiceTest}
         />
 
         <SettingsActionBar

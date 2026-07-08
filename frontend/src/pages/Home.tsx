@@ -5,7 +5,7 @@ import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Se
 import { Button, Card, useToast, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
-import { createPptRenovationProject } from '@/api/endpoints';
+import { createPptRenovationProject } from '@/api/renovationApi';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
 import { uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse } from '@/api/referenceFilesApi';
 import { useProjectStore } from '@/store/useProjectStore';

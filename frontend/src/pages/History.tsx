@@ -7,7 +7,7 @@ import { ProjectCard } from '@/components/history/ProjectCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useT } from '@/hooks/useT';
-import * as api from '@/api/projectsApi';
+import { deleteProject, listProjects, updateProject } from '@/api/projectsApi';
 import { normalizeProject } from '@/utils';
 import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -101,7 +101,7 @@ export const History: React.FC = () => {
     setError(null);
     try {
       const offset = (page - 1) * pageSize;
-      const response = await api.listProjects(pageSize, offset);
+      const response = await listProjects(pageSize, offset);
       if (response.data?.projects) {
         const normalizedProjects = response.data.projects.map(normalizeProject);
         setProjects(normalizedProjects);
@@ -204,7 +204,7 @@ export const History: React.FC = () => {
     try {
       // 批量删除 - 使用 allSettled 处理部分失败
       const results = await Promise.allSettled(
-        projectIds.map(projectId => api.deleteProject(projectId))
+        projectIds.map(projectId => deleteProject(projectId))
       );
 
       const successIds = projectIds.filter((_, i) => results[i].status === 'fulfilled');
@@ -329,7 +329,7 @@ export const History: React.FC = () => {
     try {
       const targetProject = projects.find((p) => (p.id || p.project_id) === projectId);
       if (!targetProject) return;
-      await api.updateProject(projectId, { project_title: nextTitle });
+      await updateProject(projectId, { project_title: nextTitle });
 
       // 更新本地状态
       setProjects(prev => prev.map(p => {

@@ -1,4 +1,11 @@
-import * as api from '@/api/settingsApi';
+import {
+  testBaiduInpaint,
+  testBaiduOcr,
+  testCaptionModel,
+  testImageModel,
+  testMineruPdf,
+  testTextModel,
+} from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { SettingsServiceTestItem } from '@/types/settingsPage';
 
@@ -9,7 +16,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'baidu-ocr',
     titleKey: 'settings.serviceTest.tests.baiduOcr.title',
     descriptionKey: 'settings.serviceTest.tests.baiduOcr.description',
-    action: api.testBaiduOcr,
+    action: testBaiduOcr,
     formatDetail: (data: any) => (
       data?.recognized_text
         ? t('settings.serviceTest.results.recognizedText', { text: data.recognized_text })
@@ -20,7 +27,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'text-model',
     titleKey: 'settings.serviceTest.tests.textModel.title',
     descriptionKey: 'settings.serviceTest.tests.textModel.description',
-    action: api.testTextModel,
+    action: testTextModel,
     formatDetail: (data: any) => (
       data?.reply ? t('settings.serviceTest.results.modelReply', { reply: data.reply }) : ''
     ),
@@ -29,7 +36,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'caption-model',
     titleKey: 'settings.serviceTest.tests.captionModel.title',
     descriptionKey: 'settings.serviceTest.tests.captionModel.description',
-    action: api.testCaptionModel,
+    action: testCaptionModel,
     formatDetail: (data: any) => (
       data?.caption ? t('settings.serviceTest.results.captionDesc', { caption: data.caption }) : ''
     ),
@@ -38,7 +45,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'baidu-inpaint',
     titleKey: 'settings.serviceTest.tests.baiduInpaint.title',
     descriptionKey: 'settings.serviceTest.tests.baiduInpaint.description',
-    action: api.testBaiduInpaint,
+    action: testBaiduInpaint,
     formatDetail: (data: any) => (
       data?.image_size
         ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] })
@@ -49,7 +56,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'image-model',
     titleKey: 'settings.serviceTest.tests.imageModel.title',
     descriptionKey: 'settings.serviceTest.tests.imageModel.description',
-    action: api.testImageModel,
+    action: testImageModel,
     formatDetail: (data: any) => (
       data?.image_size
         ? t('settings.serviceTest.results.imageSize', { width: data.image_size[0], height: data.image_size[1] })
@@ -60,7 +67,7 @@ export const createSettingsServiceTests = (t: SettingsTranslator): SettingsServi
     key: 'mineru-pdf',
     titleKey: 'settings.serviceTest.tests.mineruPdf.title',
     descriptionKey: 'settings.serviceTest.tests.mineruPdf.description',
-    action: api.testMineruPdf,
+    action: testMineruPdf,
     formatDetail: (data: any) => (
       data?.content_preview
         ? t('settings.serviceTest.results.parsePreview', { preview: data.content_preview })

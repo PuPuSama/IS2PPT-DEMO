@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import * as api from '@/api/settingsApi';
+import { getSettings, resetSettings, updateSettings } from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';
 import {
@@ -29,7 +29,7 @@ interface UseSettingsFormControllerOptions {
   notify: (message: string, type: ToastType) => void;
 }
 
-const buildUpdatePayload = (formData: SettingsFormData): Parameters<typeof api.updateSettings>[0] => {
+const buildUpdatePayload = (formData: SettingsFormData): Parameters<typeof updateSettings>[0] => {
   const {
     api_key,
     mineru_token,
@@ -41,7 +41,7 @@ const buildUpdatePayload = (formData: SettingsFormData): Parameters<typeof api.u
     ...otherData
   } = formData;
 
-  const payload: Parameters<typeof api.updateSettings>[0] = {
+  const payload: Parameters<typeof updateSettings>[0] = {
     ...otherData,
     ai_provider_format: otherData.ai_provider_format,
   };
@@ -97,7 +97,7 @@ export const useSettingsFormController = ({
   const loadSettings = async () => {
     setIsLoading(true);
     try {
-      const response = await api.getSettings();
+      const response = await getSettings();
       if (response.data) {
         setSettings(response.data);
         setFormData(formDataFromSettings(response.data));
@@ -121,7 +121,7 @@ export const useSettingsFormController = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await api.updateSettings(buildUpdatePayload(formData));
+      const response = await updateSettings(buildUpdatePayload(formData));
       if (response.data) {
         setSettings(response.data);
         projectSession.saveSettingsSnapshot(response.data);
@@ -146,7 +146,7 @@ export const useSettingsFormController = ({
       async () => {
         setIsSaving(true);
         try {
-          const response = await api.resetSettings();
+          const response = await resetSettings();
           if (response.data) {
             setSettings(response.data);
             setFormData(formDataFromSettings(response.data));

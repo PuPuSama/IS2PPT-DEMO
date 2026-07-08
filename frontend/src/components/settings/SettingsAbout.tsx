@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { ArrowUp, CheckCircle, Info, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
-import * as api from '@/api/settingsApi';
-import type { UpdateCheckInfo } from '@/api/settingsApi';
+import { checkForUpdates, type UpdateCheckInfo } from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 import { appVersion } from '@/utils/appVersion';
@@ -34,7 +33,7 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
     setCheckingUpdate(true);
     setUpdateError('');
     try {
-      const response = await api.checkForUpdates();
+      const response = await checkForUpdates();
       setUpdateInfo(response.data || null);
       setUpdateDialogOpen(true);
     } catch (error: any) {

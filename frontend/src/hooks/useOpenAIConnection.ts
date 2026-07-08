@@ -1,5 +1,10 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
-import * as api from '@/api/settingsApi';
+import {
+  disconnectOpenAIOAuth,
+  getOpenAIOAuthStatus,
+  getOpenAIOAuthUrl,
+  submitOAuthManualCallback,
+} from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -26,7 +31,7 @@ export const useOpenAIConnection = ({
   const [manualCallbackSubmitting, setManualCallbackSubmitting] = useState(false);
 
   const applyStatus = async () => {
-    const statusResp = await api.getOpenAIOAuthStatus();
+    const statusResp = await getOpenAIOAuthStatus();
     if (statusResp.success && statusResp.data) {
       setSettings((prev) => prev ? {
         ...prev,
@@ -39,7 +44,7 @@ export const useOpenAIConnection = ({
   const handleOAuthLogin = async () => {
     setOauthConnecting(true);
     try {
-      const resp = await api.getOpenAIOAuthUrl();
+      const resp = await getOpenAIOAuthUrl();
       if (resp.success && resp.data?.auth_url) {
         if (resp.data.callback_server_available === false) {
           setManualCallbackOpen(true);
@@ -76,7 +81,7 @@ export const useOpenAIConnection = ({
 
   const handleOAuthDisconnect = async () => {
     try {
-      const resp = await api.disconnectOpenAIOAuth();
+      const resp = await disconnectOpenAIOAuth();
       if (resp.success) {
         setSettings((prev) => prev ? {
           ...prev,
@@ -95,7 +100,7 @@ export const useOpenAIConnection = ({
 
     setManualCallbackSubmitting(true);
     try {
-      const resp = await api.submitOAuthManualCallback(manualCallbackUrl.trim());
+      const resp = await submitOAuthManualCallback(manualCallbackUrl.trim());
       if (resp.success) {
         setManualCallbackUrl('');
         setManualCallbackOpen(false);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import * as api from '@/api/settingsApi';
+import { getTestStatus } from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { SettingsFormData } from '@/config/settingsFormData';
 import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
@@ -47,7 +47,7 @@ export const useSettingsServiceRunner = ({
 
       pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await api.getTestStatus(taskId);
+          const statusResponse = await getTestStatus(taskId);
           const statusData = statusResponse?.data;
           if (!statusData) {
             throw new Error(t('settings.serviceTest.testFailed'));

@@ -4,6 +4,7 @@ import { accessCodeSession } from '@/shared/auth/accessCodeSession';
 import { getStoredOutputLanguage, type OutputLanguage } from './settingsApi';
 
 export type { Material };
+export { checkAccessCode, verifyAccessCode } from './accessCodeApi';
 export {
   OUTPUT_LANGUAGE_OPTIONS,
   getDefaultOutputLanguage,
@@ -32,18 +33,6 @@ export type {
   TestSettingsOverride,
   UpdateCheckInfo,
 } from './settingsApi';
-
-// ===== 访问口令 API =====
-
-export const checkAccessCode = async (): Promise<ApiResponse<{ enabled: boolean }>> => {
-  const response = await apiClient.get<ApiResponse<{ enabled: boolean }>>('/api/access-code/check');
-  return response.data;
-};
-
-export const verifyAccessCode = async (code: string): Promise<ApiResponse<{ valid: boolean }>> => {
-  const response = await apiClient.post<ApiResponse<{ valid: boolean }>>('/api/access-code/verify', { code });
-  return response.data;
-};
 
 // ===== 项目相关 API =====
 

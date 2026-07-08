@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { checkAccessCode, verifyAccessCode } from '@/api/endpoints';
+import { checkAccessCode, verifyAccessCode } from '@/api/accessCodeApi';
 import { useT } from '@/hooks/useT';
 import { accessCodeSession } from '@/shared/auth/accessCodeSession';
 import { Button } from './Button';
@@ -39,11 +39,11 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
     setStatus('loading');
     try {
       const res = await checkAccessCode();
-      if (!res.data.enabled) { setStatus('pass'); return; }
+      if (res.data?.enabled !== true) { setStatus('pass'); return; }
       const saved = accessCodeSession.get();
       if (saved) {
         const v = await verifyAccessCode(saved);
-        if (v.data.valid) { setStatus('pass'); return; }
+        if (v.data?.valid) { setStatus('pass'); return; }
         accessCodeSession.clear();
       }
       setStatus('prompt');
@@ -61,7 +61,7 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
     setError('');
     try {
       const res = await verifyAccessCode(code.trim());
-      if (res.data.valid) {
+      if (res.data?.valid) {
         accessCodeSession.save(code.trim());
         setStatus('pass');
       } else {

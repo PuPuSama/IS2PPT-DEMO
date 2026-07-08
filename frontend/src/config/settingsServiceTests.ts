@@ -1,4 +1,4 @@
-import * as api from '@/api/endpoints';
+import * as api from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { SettingsServiceTestItem } from '@/types/settingsPage';
 

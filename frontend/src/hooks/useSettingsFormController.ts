@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import * as api from '@/api/endpoints';
+import * as api from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';
 import {

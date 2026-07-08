@@ -13,7 +13,7 @@ export const accessCodeSession = {
     localStorage.removeItem(STORAGE_KEYS.accessCode);
   },
 
-  getAuthHeaders: () => {
+  getAuthHeaders: (): Record<string, string> => {
     const accessCode = accessCodeSession.get();
     return accessCode ? { [ACCESS_CODE_HEADER]: accessCode } : {};
   },

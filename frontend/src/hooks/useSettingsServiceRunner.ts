@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import * as api from '@/api/endpoints';
+import * as api from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { SettingsFormData } from '@/config/settingsFormData';
 import { buildSettingsTestPayload } from '@/config/settingsTestPayload';

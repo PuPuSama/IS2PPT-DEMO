@@ -14,7 +14,7 @@ vi.mock('@/utils/appVersion', () => ({
 
 const checkForUpdates = vi.fn();
 
-vi.mock('@/api/endpoints', () => ({
+vi.mock('@/api/settingsApi', () => ({
   checkForUpdates: () => checkForUpdates(),
 }));
 

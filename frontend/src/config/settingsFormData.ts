@@ -1,4 +1,4 @@
-import type { OutputLanguage } from '@/api/endpoints';
+import type { OutputLanguage } from '@/api/settingsApi';
 import type { Settings as SettingsType } from '@/types';
 import { resolveLazyllmVendor } from '@/config/settingsProviders';
 

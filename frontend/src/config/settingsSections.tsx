@@ -1,5 +1,5 @@
 import { Brain, FileText, Globe, Image, Zap } from 'lucide-react';
-import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/endpoints';
+import { OUTPUT_LANGUAGE_OPTIONS } from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import type { SettingsSectionConfig } from '@/types/settingsPage';
 

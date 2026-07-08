@@ -17,7 +17,7 @@ interface SettingsGlobalApiSectionProps {
   formData: SettingsFormData;
   settings: SettingsType | null;
   t: SettingsTranslator;
-  onFieldChange: (key: string, value: unknown) => void;
+  onFieldChange: (key: keyof SettingsFormData, value: string | number | boolean) => void;
   onVendorKeyChange: (vendor: string, value: string) => void;
   onLinkCopied: () => void;
 }

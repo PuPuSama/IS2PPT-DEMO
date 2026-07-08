@@ -3,19 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, ArrowUp } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { useOpenAIConnection } from '@/hooks/useOpenAIConnection';
+import { useSettingsFormController } from '@/hooks/useSettingsFormController';
 import { settingsI18n } from '@/config/settingsI18n';
 import { Button, Card, Loading, useToast, useConfirm } from '@/components/shared';
 import * as api from '@/api/endpoints';
-import type { Settings as SettingsType } from '@/types';
-import { projectSession } from '@/shared/storage/projectSession';
 import { createSettingsModelItems } from '@/config/settingsModelItems';
 import { createSettingsSections } from '@/config/settingsSections';
 import { createSettingsServiceTests } from '@/config/settingsServiceTests';
 import { buildSettingsTestPayload } from '@/config/settingsTestPayload';
-import {
-  formDataFromSettings,
-  initialSettingsFormData,
-} from '@/config/settingsFormData';
 import { SettingsAdvancedPanel } from '@/components/settings/SettingsAdvancedPanel';
 import { SettingsActionBar } from '@/components/settings/SettingsActionBar';
 import { SettingsAbout } from '@/components/settings/SettingsAbout';
@@ -33,12 +28,23 @@ export const Settings: React.FC = () => {
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const [settings, setSettings] = useState<SettingsType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState(initialSettingsFormData);
   const [serviceTestStates, setServiceTestStates] = useState<Record<string, ServiceTestState>>({});
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const {
+    settings,
+    setSettings,
+    isLoading,
+    isSaving,
+    formData,
+    handleSave,
+    handleReset,
+    handleFieldChange,
+    handleVendorApiKeyChange,
+  } = useSettingsFormController({
+    t,
+    confirm,
+    notify: (message, type) => show({ message, type }),
+  });
 
   const {
     oauthConnecting,
@@ -59,126 +65,6 @@ export const Settings: React.FC = () => {
 
   const settingsSections = createSettingsSections(t);
   const serviceTestItems = createSettingsServiceTests(t);
-
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.getSettings();
-      if (response.data) {
-        setSettings(response.data);
-        setFormData(formDataFromSettings(response.data));
-        projectSession.saveSettingsSnapshot(response.data);
-      }
-    } catch (error: any) {
-      console.error('加载设置失败:', error);
-      show({
-        message: t('settings.messages.loadFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
-        type: 'error'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const {
-        api_key, mineru_token, baidu_api_key, lazyllm_api_keys,
-        text_api_key, image_api_key, image_caption_api_key,
-        ...otherData
-      } = formData;
-      const payload: Parameters<typeof api.updateSettings>[0] = {
-        ...otherData,
-        ai_provider_format: otherData.ai_provider_format,
-      };
-
-      // Only send sensitive fields if user entered a new value
-      if (api_key) payload.api_key = api_key;
-      if (mineru_token) payload.mineru_token = mineru_token;
-      if (baidu_api_key) payload.baidu_api_key = baidu_api_key;
-      if (text_api_key) payload.text_api_key = text_api_key;
-      if (image_api_key) payload.image_api_key = image_api_key;
-      if (image_caption_api_key) payload.image_caption_api_key = image_caption_api_key;
-
-      // Send lazyllm API keys (only non-empty values)
-      const nonEmptyKeys = Object.fromEntries(
-        Object.entries(lazyllm_api_keys).filter(([, v]) => v)
-      );
-      if (Object.keys(nonEmptyKeys).length > 0) {
-        payload.lazyllm_api_keys = nonEmptyKeys;
-      }
-
-      const response = await api.updateSettings(payload);
-      if (response.data) {
-        setSettings(response.data);
-        projectSession.saveSettingsSnapshot(response.data);
-        show({ message: t('settings.messages.saveSuccess'), type: 'success' });
-        show({ message: t('settings.messages.testServiceTip'), type: 'info' });
-        // Clear all sensitive fields after save
-        setFormData(prev => ({
-          ...prev,
-          api_key: '', mineru_token: '', baidu_api_key: '',
-          lazyllm_api_keys: {},
-          text_api_key: '', image_api_key: '', image_caption_api_key: '',
-        }));
-      }
-    } catch (error: any) {
-      console.error('保存设置失败:', error);
-      show({
-        message: t('settings.messages.saveFailed') + ': ' + (error?.response?.data?.error?.message || error?.message || t('settings.messages.unknownError')),
-        type: 'error'
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleReset = () => {
-    confirm(
-      t('settings.messages.resetConfirm'),
-      async () => {
-        setIsSaving(true);
-        try {
-          const response = await api.resetSettings();
-          if (response.data) {
-            setSettings(response.data);
-            setFormData(formDataFromSettings(response.data));
-            show({ message: t('settings.messages.resetSuccess'), type: 'success' });
-          }
-        } catch (error: any) {
-          console.error('重置设置失败:', error);
-          show({
-            message: t('settings.messages.resetFailed') + ': ' + (error?.message || t('settings.messages.unknownError')),
-            type: 'error'
-          });
-        } finally {
-          setIsSaving(false);
-        }
-      },
-      {
-        title: t('settings.messages.resetTitle'),
-        confirmText: t('settings.messages.resetConfirmBtn'),
-        cancelText: t('settings.messages.resetCancelBtn'),
-        variant: 'warning',
-      }
-    );
-  };
-
-  const handleFieldChange = (key: string, value: any) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleVendorApiKeyChange = (vendor: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      lazyllm_api_keys: { ...prev.lazyllm_api_keys, [vendor]: value },
-    }));
-  };
 
   const updateServiceTest = (key: string, nextState: ServiceTestState) => {
     setServiceTestStates(prev => ({ ...prev, [key]: nextState }));

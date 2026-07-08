@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { uploadMaterial, getMaterialByUrl } from '@/api/endpoints';
+import { uploadMaterial, getMaterialByUrl } from '@/api/materialsApi';
 import { useT } from '@/hooks/useT';
 
 const ALLOWED_IMAGE_TYPES = [

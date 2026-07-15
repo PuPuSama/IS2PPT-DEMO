@@ -25,6 +25,7 @@ export const historyI18n = {
       titleEmpty: '项目名称不能为空',
       titleUpdated: '项目名称已更新',
       titleUpdateFailed: '更新项目名称失败',
+      untitled: '未命名项目',
     },
   },
   en: {
@@ -53,6 +54,7 @@ export const historyI18n = {
       titleEmpty: 'Project name cannot be empty',
       titleUpdated: 'Project name updated',
       titleUpdateFailed: 'Failed to update project name',
+      untitled: 'Untitled Project',
     },
   },
 };

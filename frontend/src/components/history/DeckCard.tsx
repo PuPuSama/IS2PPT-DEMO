@@ -2,36 +2,70 @@ import React, { useState, useEffect } from 'react';
 import { Clock, FileText, ChevronRight, Trash2 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { Card } from '@/components/shared';
-import { getProjectTitle, getFirstPageImage, formatDate, getStatusText, getStatusColor } from '@/utils/projectUtils';
-import type { Project } from '@/types';
+import { getImageUrl } from '@/api/client';
+import {
+  getDeckCoverImage,
+  getDeckDisplayTitle,
+  getDeckProgress,
+  type DeckProgress,
+} from '@/entities/deck/model/deckSelectors';
+import type { Deck } from '@/entities/deck/model/types';
+import { formatDate } from '@/utils/projectUtils';
 
-// ProjectCard 组件自包含翻译
-const projectCardI18n = {
+// History card copy stays local until the history feature locale is consolidated.
+const deckCardI18n = {
   zh: {
-    projectCard: { pages: "{{count}} 页", page: "第 {{num}} 页" }
+    deckCard: {
+      pages: '{{count}} 页',
+      page: '第 {{num}} 页',
+      untitled: '未命名项目',
+      status: {
+        'not-started': '未开始',
+        'needs-description': '待生成描述',
+        'needs-images': '待生成图片',
+        complete: '已完成',
+      },
+    },
   },
   en: {
-    projectCard: { pages: "{{count}} pages", page: "Page {{num}}" }
-  }
+    deckCard: {
+      pages: '{{count}} pages',
+      page: 'Page {{num}}',
+      untitled: 'Untitled Project',
+      status: {
+        'not-started': 'Not Started',
+        'needs-description': 'Pending Descriptions',
+        'needs-images': 'Pending Images',
+        complete: 'Completed',
+      },
+    },
+  },
 };
 
-export interface ProjectCardProps {
-  project: Project;
+const statusClass: Record<DeckProgress, string> = {
+  complete: 'text-green-600 bg-green-50',
+  'needs-images': 'text-yellow-600 bg-yellow-50',
+  'needs-description': 'text-blue-600 bg-blue-50',
+  'not-started': 'text-gray-600 bg-gray-50',
+};
+
+export interface DeckCardProps {
+  deck: Deck;
   isSelected: boolean;
   isEditing: boolean;
   editingTitle: string;
-  onSelect: (project: Project) => void;
-  onToggleSelect: (projectId: string) => void;
-  onDelete: (e: React.MouseEvent, project: Project) => void;
-  onStartEdit: (e: React.MouseEvent, project: Project) => void;
+  onSelect: (deck: Deck) => void;
+  onToggleSelect: (deckId: string) => void;
+  onDelete: (e: React.MouseEvent, deck: Deck) => void;
+  onStartEdit: (e: React.MouseEvent, deck: Deck) => void;
   onTitleChange: (title: string) => void;
-  onTitleKeyDown: (e: React.KeyboardEvent, projectId: string) => void;
-  onSaveEdit: (projectId: string) => void;
+  onTitleKeyDown: (e: React.KeyboardEvent, deckId: string) => void;
+  onSaveEdit: (deckId: string) => void;
   isBatchMode: boolean;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
-  project,
+export const DeckCard: React.FC<DeckCardProps> = ({
+  deck,
   isSelected,
   isEditing,
   editingTitle,
@@ -44,7 +78,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onSaveEdit,
   isBatchMode,
 }) => {
-  const t = useT(projectCardI18n);
+  const t = useT(deckCardI18n);
   // 检测屏幕尺寸，只在非手机端加载图片（必须在早期返回之前声明hooks）
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
 
@@ -60,15 +94,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const projectId = project.id || project.project_id;
-  if (!projectId) return null;
-
-  const title = getProjectTitle(project);
-  const pageCount = project.pages?.length || 0;
-  const statusText = getStatusText(project);
-  const statusColor = getStatusColor(project);
-
-  const firstPageImage = shouldLoadImage ? getFirstPageImage(project) : null;
+  const title = getDeckDisplayTitle(deck, t('deckCard.untitled'));
+  const pageCount = deck.slides.length;
+  const progress = getDeckProgress(deck);
+  const statusText = t(`deckCard.status.${progress}`);
+  const firstPageImage = shouldLoadImage
+    ? getImageUrl(getDeckCoverImage(deck) || undefined, deck.updatedAt)
+    : null;
 
   return (
     <Card
@@ -77,7 +109,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           ? 'border-2 border-brand-500 bg-brand-50 dark:bg-background-secondary'
           : 'hover:shadow-lg border border-gray-200 dark:border-border-primary'
       } ${isBatchMode ? 'cursor-default' : 'cursor-pointer'}`}
-      onClick={() => onSelect(project)}
+      onClick={() => onSelect(deck)}
     >
       <div className="flex items-start gap-3 md:gap-4">
         {/* 复选框 */}
@@ -85,7 +117,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onToggleSelect(projectId)}
+            onChange={() => onToggleSelect(deck.id)}
             className="w-4 h-4 text-brand-600 border-gray-300 dark:border-border-primary rounded focus:ring-brand-500 cursor-pointer"
           />
         </div>
@@ -98,8 +130,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 type="text"
                 value={editingTitle}
                 onChange={(e) => onTitleChange(e.target.value)}
-                onKeyDown={(e) => onTitleKeyDown(e, projectId)}
-                onBlur={() => onSaveEdit(projectId)}
+                onKeyDown={(e) => onTitleKeyDown(e, deck.id)}
+                onBlur={() => onSaveEdit(deck.id)}
                 autoFocus
                 className="text-base md:text-lg font-semibold text-gray-900 dark:text-foreground-primary px-2 py-1 border border-brand-500 rounded bg-white dark:bg-background-primary focus:outline-none focus:ring-2 focus:ring-brand-500 flex-1 min-w-0"
                 onClick={(e) => e.stopPropagation()}
@@ -111,24 +143,24 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     ? 'cursor-default'
                     : 'cursor-pointer hover:text-brand-600 transition-colors'
                 }`}
-                onClick={(e) => onStartEdit(e, project)}
+                onClick={(e) => onStartEdit(e, deck)}
                 title={isBatchMode ? undefined : t('common.edit')}
               >
                 {title}
               </h3>
             )}
-            <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusColor}`}>
+            <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusClass[progress]}`}>
               {statusText}
             </span>
           </div>
           <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary flex-wrap">
             <span className="flex items-center gap-1">
               <FileText size={14} />
-              {t('projectCard.pages', { count: pageCount })}
+              {t('deckCard.pages', { count: pageCount })}
             </span>
             <span className="flex items-center gap-1">
               <Clock size={14} />
-              {formatDate(project.updated_at || project.created_at)}
+              {formatDate(deck.updatedAt || deck.createdAt)}
             </span>
           </div>
         </div>
@@ -138,7 +170,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           {firstPageImage ? (
             <img
               src={firstPageImage}
-              alt={t('projectCard.page', { num: 1 })}
+              alt={t('deckCard.page', { num: 1 })}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -151,7 +183,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* 右侧：操作按钮 */}
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
-            onClick={(e) => onDelete(e, project)}
+            onClick={(e) => onDelete(e, deck)}
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title={t('common.delete')}
           >

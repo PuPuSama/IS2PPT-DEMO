@@ -1,10 +1,11 @@
 import { apiClient } from './client';
-import type { ApiResponse, CreateProjectRequest, Project } from '@/types';
+import type { ApiResponse, CreateProjectRequest } from '@/types';
+import type { ProjectDto, ProjectUpdateDto } from '@/entities/deck/api/projectDto';
 
 /**
  * 创建项目
  */
-export const createProject = async (data: CreateProjectRequest): Promise<ApiResponse<Project>> => {
+export const createProject = async (data: CreateProjectRequest): Promise<ApiResponse<ProjectDto>> => {
   // 根据输入类型确定 creation_type
   let creation_type = 'idea';
   if (data.description_text) {
@@ -13,7 +14,7 @@ export const createProject = async (data: CreateProjectRequest): Promise<ApiResp
     creation_type = 'outline';
   }
 
-  const response = await apiClient.post<ApiResponse<Project>>('/api/projects', {
+  const response = await apiClient.post<ApiResponse<ProjectDto>>('/api/projects', {
     creation_type,
     idea_prompt: data.idea_prompt,
     outline_text: data.outline_text,
@@ -44,22 +45,25 @@ export const uploadTemplate = async (
 /**
  * 获取项目列表（历史项目）
  */
-export const listProjects = async (limit?: number, offset?: number): Promise<ApiResponse<{ projects: Project[]; total: number }>> => {
+export const listProjects = async (
+  limit?: number,
+  offset?: number
+): Promise<ApiResponse<{ projects: ProjectDto[]; total: number }>> => {
   const params = new URLSearchParams();
   if (limit !== undefined) params.append('limit', limit.toString());
   if (offset !== undefined) params.append('offset', offset.toString());
 
   const queryString = params.toString();
   const url = `/api/projects${queryString ? `?${queryString}` : ''}`;
-  const response = await apiClient.get<ApiResponse<{ projects: Project[]; total: number }>>(url);
+  const response = await apiClient.get<ApiResponse<{ projects: ProjectDto[]; total: number }>>(url);
   return response.data;
 };
 
 /**
  * 获取项目详情
  */
-export const getProject = async (projectId: string): Promise<ApiResponse<Project>> => {
-  const response = await apiClient.get<ApiResponse<Project>>(`/api/projects/${projectId}`);
+export const getProject = async (projectId: string): Promise<ApiResponse<ProjectDto>> => {
+  const response = await apiClient.get<ApiResponse<ProjectDto>>(`/api/projects/${projectId}`);
   return response.data;
 };
 
@@ -76,9 +80,9 @@ export const deleteProject = async (projectId: string): Promise<ApiResponse> => 
  */
 export const updateProject = async (
   projectId: string,
-  data: Partial<Project>
-): Promise<ApiResponse<Project>> => {
-  const response = await apiClient.put<ApiResponse<Project>>(`/api/projects/${projectId}`, data);
+  data: ProjectUpdateDto
+): Promise<ApiResponse<ProjectDto>> => {
+  const response = await apiClient.put<ApiResponse<ProjectDto>>(`/api/projects/${projectId}`, data);
   return response.data;
 };
 
@@ -88,8 +92,8 @@ export const updateProject = async (
 export const updatePagesOrder = async (
   projectId: string,
   pageIds: string[]
-): Promise<ApiResponse<Project>> => {
-  const response = await apiClient.put<ApiResponse<Project>>(
+): Promise<ApiResponse<ProjectDto>> => {
+  const response = await apiClient.put<ApiResponse<ProjectDto>>(
     `/api/projects/${projectId}`,
     { pages_order: pageIds }
   );

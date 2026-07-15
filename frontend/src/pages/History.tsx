@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, Trash2, Sun, Moon } from 'lucide-react';
+import { Home, Trash2, Sun, Moon, Presentation } from 'lucide-react';
 import { Button, Loading, Card, Pagination, useToast, useConfirm } from '@/components/shared';
-import { ProjectCard } from '@/components/history/ProjectCard';
+import { DeckCard } from '@/components/history/DeckCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useT } from '@/hooks/useT';
 import { deleteProject, listProjects, updateProject } from '@/api/projectsApi';
-import { normalizeProject } from '@/utils';
-import { getProjectTitle, getProjectRoute } from '@/utils/projectUtils';
+import {
+  deckToProjectUpdateDto,
+  projectDtoToDeck,
+} from '@/entities/deck/model/projectMapper';
+import { getDeckDisplayTitle, getDeckRoute } from '@/entities/deck/model/deckSelectors';
+import type { Deck } from '@/entities/deck/model/types';
 import { projectSession } from '@/shared/storage/projectSession';
 import { historyPreferences } from '@/shared/storage/historyPreferences';
 import { historyI18n } from '@/config/historyI18n';
-import type { Project } from '@/types';
 
 export const History: React.FC = () => {
   const navigate = useNavigate();
@@ -22,31 +25,30 @@ export const History: React.FC = () => {
   const { isDark, setTheme } = useTheme();
   const { syncProject, setCurrentProject } = useProjectStore();
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [totalProjects, setTotalProjects] = useState(0);
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [totalDecks, setTotalDecks] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(() => historyPreferences.readPageSize());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
+  const [selectedDeckIds, setSelectedDeckIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState<string>('');
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const totalPages = Math.ceil(totalProjects / pageSize);
+  const totalPages = Math.ceil(totalDecks / pageSize);
 
-  const loadProjects = useCallback(async (page: number) => {
+  const loadDecks = useCallback(async (page: number) => {
     setIsLoading(true);
     setError(null);
     try {
       const offset = (page - 1) * pageSize;
       const response = await listProjects(pageSize, offset);
       if (response.data?.projects) {
-        const normalizedProjects = response.data.projects.map(normalizeProject);
-        setProjects(normalizedProjects);
-        setTotalProjects(response.data.total ?? 0);
+        setDecks(response.data.projects.map(projectDtoToDeck));
+        setTotalDecks(response.data.total ?? 0);
       }
     } catch (err: any) {
       console.error('加载历史项目失败:', err);
@@ -57,11 +59,11 @@ export const History: React.FC = () => {
   }, [pageSize]);
 
   useEffect(() => {
-    loadProjects(currentPage);
-  }, [currentPage, pageSize]);
+    loadDecks(currentPage);
+  }, [currentPage, loadDecks]);
 
   const handlePageChange = useCallback((page: number) => {
-    setSelectedProjects(new Set());
+    setSelectedDeckIds(new Set());
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -70,35 +72,32 @@ export const History: React.FC = () => {
     historyPreferences.savePageSize(size);
     setPageSize(size);
     setCurrentPage(1);
-    setSelectedProjects(new Set());
+    setSelectedDeckIds(new Set());
   }, []);
 
-  // ===== 项目选择与导航 =====
+  // ===== Deck selection and navigation =====
 
-  const handleSelectProject = useCallback(async (project: Project) => {
-    const projectId = project.id || project.project_id;
-    if (!projectId) return;
+  const handleOpenDeck = useCallback(async (deck: Deck) => {
+    const deckId = deck.id;
 
     // 如果正在批量选择模式，不跳转
-    if (selectedProjects.size > 0) {
+    if (selectedDeckIds.size > 0) {
       return;
     }
 
     // 如果正在编辑该项目，不跳转
-    if (editingProjectId === projectId) {
+    if (editingDeckId === deckId) {
       return;
     }
 
     try {
-      // 设置当前项目
-      setCurrentProject(project);
-      projectSession.setActiveProjectId(projectId);
+      projectSession.setActiveProjectId(deckId);
       
       // 同步项目数据
-      await syncProject(projectId);
+      await syncProject(deckId);
       
       // 根据项目状态跳转到不同页面
-      const route = getProjectRoute(project);
+      const route = getDeckRoute(deck);
       navigate(route, { state: { from: 'history' } });
     } catch (err: any) {
       console.error('打开项目失败:', err);
@@ -108,36 +107,35 @@ export const History: React.FC = () => {
       });
     }
    
-  }, [selectedProjects, editingProjectId, setCurrentProject, syncProject, navigate, show]);
+  }, [selectedDeckIds, editingDeckId, syncProject, navigate, show]);
 
   // ===== 批量选择操作 =====
 
-  const handleToggleSelect = useCallback((projectId: string) => {
-    setSelectedProjects(prev => {
+  const handleToggleSelect = useCallback((deckId: string) => {
+    setSelectedDeckIds(prev => {
       const newSelected = new Set(prev);
-      if (newSelected.has(projectId)) {
-        newSelected.delete(projectId);
+      if (newSelected.has(deckId)) {
+        newSelected.delete(deckId);
       } else {
-        newSelected.add(projectId);
+        newSelected.add(deckId);
       }
       return newSelected;
     });
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    setSelectedProjects(prev => {
-      if (prev.size === projects.length) {
+    setSelectedDeckIds(prev => {
+      if (prev.size === decks.length) {
         return new Set();
       } else {
-        const allIds = projects.map(p => p.id || p.project_id).filter(Boolean) as string[];
-        return new Set(allIds);
+        return new Set(decks.map((deck) => deck.id));
       }
     });
-  }, [projects]);
+  }, [decks]);
 
   // ===== 删除操作 =====
 
-  const deleteProjects = useCallback(async (projectIds: string[]) => {
+  const deleteDecks = useCallback(async (deckIds: string[]) => {
     setIsDeleting(true);
     const currentProjectId = projectSession.getActiveProjectId();
     let deletedCurrentProject = false;
@@ -145,10 +143,10 @@ export const History: React.FC = () => {
     try {
       // 批量删除 - 使用 allSettled 处理部分失败
       const results = await Promise.allSettled(
-        projectIds.map(projectId => deleteProject(projectId))
+        deckIds.map((deckId) => deleteProject(deckId))
       );
 
-      const successIds = projectIds.filter((_, i) => results[i].status === 'fulfilled');
+      const successIds = deckIds.filter((_, i) => results[i].status === 'fulfilled');
       const failCount = results.filter(r => r.status === 'rejected').length;
 
       // 检查是否删除了当前项目
@@ -159,17 +157,17 @@ export const History: React.FC = () => {
       }
 
       // 清空选择
-      setSelectedProjects(new Set());
+      setSelectedDeckIds(new Set());
 
       // Reload current page; if all items on this page were deleted, go back one page
       if (successIds.length > 0) {
-        const remainingOnPage = projects.length - successIds.length;
+        const remainingOnPage = decks.length - successIds.length;
         const newPage = remainingOnPage <= 0 && currentPage > 1 ? currentPage - 1 : currentPage;
         if (newPage !== currentPage) {
-          // setCurrentPage triggers the useEffect which calls loadProjects
+          // setCurrentPage triggers the useEffect which reloads the deck list.
           setCurrentPage(newPage);
         } else {
-          await loadProjects(newPage);
+          await loadDecks(newPage);
         }
       }
 
@@ -203,63 +201,56 @@ export const History: React.FC = () => {
     } finally {
       setIsDeleting(false);
     }
-  }, [setCurrentProject, show, projects, currentPage, loadProjects]);
+  }, [setCurrentProject, show, decks, currentPage, loadDecks]);
 
-  const handleDeleteProject = useCallback(async (e: React.MouseEvent, project: Project) => {
+  const handleDeleteDeck = useCallback(async (e: React.MouseEvent, deck: Deck) => {
     e.stopPropagation(); // 阻止事件冒泡，避免触发项目选择
-    
-    const projectId = project.id || project.project_id;
-    if (!projectId) return;
 
-    const projectTitle = getProjectTitle(project);
+    const deckTitle = getDeckDisplayTitle(deck, t('history.untitled'));
     confirm(
-      t('history.confirmDelete', { title: projectTitle }),
+      t('history.confirmDelete', { title: deckTitle }),
       async () => {
-        await deleteProjects([projectId]);
+        await deleteDecks([deck.id]);
       },
       { title: t('history.deleteTitle'), variant: 'danger' }
     );
    
-  }, [confirm, deleteProjects]);
+  }, [confirm, deleteDecks, t]);
 
   const handleBatchDelete = useCallback(async () => {
-    if (selectedProjects.size === 0) return;
+    if (selectedDeckIds.size === 0) return;
 
-    const count = selectedProjects.size;
+    const count = selectedDeckIds.size;
     confirm(
       t('history.confirmBatchDelete', { count }),
       async () => {
-        const projectIds = Array.from(selectedProjects);
-        await deleteProjects(projectIds);
+        await deleteDecks(Array.from(selectedDeckIds));
       },
       { title: t('history.batchDeleteTitle'), variant: 'danger' }
     );
-  }, [selectedProjects, confirm, deleteProjects, t]);
+  }, [selectedDeckIds, confirm, deleteDecks, t]);
 
   // ===== 编辑操作 =====
 
-  const handleStartEdit = useCallback((e: React.MouseEvent, project: Project) => {
+  const handleStartEdit = useCallback((e: React.MouseEvent, deck: Deck) => {
     e.stopPropagation(); // 阻止事件冒泡，避免触发项目选择
     
     // 如果正在批量选择模式，不允许编辑
-    if (selectedProjects.size > 0) {
+    if (selectedDeckIds.size > 0) {
       return;
     }
     
-    const projectId = project.id || project.project_id;
-    if (!projectId) return;
-    
-    const currentTitle = getProjectTitle(project);
-    setEditingProjectId(projectId);
+    const currentTitle = getDeckDisplayTitle(deck, t('history.untitled'));
+    setEditingDeckId(deck.id);
     setEditingTitle(currentTitle);
-  }, [selectedProjects]);
+  }, [selectedDeckIds, t]);
 
   const handleCancelEdit = useCallback(() => {
-    setEditingProjectId(null);
+    setEditingDeckId(null);
     setEditingTitle('');
   }, []);
 
-  const handleSaveEdit = useCallback(async (projectId: string) => {
+  const handleSaveEdit = useCallback(async (deckId: string) => {
     const nextTitle = editingTitle.trim();
 
     if (!nextTitle) {
@@ -268,23 +259,16 @@ export const History: React.FC = () => {
     }
 
     try {
-      const targetProject = projects.find((p) => (p.id || p.project_id) === projectId);
-      if (!targetProject) return;
-      await updateProject(projectId, { project_title: nextTitle });
+      const targetDeck = decks.find((deck) => deck.id === deckId);
+      if (!targetDeck) return;
+      await updateProject(deckId, deckToProjectUpdateDto({ title: nextTitle }));
 
       // 更新本地状态
-      setProjects(prev => prev.map(p => {
-        const id = p.id || p.project_id;
-        if (id === projectId) {
-          return {
-            ...p,
-            project_title: nextTitle,
-          };
-        }
-        return p;
-      }));
+      setDecks((currentDecks) => currentDecks.map((deck) => (
+        deck.id === deckId ? { ...deck, title: nextTitle } : deck
+      )));
 
-      setEditingProjectId(null);
+      setEditingDeckId(null);
       setEditingTitle('');
       show({ message: t('history.titleUpdated'), type: 'success' });
     } catch (err: any) {
@@ -295,12 +279,12 @@ export const History: React.FC = () => {
       });
     }
    
-  }, [editingTitle, projects, show, t]);
+  }, [editingTitle, decks, show, t]);
 
-  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent, projectId: string) => {
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent, deckId: string) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleSaveEdit(projectId);
+      handleSaveEdit(deckId);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       handleCancelEdit();
@@ -313,8 +297,8 @@ export const History: React.FC = () => {
       <nav className="h-14 md:h-16 bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-100 dark:border-border-primary">
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center text-xl md:text-2xl">
-              🍌
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-600 rounded-lg flex items-center justify-center text-white">
+              <Presentation size={20} className="md:w-6 md:h-6" />
             </div>
             <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('home.title')}</span>
           </div>
@@ -357,15 +341,15 @@ export const History: React.FC = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-foreground-primary mb-1 md:mb-2">{t('history.title')}</h1>
             <p className="text-sm md:text-base text-gray-600 dark:text-foreground-tertiary">{t('history.subtitle')}</p>
           </div>
-          {projects.length > 0 && selectedProjects.size > 0 && (
+          {decks.length > 0 && selectedDeckIds.size > 0 && (
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                {t('history.selectedCount', { count: selectedProjects.size })}
+                {t('history.selectedCount', { count: selectedDeckIds.size })}
               </span>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setSelectedProjects(new Set())}
+                onClick={() => setSelectedDeckIds(new Set())}
                 disabled={isDeleting}
               >
                 {t('history.cancelSelect')}
@@ -392,11 +376,11 @@ export const History: React.FC = () => {
           <Card className="p-8 text-center">
             <div className="text-6xl mb-4">⚠️</div>
             <p className="text-gray-600 dark:text-foreground-tertiary mb-4">{error}</p>
-            <Button variant="primary" onClick={() => loadProjects(currentPage)}>
+            <Button variant="primary" onClick={() => loadDecks(currentPage)}>
               {t('common.retry')}
             </Button>
           </Card>
-        ) : projects.length === 0 ? (
+        ) : decks.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="text-6xl mb-4">📭</div>
             <h3 className="text-xl font-semibold text-gray-700 dark:text-foreground-secondary mb-2">
@@ -412,44 +396,39 @@ export const History: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {/* 全选工具栏 */}
-            {projects.length > 0 && (
+            {decks.length > 0 && (
               <div className="flex items-center gap-3 pb-2 border-b border-gray-200 dark:border-border-primary">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={selectedProjects.size === projects.length && projects.length > 0}
+                    checked={selectedDeckIds.size === decks.length && decks.length > 0}
                     onChange={handleSelectAll}
                     className="w-4 h-4 text-brand-600 border-gray-300 dark:border-border-primary rounded focus:ring-brand-500"
                   />
                   <span className="text-sm text-gray-700 dark:text-foreground-secondary">
-                    {selectedProjects.size === projects.length ? t('common.deselectAll') : t('common.selectAll')}
+                    {selectedDeckIds.size === decks.length ? t('common.deselectAll') : t('common.selectAll')}
                   </span>
                 </label>
               </div>
             )}
             
-            {projects.map((project) => {
-              const projectId = project.id || project.project_id;
-              if (!projectId) return null;
-
-              return (
-                <ProjectCard
-                  key={projectId}
-                  project={project}
-                  isSelected={selectedProjects.has(projectId)}
-                  isEditing={editingProjectId === projectId}
-                  editingTitle={editingTitle}
-                  onSelect={handleSelectProject}
-                  onToggleSelect={handleToggleSelect}
-                  onDelete={handleDeleteProject}
-                  onStartEdit={handleStartEdit}
-                  onTitleChange={setEditingTitle}
-                  onTitleKeyDown={handleTitleKeyDown}
-                  onSaveEdit={handleSaveEdit}
-                  isBatchMode={selectedProjects.size > 0}
-                />
-              );
-            })}
+            {decks.map((deck) => (
+              <DeckCard
+                key={deck.id}
+                deck={deck}
+                isSelected={selectedDeckIds.has(deck.id)}
+                isEditing={editingDeckId === deck.id}
+                editingTitle={editingTitle}
+                onSelect={handleOpenDeck}
+                onToggleSelect={handleToggleSelect}
+                onDelete={handleDeleteDeck}
+                onStartEdit={handleStartEdit}
+                onTitleChange={setEditingTitle}
+                onTitleKeyDown={handleTitleKeyDown}
+                onSaveEdit={handleSaveEdit}
+                isBatchMode={selectedDeckIds.size > 0}
+              />
+            ))}
 
             {/* 分页 */}
             <div className="pt-4">

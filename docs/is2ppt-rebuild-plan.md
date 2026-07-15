@@ -13,6 +13,20 @@ the project easier to maintain as `is2ppt`.
 
 ## Current State
 
+Progress snapshot (2026-07-15):
+
+- Phase 1 identity work is complete across frontend, backend identity constants,
+  and the CLI package.
+- Phase 2 frontend API split is complete; the legacy `endpoints.ts` facade has
+  been removed.
+- Phase 3 is in progress. `Deck` and `Slide` domain models, DTO contracts, and
+  bidirectional mappers are in place, and the history feature now consumes the
+  new domain model.
+- Phase 6 is in progress. Settings and several locale payloads have been split,
+  and the remaining legacy banana visual marks have been removed from frontend
+  source.
+- Phase 7 and Phase 8 backend package/domain restructuring have not started.
+
 The repository currently contains:
 
 - React 18 + Vite frontend under `frontend/`.
@@ -21,9 +35,9 @@ The repository currently contains:
 - Docker, docs, skills, tests, migrations, and deployment scripts.
 - Frontend business logic concentrated in large files:
   - `frontend/src/pages/SlidePreview.tsx`
-  - `frontend/src/pages/Settings.tsx`
   - `frontend/src/store/useProjectStore.ts`
-  - `frontend/src/api/endpoints.ts`
+- Frontend DTO compatibility types now live at the API/domain boundary, while
+  migrated UI code uses `Deck` and `Slide` terminology.
 - Backend logic organized around `controllers/`, `services/`, `models/`, and
   `utils/`, but still uses the old project vocabulary heavily.
 

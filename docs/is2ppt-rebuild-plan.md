@@ -37,8 +37,10 @@ Progress snapshot (2026-07-15):
   compatibility writes are still mirrored from the legacy store. A reusable,
   cancellable generation job poller now owns status normalization, scheduling,
   and retry limits. General async jobs, description generation, and image
-  generation all use it. Image-specific page release, warning, and asset-sync
-  callbacks remain in the compatibility store for the next service extraction.
+  generation all use it. An image-generation coordinator now owns per-slide job
+  release, warning propagation, terminal failure handling, and generated-asset
+  synchronization retries. `useProjectStore` supplies only compatibility state
+  adapters to that coordinator.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

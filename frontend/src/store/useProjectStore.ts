@@ -46,6 +46,7 @@ import { useSlidesStore } from '@/entities/slide/model/useSlidesStore';
 import type { GenerationProgress } from '@/entities/generation/model/types';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { createGenerationJobPoller } from '@/entities/generation/api/generationJobPoller';
+import { createImageGenerationJobCallbacks } from '@/entities/generation/model/imageGenerationJobService';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -1042,99 +1043,42 @@ const debouncedUpdatePage = debounce(
     }
     const projectId = currentProject.id!;
 
-    const releaseTrackedSlides = () => {
-      const jobsBySlideId = { ...get().pageGeneratingTasks };
-      pageIds.forEach((slideId) => {
-        if (jobsBySlideId[slideId] === taskId) {
-          delete jobsBySlideId[slideId];
-        }
-      });
-      return jobsBySlideId;
-    };
+    const imageJobCallbacks = createImageGenerationJobCallbacks({
+      jobId: taskId,
+      slideIds: pageIds,
+      readAssignments: () => get().pageGeneratingTasks,
+      writeAssignments: (pageGeneratingTasks) => set({ pageGeneratingTasks }),
+      refreshDeck: () => get().syncProject(),
+      isSlideSettled: (slideId) => {
+        const page = get().currentProject?.pages.find((candidate) => candidate.id === slideId);
+        return page?.status === 'COMPLETED' || page?.status === 'FAILED';
+      },
+      areSlideAssetsReady: () => {
+        const project = get().currentProject;
+        if (!project) return null;
+        return pageIds.every((slideId) => {
+          const page = project.pages.find((candidate) => candidate.id === slideId);
+          return Boolean(page?.generated_image_path);
+        });
+      },
+      setWarning: (warningMessage) => {
+        if (get().warningMessage !== warningMessage) set({ warningMessage });
+      },
+      setError: (error) => set({ error }),
+      failureMessage: (task) => normalizeErrorMessage(
+        task.error_message || task.error || t('store.batchGenerateFailed'),
+      ),
+      logger: {
+        debug: (message) => devLog(message),
+        warn: (message) => console.warn(message),
+        error: (message, error) => console.error(message, error),
+      },
+    });
 
     const poller = createGenerationJobPoller({
       projectId,
       jobId: taskId,
-      onUpdate: async (task, phase) => {
-        devLog(`[批量轮询] Task ${taskId} 状态: ${task.status}`, task.progress);
-        if (phase !== 'waiting' && phase !== 'running') return;
-
-        const newWarning = task.progress?.warning_message;
-        if (newWarning && get().warningMessage !== newWarning) {
-          set({ warningMessage: newWarning });
-        }
-
-        devLog(`[批量轮询] Task ${taskId} 处理中，同步项目数据...`);
-        await get().syncProject();
-
-        const { currentProject: project, pageGeneratingTasks: jobsBySlideId } = get();
-        if (!project) return;
-
-        const remainingJobs = { ...jobsBySlideId };
-        let changed = false;
-        pageIds.forEach((slideId) => {
-          if (remainingJobs[slideId] !== taskId) return;
-          const page = project.pages.find((candidate) => candidate.id === slideId);
-          if (page && (page.status === 'COMPLETED' || page.status === 'FAILED')) {
-            delete remainingJobs[slideId];
-            changed = true;
-          }
-        });
-        if (changed) set({ pageGeneratingTasks: remainingJobs });
-      },
-      onComplete: async (task) => {
-        devLog(`[批量轮询] Task ${taskId} 已完成，清除任务记录`);
-        set({
-          pageGeneratingTasks: releaseTrackedSlides(),
-          warningMessage: task.progress?.warning_message || null,
-        });
-
-        let retryCount = 0;
-        const maxRetries = 5;
-        const retryDelay = 1000;
-        const syncWithRetry = async (): Promise<void> => {
-          await get().syncProject();
-          const updatedProject = get().currentProject;
-          if (!updatedProject) return;
-
-          const allImagesReady = pageIds.every((slideId) => {
-            const page = updatedProject.pages.find((candidate) => candidate.id === slideId);
-            return page?.generated_image_path;
-          });
-          if (allImagesReady) {
-            devLog('[批量轮询] 所有图片路径已同步');
-            return;
-          }
-
-          if (retryCount < maxRetries) {
-            retryCount += 1;
-            devLog(`[批量轮询] 图片路径尚未完全同步，${retryDelay}ms 后重试 (${retryCount}/${maxRetries})`);
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-            await syncWithRetry();
-          } else {
-            console.warn('[批量轮询] 达到最大重试次数，部分图片路径可能未同步');
-          }
-        };
-        await syncWithRetry();
-      },
-      onFailure: async (task) => {
-        console.error(`[批量轮询] Task ${taskId} 失败:`, task.error_message || task.error);
-        set({
-          pageGeneratingTasks: releaseTrackedSlides(),
-          error: normalizeErrorMessage(
-            task.error_message || task.error || t('store.batchGenerateFailed'),
-          ),
-        });
-        await get().syncProject();
-      },
-      onUnknown: (task) => {
-        console.warn(`[批量轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
-        set({ pageGeneratingTasks: releaseTrackedSlides() });
-      },
-      onError: (error) => {
-        console.error('[批量轮询] 轮询错误:', error);
-        set({ pageGeneratingTasks: releaseTrackedSlides() });
-      },
+      ...imageJobCallbacks,
     });
 
     void poller.checkNow();

@@ -14,7 +14,6 @@ import {
   updatePageDescription,
   updatePageOutline,
 } from '@/api/pagesApi';
-import { getTaskStatus } from '@/api/tasksApi';
 import { generateOutline, generateOutlineStream } from '@/api/outlineApi';
 import {
   generateFromDescription,
@@ -1043,144 +1042,102 @@ const debouncedUpdatePage = debounce(
     }
     const projectId = currentProject.id!;
 
-    const poll = async () => {
-      try {
-        const response = await getTaskStatus(projectId, taskId);
-        const task = response.data;
-        
-        if (!task) {
-          console.warn('[批量轮询] 响应中没有任务数据');
-          return;
+    const releaseTrackedSlides = () => {
+      const jobsBySlideId = { ...get().pageGeneratingTasks };
+      pageIds.forEach((slideId) => {
+        if (jobsBySlideId[slideId] === taskId) {
+          delete jobsBySlideId[slideId];
         }
-
-        devLog(`[批量轮询] Task ${taskId} 状态: ${task.status}`, task.progress);
-
-        // 检查任务状态
-        if (task.status === 'COMPLETED') {
-          devLog(`[批量轮询] Task ${taskId} 已完成，清除任务记录`);
-          // 清除所有相关页面的任务记录
-          const { pageGeneratingTasks } = get();
-          const newTasks = { ...pageGeneratingTasks };
-          pageIds.forEach(id => {
-            if (newTasks[id] === taskId) {
-              delete newTasks[id];
-            }
-          });
-          
-          // 提取警告消息（如果有）
-          const warningMessage = task.progress?.warning_message || null;
-          
-          set({ pageGeneratingTasks: newTasks, warningMessage });
-
-          // 刷新项目数据，并验证图片路径已更新
-          // 使用重试机制确保数据同步完成
-          let retryCount = 0;
-          const maxRetries = 5;
-          const retryDelay = 1000; // 1秒
-
-          const syncWithRetry = async (): Promise<void> => {
-            await get().syncProject();
-
-            // 验证所有页面的图片路径是否已更新
-            const { currentProject: updatedProject } = get();
-            if (updatedProject) {
-              const allImagesReady = pageIds.every(pageId => {
-                const page = updatedProject.pages.find(p => p.id === pageId);
-                return page?.generated_image_path;
-              });
-
-              if (allImagesReady) {
-                devLog(`[批量轮询] 所有图片路径已同步`);
-                return;
-              }
-
-              if (retryCount < maxRetries) {
-                retryCount++;
-                devLog(`[批量轮询] 图片路径尚未完全同步，${retryDelay}ms 后重试 (${retryCount}/${maxRetries})`);
-                await new Promise(resolve => setTimeout(resolve, retryDelay));
-                return syncWithRetry();
-              } else {
-                console.warn(`[批量轮询] 达到最大重试次数，部分图片路径可能未同步`);
-              }
-            }
-          };
-
-          await syncWithRetry();
-        } else if (task.status === 'FAILED') {
-          console.error(`[批量轮询] Task ${taskId} 失败:`, task.error_message || task.error);
-          // 清除所有相关页面的任务记录
-          const { pageGeneratingTasks } = get();
-          const newTasks = { ...pageGeneratingTasks };
-          pageIds.forEach(id => {
-            if (newTasks[id] === taskId) {
-              delete newTasks[id];
-            }
-          });
-          set({ 
-            pageGeneratingTasks: newTasks,
-            error: normalizeErrorMessage(task.error_message || task.error || t('store.batchGenerateFailed'))
-          });
-          // 刷新项目数据以更新页面状态
-          await get().syncProject();
-        } else if (task.status === 'PENDING' || task.status === 'PROCESSING') {
-          // 检查警告消息
-          const newWarning = task.progress?.warning_message;
-          if (newWarning && get().warningMessage !== newWarning) {
-            set({ warningMessage: newWarning });
-          }
-          // 继续轮询，同时同步项目数据以更新页面状态
-          devLog(`[批量轮询] Task ${taskId} 处理中，同步项目数据...`);
-          await get().syncProject();
-
-          // 逐个释放已完成的页面，让缩略图立刻显示
-          const { currentProject: proj, pageGeneratingTasks: pgt } = get();
-          if (proj) {
-            const updated = { ...pgt };
-            let changed = false;
-            pageIds.forEach(id => {
-              if (updated[id] === taskId) {
-                const page = proj.pages.find(p => p.id === id);
-                // 只释放已完成或失败的页面，避免误释放尚未被线程池拾取的页面
-                // （未拾取的页面仍为 DESCRIPTION_GENERATED，不应提前释放）
-                if (page && (page.status === 'COMPLETED' || page.status === 'FAILED')) {
-                  delete updated[id];
-                  changed = true;
-                }
-              }
-            });
-            if (changed) set({ pageGeneratingTasks: updated });
-          }
-
-          devLog(`[批量轮询] Task ${taskId} 处理中，2秒后继续轮询...`);
-          setTimeout(poll, 2000);
-        } else {
-          // 未知状态，停止轮询
-          console.warn(`[批量轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
-          const { pageGeneratingTasks } = get();
-          const newTasks = { ...pageGeneratingTasks };
-          pageIds.forEach(id => {
-            if (newTasks[id] === taskId) {
-              delete newTasks[id];
-            }
-          });
-          set({ pageGeneratingTasks: newTasks });
-        }
-      } catch (error: any) {
-        console.error('[批量轮询] 轮询错误:', error);
-        // 清除所有相关页面的任务记录
-        const { pageGeneratingTasks } = get();
-        const newTasks = { ...pageGeneratingTasks };
-        pageIds.forEach(id => {
-          if (newTasks[id] === taskId) {
-            delete newTasks[id];
-          }
-        });
-        set({ pageGeneratingTasks: newTasks });
-      }
+      });
+      return jobsBySlideId;
     };
 
-    // 开始轮询（不 await，立即返回让 UI 继续响应）
-    poll();
+    const poller = createGenerationJobPoller({
+      projectId,
+      jobId: taskId,
+      onUpdate: async (task, phase) => {
+        devLog(`[批量轮询] Task ${taskId} 状态: ${task.status}`, task.progress);
+        if (phase !== 'waiting' && phase !== 'running') return;
+
+        const newWarning = task.progress?.warning_message;
+        if (newWarning && get().warningMessage !== newWarning) {
+          set({ warningMessage: newWarning });
+        }
+
+        devLog(`[批量轮询] Task ${taskId} 处理中，同步项目数据...`);
+        await get().syncProject();
+
+        const { currentProject: project, pageGeneratingTasks: jobsBySlideId } = get();
+        if (!project) return;
+
+        const remainingJobs = { ...jobsBySlideId };
+        let changed = false;
+        pageIds.forEach((slideId) => {
+          if (remainingJobs[slideId] !== taskId) return;
+          const page = project.pages.find((candidate) => candidate.id === slideId);
+          if (page && (page.status === 'COMPLETED' || page.status === 'FAILED')) {
+            delete remainingJobs[slideId];
+            changed = true;
+          }
+        });
+        if (changed) set({ pageGeneratingTasks: remainingJobs });
+      },
+      onComplete: async (task) => {
+        devLog(`[批量轮询] Task ${taskId} 已完成，清除任务记录`);
+        set({
+          pageGeneratingTasks: releaseTrackedSlides(),
+          warningMessage: task.progress?.warning_message || null,
+        });
+
+        let retryCount = 0;
+        const maxRetries = 5;
+        const retryDelay = 1000;
+        const syncWithRetry = async (): Promise<void> => {
+          await get().syncProject();
+          const updatedProject = get().currentProject;
+          if (!updatedProject) return;
+
+          const allImagesReady = pageIds.every((slideId) => {
+            const page = updatedProject.pages.find((candidate) => candidate.id === slideId);
+            return page?.generated_image_path;
+          });
+          if (allImagesReady) {
+            devLog('[批量轮询] 所有图片路径已同步');
+            return;
+          }
+
+          if (retryCount < maxRetries) {
+            retryCount += 1;
+            devLog(`[批量轮询] 图片路径尚未完全同步，${retryDelay}ms 后重试 (${retryCount}/${maxRetries})`);
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            await syncWithRetry();
+          } else {
+            console.warn('[批量轮询] 达到最大重试次数，部分图片路径可能未同步');
+          }
+        };
+        await syncWithRetry();
+      },
+      onFailure: async (task) => {
+        console.error(`[批量轮询] Task ${taskId} 失败:`, task.error_message || task.error);
+        set({
+          pageGeneratingTasks: releaseTrackedSlides(),
+          error: normalizeErrorMessage(
+            task.error_message || task.error || t('store.batchGenerateFailed'),
+          ),
+        });
+        await get().syncProject();
+      },
+      onUnknown: (task) => {
+        console.warn(`[批量轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
+        set({ pageGeneratingTasks: releaseTrackedSlides() });
+      },
+      onError: (error) => {
+        console.error('[批量轮询] 轮询错误:', error);
+        set({ pageGeneratingTasks: releaseTrackedSlides() });
+      },
+    });
+
+    void poller.checkNow();
   },
 
   // 编辑页面图片（异步）

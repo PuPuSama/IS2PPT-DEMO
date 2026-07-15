@@ -36,8 +36,9 @@ Progress snapshot (2026-07-15):
   domain names. `OutlineEditor` and `SlidePreview` consume this read model while
   compatibility writes are still mirrored from the legacy store. A reusable,
   cancellable generation job poller now owns status normalization, scheduling,
-  and retry limits. General async jobs and description generation use it; image
-  generation still keeps its page-release callbacks in the compatibility store.
+  and retry limits. General async jobs, description generation, and image
+  generation all use it. Image-specific page release, warning, and asset-sync
+  callbacks remain in the compatibility store for the next service extraction.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

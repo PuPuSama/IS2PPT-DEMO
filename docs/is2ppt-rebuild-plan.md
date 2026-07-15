@@ -28,6 +28,9 @@ Progress snapshot (2026-07-15):
   API endpoints or DTO mappers directly. `useDeckStore` owns the synchronized
   Deck snapshot, session restore, and load errors, while `useProjectStore`
   mirrors server syncs into it as a temporary compatibility facade.
+  `useSlidesStore` now owns domain-level slide snapshots, local edits, ordering,
+  additions, removals, and clearing. The compatibility facade mirrors full
+  project syncs plus optimistic page edits and reorders into that store.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

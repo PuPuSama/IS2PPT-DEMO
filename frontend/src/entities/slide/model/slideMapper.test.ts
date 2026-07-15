@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import type { PageDto } from '../api/pageDto';
-import { pageDtoToSlide, slideToPageUpdateDto } from './slideMapper';
+import {
+  pageDtoToSlide,
+  pageUpdateDtoToSlideUpdate,
+  slideToPageUpdateDto,
+} from './slideMapper';
 
 const pageDto: PageDto = {
   page_id: 'slide-02',
@@ -49,6 +53,18 @@ describe('slide DTO mapping', () => {
         extra_fields: undefined,
         layout_suggestion: undefined,
       },
+    });
+  });
+
+  test('maps compatibility page patches into domain slide updates', () => {
+    expect(pageUpdateDtoToSlideUpdate({
+      part: 'Results',
+      outline_content: { title: 'Results', points: ['Growth'] },
+      description_content: { text: 'Show the growth chart' },
+    })).toEqual({
+      section: 'Results',
+      outline: { title: 'Results', points: ['Growth'] },
+      description: { format: 'text', text: 'Show the growth chart' },
     });
   });
 });

@@ -49,3 +49,5 @@ export interface Slide {
   updatedAt?: string;
   imageVersions?: SlideImageVersion[];
 }
+
+export type SlideUpdate = Partial<Slide>;

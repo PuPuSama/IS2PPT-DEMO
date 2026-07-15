@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useProjectStore } from '@/store/useProjectStore'
+import { useSlidesStore } from '@/entities/slide/model/useSlidesStore'
 
 // Mock API modules
 vi.mock('@/api/projectsApi', () => ({
@@ -160,6 +161,10 @@ describe('useProjectStore', () => {
       // 验证乐观更新
       const updatedPage = result.current.currentProject?.pages.find(p => p.id === 'page-1')
       expect(updatedPage?.outline_content?.title).toBe('Updated Page 1')
+      expect(useSlidesStore.getState().slides[0].outline).toEqual({
+        title: 'Updated Page 1',
+        points: ['new point'],
+      })
     })
   })
 
@@ -180,6 +185,7 @@ describe('useProjectStore', () => {
       })
       
       expect(result.current.currentProject).toBeNull()
+      expect(useSlidesStore.getState().slides).toEqual([])
     })
   })
 })

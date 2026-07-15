@@ -5,7 +5,13 @@ import type {
   PageStatusDto,
   PageUpdateDto,
 } from '../api/pageDto';
-import type { Slide, SlideDescription, SlideImageVersion, SlideStatus } from './types';
+import type {
+  Slide,
+  SlideDescription,
+  SlideImageVersion,
+  SlideStatus,
+  SlideUpdate,
+} from './types';
 
 const statusFromDto: Record<PageStatusDto, SlideStatus> = {
   DRAFT: 'draft',
@@ -113,6 +119,28 @@ export const slideToPageUpdateDto = (slide: Partial<Slide>): PageUpdateDto => {
   if (slide.imageUrl !== undefined) update.generated_image_url = slide.imageUrl;
   if (slide.svgUrl !== undefined) update.generated_svg_url = slide.svgUrl;
   if (slide.status !== undefined) update.status = statusToDto[slide.status];
+
+  return update;
+};
+
+export const pageUpdateDtoToSlideUpdate = (page: PageUpdateDto): SlideUpdate => {
+  const update: SlideUpdate = {};
+
+  if (page.order_index !== undefined) update.position = page.order_index;
+  if (page.part !== undefined) update.section = page.part;
+  if (page.outline_content !== undefined) {
+    update.outline = page.outline_content
+      ? { title: page.outline_content.title, points: [...page.outline_content.points] }
+      : null;
+  }
+  if (page.description_content !== undefined) {
+    update.description = descriptionFromDto(page.description_content);
+  }
+  if (page.generated_image_url !== undefined || page.generated_image_path !== undefined) {
+    update.imageUrl = page.generated_image_url || page.generated_image_path;
+  }
+  if (page.generated_svg_url !== undefined) update.svgUrl = page.generated_svg_url;
+  if (page.status !== undefined) update.status = statusFromDto[page.status] ?? 'draft';
 
   return update;
 };

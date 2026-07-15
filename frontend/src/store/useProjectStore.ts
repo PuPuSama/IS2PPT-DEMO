@@ -42,12 +42,25 @@ import {
 import { projectDtoToLegacyProject } from '@/entities/deck/model/legacyProjectAdapter';
 import { projectDtoToDeck } from '@/entities/deck/model/projectMapper';
 import { useDeckStore } from '@/entities/deck/model/useDeckStore';
+import { pageUpdateDtoToSlideUpdate } from '@/entities/slide/model/slideMapper';
+import { useSlidesStore } from '@/entities/slide/model/useSlidesStore';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
 import { projectStoreI18n } from './projectStoreI18n';
 
 const t = getT(projectStoreI18n);
+
+const syncDomainStores = (project: Project) => {
+  const deck = projectDtoToDeck(project);
+  useDeckStore.getState().setCurrentDeck(deck);
+  useSlidesStore.getState().replaceSlides(deck.slides);
+};
+
+const clearDomainStores = () => {
+  useDeckStore.getState().clearDeck();
+  useSlidesStore.getState().clearSlides();
+};
 
 interface ProjectState {
   // 状态
@@ -171,7 +184,11 @@ const debouncedUpdatePage = debounce(
   // Setters
   setCurrentProject: (project) => {
     set({ currentProject: project });
-    if (!project) useDeckStore.getState().clearDeck();
+    if (project) {
+      syncDomainStores(project);
+    } else {
+      clearDomainStores();
+    }
   },
   setGlobalLoading: (loading) => set({ isGlobalLoading: loading }),
   setError: (error) => set({ error }),
@@ -236,7 +253,7 @@ const debouncedUpdatePage = debounce(
       const project = projectDto ? projectDtoToLegacyProject(projectDto) : null;
 
       if (project && projectDto) {
-        useDeckStore.getState().setCurrentDeck(projectDtoToDeck(projectDto));
+        syncDomainStores(project);
         set({ currentProject: project });
       }
     } catch (error: any) {
@@ -276,7 +293,7 @@ const debouncedUpdatePage = debounce(
           pagesCount: project.pages?.length || 0,
           status: project.status
         });
-        useDeckStore.getState().setCurrentDeck(projectDtoToDeck(projectDto));
+        syncDomainStores(project);
         set({ currentProject: project });
       }
     } catch (error: any) {
@@ -313,8 +330,7 @@ const debouncedUpdatePage = debounce(
       // 不显示错误toast，因为这通常是自动同步时发现的过期项目ID
       if (shouldClearStorage) {
         console.warn('[syncProject] 项目不存在，清除项目会话缓存');
-        projectSession.clearActiveProjectId();
-        useDeckStore.getState().clearDeck();
+        clearDomainStores();
         set({ currentProject: null });
       } else {
         set({ error: normalizeErrorMessage(errorMessage) });
@@ -337,6 +353,7 @@ const debouncedUpdatePage = debounce(
         pages: updatedPages,
       },
     });
+    useSlidesStore.getState().updateSlide(pageId, pageUpdateDtoToSlideUpdate(data));
 
     // 防抖后调用API
     debouncedUpdatePage(currentProject.id, pageId, data);
@@ -371,6 +388,7 @@ const debouncedUpdatePage = debounce(
         pages: reorderedPages,
       },
     });
+    useSlidesStore.getState().reorderSlides(newOrder);
 
     try {
       await updatePagesOrder(currentProject.id, newOrder);

@@ -1,5 +1,12 @@
 import { apiClient } from './client';
-import type { ApiResponse, Page } from '@/types';
+import type { ApiResponse } from '@/types';
+import type {
+  DescriptionContentDto,
+  ImageVersionDto,
+  OutlineContentDto,
+  PageDto,
+  PageUpdateDto,
+} from '@/entities/slide/api/pageDto';
 import { getStoredOutputLanguage, type OutputLanguage } from './settingsApi';
 
 /**
@@ -8,8 +15,8 @@ import { getStoredOutputLanguage, type OutputLanguage } from './settingsApi';
 export const getPageImageVersions = async (
   projectId: string,
   pageId: string
-): Promise<ApiResponse<{ versions: any[] }>> => {
-  const response = await apiClient.get<ApiResponse<{ versions: any[] }>>(
+): Promise<ApiResponse<{ versions: ImageVersionDto[] }>> => {
+  const response = await apiClient.get<ApiResponse<{ versions: ImageVersionDto[] }>>(
     `/api/projects/${projectId}/pages/${pageId}/image-versions`
   );
   return response.data;
@@ -35,9 +42,9 @@ export const setCurrentImageVersion = async (
 export const updatePage = async (
   projectId: string,
   pageId: string,
-  data: Partial<Page>
-): Promise<ApiResponse<Page>> => {
-  const response = await apiClient.put<ApiResponse<Page>>(
+  data: PageUpdateDto
+): Promise<ApiResponse<PageDto>> => {
+  const response = await apiClient.put<ApiResponse<PageDto>>(
     `/api/projects/${projectId}/pages/${pageId}`,
     data
   );
@@ -64,8 +71,8 @@ export const savePageSvg = async (
   projectId: string,
   pageId: string,
   svg: string
-): Promise<ApiResponse<Page>> => {
-  const response = await apiClient.put<ApiResponse<Page>>(
+): Promise<ApiResponse<PageDto>> => {
+  const response = await apiClient.put<ApiResponse<PageDto>>(
     `/api/projects/${projectId}/pages/${pageId}/svg`,
     { svg }
   );
@@ -78,11 +85,11 @@ export const savePageSvg = async (
 export const updatePageDescription = async (
   projectId: string,
   pageId: string,
-  descriptionContent: any,
+  descriptionContent: DescriptionContentDto,
   language?: OutputLanguage
-): Promise<ApiResponse<Page>> => {
+): Promise<ApiResponse<PageDto>> => {
   const lang = language || await getStoredOutputLanguage();
-  const response = await apiClient.put<ApiResponse<Page>>(
+  const response = await apiClient.put<ApiResponse<PageDto>>(
     `/api/projects/${projectId}/pages/${pageId}/description`,
     { description_content: descriptionContent, language: lang }
   );
@@ -95,11 +102,11 @@ export const updatePageDescription = async (
 export const updatePageOutline = async (
   projectId: string,
   pageId: string,
-  outlineContent: any,
+  outlineContent: OutlineContentDto,
   language?: OutputLanguage
-): Promise<ApiResponse<Page>> => {
+): Promise<ApiResponse<PageDto>> => {
   const lang = language || await getStoredOutputLanguage();
-  const response = await apiClient.put<ApiResponse<Page>>(
+  const response = await apiClient.put<ApiResponse<PageDto>>(
     `/api/projects/${projectId}/pages/${pageId}/outline`,
     { outline_content: outlineContent, language: lang }
   );
@@ -119,8 +126,11 @@ export const deletePage = async (projectId: string, pageId: string): Promise<Api
 /**
  * 添加页面
  */
-export const addPage = async (projectId: string, data: Partial<Page>): Promise<ApiResponse<Page>> => {
-  const response = await apiClient.post<ApiResponse<Page>>(
+export const addPage = async (
+  projectId: string,
+  data: PageUpdateDto
+): Promise<ApiResponse<PageDto>> => {
+  const response = await apiClient.post<ApiResponse<PageDto>>(
     `/api/projects/${projectId}/pages`,
     data
   );

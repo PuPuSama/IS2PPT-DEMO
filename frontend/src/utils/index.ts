@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Project, Page } from '@/types';
 import { languagePreference } from '@/shared/storage/languagePreference';
 
 /**
@@ -8,29 +7,6 @@ import { languagePreference } from '@/shared/storage/languagePreference';
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-/**
- * 标准化后端返回的项目数据
- */
-export function normalizeProject(data: any): Project {
-  return {
-    ...data,
-    id: data.project_id || data.id,
-    template_image_path: data.template_image_url || data.template_image_path,
-    pages: (data.pages || []).map(normalizePage),
-  };
-}
-
-/**
- * 标准化后端返回的页面数据
- */
-export function normalizePage(data: any): Page {
-  return {
-    ...data,
-    id: data.page_id || data.id,
-    generated_image_path: data.generated_image_url || data.generated_image_path,
-  };
 }
 
 /**

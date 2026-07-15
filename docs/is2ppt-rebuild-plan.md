@@ -19,9 +19,10 @@ Progress snapshot (2026-07-15):
   and the CLI package.
 - Phase 2 frontend API split is complete; the legacy `endpoints.ts` facade has
   been removed.
-- Phase 3 is in progress. `Deck` and `Slide` domain models, DTO contracts, and
-  bidirectional mappers are in place, and the history feature now consumes the
-  new domain model.
+- Phase 3 is complete. `Deck` and `Slide` domain models, DTO contracts,
+  bidirectional mappers, and explicit legacy-store adapters are in place. The
+  history feature consumes the new domain model, and business normalization no
+  longer lives in generic utilities.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

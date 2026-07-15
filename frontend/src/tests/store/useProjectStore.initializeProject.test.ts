@@ -92,8 +92,11 @@ vi.mock('@/api/auth', () => ({
 
 vi.mock('@/utils', () => ({
   debounce: (fn: any) => fn,
-  normalizeProject: (data: any) => data,
   normalizeErrorMessage: (msg: string) => msg,
+}))
+
+vi.mock('@/entities/deck/model/legacyProjectAdapter', () => ({
+  projectDtoToLegacyProject: (data: any) => data,
 }))
 
 describe('initializeProject - reference file association', () => {

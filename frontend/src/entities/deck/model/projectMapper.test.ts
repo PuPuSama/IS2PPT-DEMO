@@ -5,6 +5,7 @@ import {
   getDeckProgress,
   getDeckRoute,
 } from './deckSelectors';
+import { projectDtoToLegacyProject } from './legacyProjectAdapter';
 import { deckToProjectUpdateDto, projectDtoToDeck } from './projectMapper';
 
 const projectDto: ProjectDto = {
@@ -84,6 +85,17 @@ describe('projectDtoToDeck', () => {
       enable_web_research: false,
       template_style: 'Minimal editorial',
     });
+  });
+});
+
+describe('legacy project compatibility', () => {
+  test('keeps old store aliases outside generic utilities', () => {
+    const project = projectDtoToLegacyProject(projectDto);
+
+    expect(project.id).toBe('deck-01');
+    expect(project.template_image_path).toBe('/files/template.png');
+    expect(project.pages[0].id).toBe('slide-01');
+    expect(project.pages[0].generated_image_path).toBe('/files/slide-01.png');
   });
 });
 

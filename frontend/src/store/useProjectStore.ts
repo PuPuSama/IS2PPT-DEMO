@@ -37,9 +37,9 @@ import {
 import {
   debounce,
   downloadFromUrl,
-  normalizeProject,
   normalizeErrorMessage,
 } from '@/utils';
+import { projectDtoToLegacyProject } from '@/entities/deck/model/legacyProjectAdapter';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -227,7 +227,9 @@ const debouncedUpdatePage = debounce(
 
       // 4. 获取完整项目信息。大纲/描述入口的 AI 生成由用户在大纲页手动触发。
       const projectResponse = await getProject(projectId);
-      const project = normalizeProject(projectResponse.data);
+      const project = projectResponse.data
+        ? projectDtoToLegacyProject(projectResponse.data)
+        : null;
 
       if (project) {
         set({ currentProject: project });
@@ -263,7 +265,7 @@ const debouncedUpdatePage = debounce(
     try {
       const response = await getProject(targetProjectId);
       if (response.data) {
-        const project = normalizeProject(response.data);
+        const project = projectDtoToLegacyProject(response.data);
         devLog('[syncProject] 同步项目数据:', {
           projectId: project.id,
           pagesCount: project.pages?.length || 0,
@@ -623,7 +625,7 @@ const debouncedUpdatePage = debounce(
       if (doneData) {
         const { currentProject: proj } = get();
         if (proj) {
-          const normalized = normalizeProject({ ...proj, pages: doneData.pages });
+          const normalized = projectDtoToLegacyProject({ ...proj, pages: doneData.pages });
           set({ currentProject: normalized, isOutlineStreaming: false });
         }
         devLog('[流式大纲] 完成:', doneData.total, '个页面');
@@ -744,7 +746,7 @@ const debouncedUpdatePage = debounce(
         if (doneData) {
           const { currentProject: proj } = get();
           if (proj) {
-            const normalized = normalizeProject({ ...proj, pages: doneData.pages });
+            const normalized = projectDtoToLegacyProject({ ...proj, pages: doneData.pages });
             set({
               currentProject: normalized,
               isDescriptionStreaming: false,

@@ -25,7 +25,9 @@ Progress snapshot (2026-07-15):
   longer lives in generic utilities.
 - Phase 4 is in progress. A domain-level deck repository now owns list, load,
   rename, and delete operations; the history feature no longer imports project
-  API endpoints or DTO mappers directly.
+  API endpoints or DTO mappers directly. `useDeckStore` owns the synchronized
+  Deck snapshot, session restore, and load errors, while `useProjectStore`
+  mirrors server syncs into it as a temporary compatibility facade.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

@@ -40,6 +40,8 @@ import {
   normalizeErrorMessage,
 } from '@/utils';
 import { projectDtoToLegacyProject } from '@/entities/deck/model/legacyProjectAdapter';
+import { projectDtoToDeck } from '@/entities/deck/model/projectMapper';
+import { useDeckStore } from '@/entities/deck/model/useDeckStore';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -167,7 +169,10 @@ const debouncedUpdatePage = debounce(
   isDescriptionStreaming: false,
 
   // Setters
-  setCurrentProject: (project) => set({ currentProject: project }),
+  setCurrentProject: (project) => {
+    set({ currentProject: project });
+    if (!project) useDeckStore.getState().clearDeck();
+  },
   setGlobalLoading: (loading) => set({ isGlobalLoading: loading }),
   setError: (error) => set({ error }),
 
@@ -227,13 +232,12 @@ const debouncedUpdatePage = debounce(
 
       // 4. 获取完整项目信息。大纲/描述入口的 AI 生成由用户在大纲页手动触发。
       const projectResponse = await getProject(projectId);
-      const project = projectResponse.data
-        ? projectDtoToLegacyProject(projectResponse.data)
-        : null;
+      const projectDto = projectResponse.data;
+      const project = projectDto ? projectDtoToLegacyProject(projectDto) : null;
 
-      if (project) {
+      if (project && projectDto) {
+        useDeckStore.getState().setCurrentDeck(projectDtoToDeck(projectDto));
         set({ currentProject: project });
-        projectSession.setActiveProjectId(project.id!);
       }
     } catch (error: any) {
       set({ error: normalizeErrorMessage(error.message || t('store.createFailed')) });
@@ -265,14 +269,15 @@ const debouncedUpdatePage = debounce(
     try {
       const response = await getProject(targetProjectId);
       if (response.data) {
-        const project = projectDtoToLegacyProject(response.data);
+        const projectDto = response.data;
+        const project = projectDtoToLegacyProject(projectDto);
         devLog('[syncProject] 同步项目数据:', {
           projectId: project.id,
           pagesCount: project.pages?.length || 0,
           status: project.status
         });
+        useDeckStore.getState().setCurrentDeck(projectDtoToDeck(projectDto));
         set({ currentProject: project });
-        projectSession.setActiveProjectId(project.id!);
       }
     } catch (error: any) {
       // 提取更详细的错误信息
@@ -309,6 +314,7 @@ const debouncedUpdatePage = debounce(
       if (shouldClearStorage) {
         console.warn('[syncProject] 项目不存在，清除项目会话缓存');
         projectSession.clearActiveProjectId();
+        useDeckStore.getState().clearDeck();
         set({ currentProject: null });
       } else {
         set({ error: normalizeErrorMessage(errorMessage) });

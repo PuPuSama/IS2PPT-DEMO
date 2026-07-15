@@ -44,6 +44,8 @@ import { projectDtoToDeck } from '@/entities/deck/model/projectMapper';
 import { useDeckStore } from '@/entities/deck/model/useDeckStore';
 import { pageUpdateDtoToSlideUpdate } from '@/entities/slide/model/slideMapper';
 import { useSlidesStore } from '@/entities/slide/model/useSlidesStore';
+import type { GenerationProgress } from '@/entities/generation/model/types';
+import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -1299,3 +1301,45 @@ const debouncedUpdatePage = debounce(
     }
   },
 };});
+
+const toGenerationProgress = (
+  progress: ProjectState['taskProgress'],
+): GenerationProgress | null => {
+  if (!progress) return null;
+
+  const details = progress as typeof progress & Record<string, unknown>;
+  return {
+    total: progress.total,
+    completed: progress.completed,
+    ...(typeof details.failed === 'number' ? { failed: details.failed } : {}),
+    ...(typeof details.percent === 'number' ? { percent: details.percent } : {}),
+    ...(typeof details.current_step === 'string'
+      ? { currentStep: details.current_step }
+      : {}),
+    ...(Array.isArray(details.messages)
+      ? { messages: details.messages.filter((message): message is string => typeof message === 'string') }
+      : {}),
+  };
+};
+
+useProjectStore.subscribe((state, previousState) => {
+  if (
+    state.activeTaskId === previousState.activeTaskId
+    && state.taskProgress === previousState.taskProgress
+    && state.pageGeneratingTasks === previousState.pageGeneratingTasks
+    && state.warningMessage === previousState.warningMessage
+    && state.isOutlineStreaming === previousState.isOutlineStreaming
+    && state.isDescriptionStreaming === previousState.isDescriptionStreaming
+  ) {
+    return;
+  }
+
+  useGenerationJobsStore.getState().syncSnapshot({
+    activeJobId: state.activeTaskId,
+    progress: toGenerationProgress(state.taskProgress),
+    jobsBySlideId: state.pageGeneratingTasks,
+    warning: state.warningMessage,
+    outlineStreamActive: state.isOutlineStreaming,
+    descriptionStreamActive: state.isDescriptionStreaming,
+  });
+});

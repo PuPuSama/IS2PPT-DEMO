@@ -26,6 +26,7 @@ import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal,
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { OutlineCard } from '@/components/outline/OutlineCard';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { refineOutline } from '@/api/outlineApi';
 import { addPage } from '@/api/pagesApi';
 import { updateProject } from '@/api/projectsApi';
@@ -78,8 +79,8 @@ export const OutlineEditor: React.FC = () => {
     addNewPage,
     generateOutlineStream,
     isGlobalLoading,
-    isOutlineStreaming,
   } = useProjectStore();
+  const outlineStreamActive = useGenerationJobsStore((state) => state.outlineStreamActive);
 
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [isAiRefining, setIsAiRefining] = useState(false);
@@ -91,7 +92,7 @@ export const OutlineEditor: React.FC = () => {
   const [skeletonVisible, setSkeletonVisible] = useState(false);
   const [skeletonFading, setSkeletonFading] = useState(false);
   useEffect(() => {
-    if (isOutlineStreaming) {
+    if (outlineStreamActive) {
       setSkeletonVisible(true);
       setSkeletonFading(false);
     } else if (skeletonVisible) {
@@ -102,7 +103,7 @@ export const OutlineEditor: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [isOutlineStreaming]);
+  }, [outlineStreamActive]);
 
   // 初始化"联网调研"开关：跟随当前项目已存的设置
   useEffect(() => {
@@ -371,7 +372,7 @@ export const OutlineEditor: React.FC = () => {
     return <Loading fullscreen message={t('outline.messages.loadingProject')} />;
   }
 
-  if (isGlobalLoading && !isOutlineStreaming) {
+  if (isGlobalLoading && !outlineStreamActive) {
     return <Loading fullscreen message={t('outline.messages.generatingOutline')} />;
   }
 
@@ -478,16 +479,16 @@ export const OutlineEditor: React.FC = () => {
                 type="checkbox"
                 checked={enableWebResearch}
                 onChange={(e) => setEnableWebResearch(e.target.checked)}
-                disabled={isOutlineStreaming}
+                disabled={outlineStreamActive}
                 className="cursor-pointer accent-yellow-500"
               />
               <span>🌐 {t('outline.webResearch')}</span>
             </label>
-            {currentProject.pages.length === 0 && !isOutlineStreaming ? (
+            {currentProject.pages.length === 0 && !outlineStreamActive ? (
               <Button
                 variant="secondary"
                 onClick={handleGenerateOutline}
-                disabled={isOutlineStreaming}
+                disabled={outlineStreamActive}
                 className="flex-1 sm:flex-initial text-sm md:text-base"
               >
                 {currentProject.creation_type === 'outline' ? t('outline.parseOutline') : t('outline.autoGenerate')}
@@ -496,10 +497,10 @@ export const OutlineEditor: React.FC = () => {
               <Button
                 variant="secondary"
                 onClick={handleGenerateOutline}
-                disabled={isOutlineStreaming}
+                disabled={outlineStreamActive}
                 className="flex-1 sm:flex-initial text-sm md:text-base"
               >
-                {isOutlineStreaming
+                {outlineStreamActive
                   ? t('outline.generating')
                   : currentProject.creation_type === 'outline' ? t('outline.reParseOutline') : t('outline.reGenerate')}
               </Button>
@@ -685,7 +686,7 @@ export const OutlineEditor: React.FC = () => {
 
         {/* 右侧：大纲列表 */}
         <div className="flex-1 min-w-0">
-          {currentProject.pages.length === 0 && !isOutlineStreaming ? (
+          {currentProject.pages.length === 0 && !outlineStreamActive ? (
             <div className="text-center py-12 md:py-20">
               <div className="flex justify-center mb-4">
                 <FileText size={48} className="text-gray-300" />
@@ -711,8 +712,8 @@ export const OutlineEditor: React.FC = () => {
                   {currentProject.pages.map((page, index) => (
                     <div
                       key={page.id || `page-${index}`}
-                      className={isOutlineStreaming ? 'animate-slide-in-up' : ''}
-                      style={isOutlineStreaming ? { animationDelay: `${index * 60}ms` } : undefined}
+                      className={outlineStreamActive ? 'animate-slide-in-up' : ''}
+                      style={outlineStreamActive ? { animationDelay: `${index * 60}ms` } : undefined}
                     >
                       <SortableCard
                         page={page}

@@ -31,6 +31,11 @@ Progress snapshot (2026-07-15):
   `useSlidesStore` now owns domain-level slide snapshots, local edits, ordering,
   additions, removals, and clearing. The compatibility facade mirrors full
   project syncs plus optimistic page edits and reorders into that store.
+  `useGenerationJobsStore` now exposes the active job, normalized progress,
+  per-slide job assignments, warnings, and stream activity through independent
+  domain names. `OutlineEditor` and `SlidePreview` consume this read model while
+  polling writes remain in the compatibility facade until the job service is
+  extracted.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

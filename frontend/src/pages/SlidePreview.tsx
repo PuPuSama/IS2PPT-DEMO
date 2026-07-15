@@ -34,6 +34,7 @@ import { SlideCard } from '@/components/preview/SlideCard';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { useExportTasksStore, type ExportTaskType } from '@/store/useExportTasksStore';
 import { getImageUrl } from '@/api/client';
 import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
@@ -59,10 +60,12 @@ export const SlidePreview: React.FC = () => {
     deletePageById,
     updatePageLocal,
     isGlobalLoading,
-    taskProgress,
-    pageGeneratingTasks,
-    warningMessage,
   } = useProjectStore();
+  const {
+    progress: generationProgress,
+    jobsBySlideId: slideJobs,
+    warning: generationWarning,
+  } = useGenerationJobsStore();
 
   const { addTask, pollTask: pollExportTask, tasks: exportTasks, restoreActiveTasks } = useExportTasksStore();
 
@@ -195,16 +198,16 @@ export const SlidePreview: React.FC = () => {
   // 监听警告消息
   const lastWarningRef = React.useRef<string | null>(null);
   useEffect(() => {
-    if (warningMessage) {
-      if (warningMessage !== lastWarningRef.current) {
-        lastWarningRef.current = warningMessage;
-        show({ message: warningMessage, type: 'warning', duration: 6000 });
+    if (generationWarning) {
+      if (generationWarning !== lastWarningRef.current) {
+        lastWarningRef.current = generationWarning;
+        show({ message: generationWarning, type: 'warning', duration: 6000 });
       }
     } else {
-      // warningMessage 被清空时重置 ref，以便下次能再次显示
+      // 警告被清空时重置 ref，以便下次能再次显示
       lastWarningRef.current = null;
     }
-  }, [warningMessage, show]);
+  }, [generationWarning, show]);
 
   // 当项目加载后，初始化额外要求和风格描述
   // 只在项目首次加载或项目ID变化时初始化，避免覆盖用户正在输入的内容
@@ -428,7 +431,7 @@ export const SlidePreview: React.FC = () => {
     if (!page.id) return;
 
     // 如果该页面正在生成，不重复提交
-    if (pageGeneratingTasks[page.id]) {
+    if (slideJobs[page.id]) {
       show({ message: t('slidePreview.pageGenerating'), type: 'info' });
       return;
     }
@@ -469,7 +472,7 @@ export const SlidePreview: React.FC = () => {
         });
       }
     });
-  }, [currentProject, selectedIndex, pageGeneratingTasks, generatePageImage, show, checkResolutionAndExecute, ensureImageGenerationStyleSource]);
+  }, [currentProject, selectedIndex, slideJobs, generatePageImage, show, checkResolutionAndExecute, ensureImageGenerationStyleSource]);
 
   const handleSwitchVersion = async (versionId: string) => {
     if (!currentProject || !selectedPage?.id || !projectId) return;
@@ -1100,19 +1103,16 @@ export const SlidePreview: React.FC = () => {
   if (isGlobalLoading) {
     // 根据任务进度显示不同的消息
     let loadingMessage = t('preview.messages.processing');
-    if (taskProgress && typeof taskProgress === 'object') {
-      const progressData = taskProgress as any;
-      if (progressData.current_step) {
-        // 使用后端提供的当前步骤信息
-        const stepMap: Record<string, string> = {
-          'Generating clean backgrounds': t('preview.messages.generatingBackgrounds'),
-          'Creating PDF': t('preview.messages.creatingPdf'),
-          'Parsing with MinerU': t('preview.messages.parsingContent'),
-          'Creating editable PPTX': t('preview.messages.creatingPptx'),
-          'Complete': t('preview.messages.complete')
-        };
-        loadingMessage = stepMap[progressData.current_step] || progressData.current_step;
-      }
+    if (generationProgress?.currentStep) {
+      // 使用后端提供的当前步骤信息
+      const stepMap: Record<string, string> = {
+        'Generating clean backgrounds': t('preview.messages.generatingBackgrounds'),
+        'Creating PDF': t('preview.messages.creatingPdf'),
+        'Parsing with MinerU': t('preview.messages.parsingContent'),
+        'Creating editable PPTX': t('preview.messages.creatingPptx'),
+        'Complete': t('preview.messages.complete')
+      };
+      loadingMessage = stepMap[generationProgress.currentStep] || generationProgress.currentStep;
       // 不再显示 "处理中 (X/Y)..." 格式，百分比已在进度条显示
     }
 
@@ -1120,7 +1120,7 @@ export const SlidePreview: React.FC = () => {
       <Loading
         fullscreen
         message={loadingMessage}
-        progress={taskProgress || undefined}
+        progress={generationProgress || undefined}
       />
     );
   }
@@ -1603,7 +1603,7 @@ export const SlidePreview: React.FC = () => {
                         handleEditPage();
                       }}
                       onDelete={() => page.id && deletePageById(page.id)}
-                      isGenerating={page.id ? !!pageGeneratingTasks[page.id] : false}
+                      isGenerating={page.id ? !!slideJobs[page.id] : false}
                       aspectRatio={aspectRatio}
                     />
                   </div>
@@ -1664,12 +1664,12 @@ export const SlidePreview: React.FC = () => {
                           <p className="text-gray-500 dark:text-foreground-tertiary mb-4">
                             {selectedPage?.status === 'QUEUED'
                               ? t('preview.queued')
-                              : (selectedPage?.id && pageGeneratingTasks[selectedPage.id]) ||
+                              : (selectedPage?.id && slideJobs[selectedPage.id]) ||
                                 selectedPage?.status === 'GENERATING'
                               ? t('preview.generating')
                               : t('preview.notGenerated')}
                           </p>
-                          {(!selectedPage?.id || !pageGeneratingTasks[selectedPage.id]) &&
+                          {(!selectedPage?.id || !slideJobs[selectedPage.id]) &&
                            selectedPage?.status !== 'QUEUED' &&
                            selectedPage?.status !== 'GENERATING' && (
                             <Button
@@ -1803,10 +1803,10 @@ export const SlidePreview: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={handleRegeneratePage}
-                      disabled={selectedPage?.id && pageGeneratingTasks[selectedPage.id] ? true : false}
+                      disabled={selectedPage?.id && slideJobs[selectedPage.id] ? true : false}
                       className="text-xs md:text-sm flex-1 sm:flex-initial"
                     >
-                      {selectedPage?.id && pageGeneratingTasks[selectedPage.id]
+                      {selectedPage?.id && slideJobs[selectedPage.id]
                         ? t('preview.regenerating')
                         : t('preview.regenerate')}
                     </Button>

@@ -7,7 +7,7 @@ interface ProgressData {
   total: number;
   completed: number;
   percent?: number;
-  current_step?: string;
+  currentStep?: string;
   messages?: string[];
 }
 

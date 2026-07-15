@@ -34,8 +34,10 @@ Progress snapshot (2026-07-15):
   `useGenerationJobsStore` now exposes the active job, normalized progress,
   per-slide job assignments, warnings, and stream activity through independent
   domain names. `OutlineEditor` and `SlidePreview` consume this read model while
-  polling writes remain in the compatibility facade until the job service is
-  extracted.
+  compatibility writes are still mirrored from the legacy store. A reusable,
+  cancellable generation job poller now owns status normalization, scheduling,
+  and retry limits. General async jobs and description generation use it; image
+  generation still keeps its page-release callbacks in the compatibility store.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

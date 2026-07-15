@@ -46,6 +46,7 @@ import { pageUpdateDtoToSlideUpdate } from '@/entities/slide/model/slideMapper';
 import { useSlidesStore } from '@/entities/slide/model/useSlidesStore';
 import type { GenerationProgress } from '@/entities/generation/model/types';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
+import { createGenerationJobPoller } from '@/entities/generation/api/generationJobPoller';
 import { devLog } from '@/utils/logger';
 import { getT } from '@/utils/i18nHelper';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -471,86 +472,68 @@ const debouncedUpdatePage = debounce(
     }
     const projectId = currentProject.id!;
 
-    const poll = async () => {
-      try {
-        devLog(`[轮询] 查询任务状态: ${taskId}`);
-        const response = await getTaskStatus(projectId, taskId);
-        const task = response.data;
-        
-        if (!task) {
-          console.warn('[轮询] 响应中没有任务数据');
-          return;
-        }
-
-        // 更新进度
+    const poller = createGenerationJobPoller({
+      projectId,
+      jobId: taskId,
+      onUpdate: (task) => {
         if (task.progress) {
           set({ taskProgress: task.progress });
         }
-
         devLog(`[轮询] Task ${taskId} 状态: ${task.status}`, task);
+      },
+      onComplete: async (task) => {
+        devLog(`[轮询] Task ${taskId} 已完成，刷新项目数据`);
 
-        // 检查任务状态
-        if (task.status === 'COMPLETED') {
-          devLog(`[轮询] Task ${taskId} 已完成，刷新项目数据`);
-          
-          // 如果是导出可编辑PPTX任务，检查是否有下载链接
-          if (task.task_type === 'EXPORT_EDITABLE_PPTX' && task.progress) {
-            const progress = typeof task.progress === 'string' 
-              ? JSON.parse(task.progress) 
-              : task.progress;
-            
-            const downloadUrl = progress?.download_url;
-            if (downloadUrl) {
-              devLog('[导出可编辑PPTX] 从任务响应中获取下载链接:', downloadUrl);
-              // 延迟一下，确保状态更新完成后再打开下载链接
-              setTimeout(() => {
-                window.open(downloadUrl, '_blank');
-              }, 500);
-            } else {
-              console.warn('[导出可编辑PPTX] 任务完成但没有下载链接');
-            }
+        if (task.task_type === 'EXPORT_EDITABLE_PPTX' && task.progress) {
+          const downloadUrl = task.progress.download_url;
+          if (downloadUrl) {
+            devLog('[导出可编辑PPTX] 从任务响应中获取下载链接:', downloadUrl);
+            setTimeout(() => {
+              window.open(downloadUrl, '_blank');
+            }, 500);
+          } else {
+            console.warn('[导出可编辑PPTX] 任务完成但没有下载链接');
           }
-          
-          set({ 
-            activeTaskId: null, 
-            taskProgress: null, 
-            isGlobalLoading: false 
-          });
-          // 刷新项目数据
-          await get().syncProject();
-        } else if (task.status === 'FAILED') {
-          console.error(`[轮询] Task ${taskId} 失败:`, task.error_message || task.error);
-          set({ 
-            error: normalizeErrorMessage(task.error_message || task.error || t('store.taskFailed')),
-            activeTaskId: null,
-            taskProgress: null,
-            isGlobalLoading: false
-          });
-        } else if (task.status === 'PENDING' || task.status === 'PROCESSING') {
-          // 继续轮询（PENDING 或 PROCESSING）
-          devLog(`[轮询] Task ${taskId} 处理中，2秒后继续轮询...`);
-          setTimeout(poll, 2000);
-        } else {
-          // 未知状态，停止轮询
-          console.warn(`[轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
-          set({ 
-            error: `${t('store.unknownTaskStatus', { status: task.status })}`,
-            activeTaskId: null,
-            taskProgress: null,
-            isGlobalLoading: false
-          });
         }
-      } catch (error: any) {
-        console.error('任务轮询错误:', error);
-        set({ 
-          error: normalizeErrorMessage(error.message || t('store.taskQueryFailed')),
-          activeTaskId: null,
-          isGlobalLoading: false
-        });
-      }
-    };
 
-    await poll();
+        set({
+          activeTaskId: null,
+          taskProgress: null,
+          isGlobalLoading: false,
+        });
+        await get().syncProject();
+      },
+      onFailure: (task) => {
+        console.error(`[轮询] Task ${taskId} 失败:`, task.error_message || task.error);
+        set({
+          error: normalizeErrorMessage(task.error_message || task.error || t('store.taskFailed')),
+          activeTaskId: null,
+          taskProgress: null,
+          isGlobalLoading: false,
+        });
+      },
+      onUnknown: (task) => {
+        console.warn(`[轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
+        set({
+          error: `${t('store.unknownTaskStatus', { status: task.status })}`,
+          activeTaskId: null,
+          taskProgress: null,
+          isGlobalLoading: false,
+        });
+      },
+      onError: (error) => {
+        console.error('任务轮询错误:', error);
+        set({
+          error: normalizeErrorMessage(
+            error instanceof Error ? error.message : t('store.taskQueryFailed'),
+          ),
+          activeTaskId: null,
+          isGlobalLoading: false,
+        });
+      },
+    });
+
+    await poller.checkNow();
   },
 
   // 生成大纲（同步操作，不需要轮询）
@@ -817,52 +800,58 @@ const debouncedUpdatePage = debounce(
           throw new Error(t('store.noTaskId'));
         }
 
-        let pollErrors = 0;
-        const pollAndSync = async () => {
-          try {
-            const taskResponse = await getTaskStatus(projectId, taskId);
-            const task = taskResponse.data;
-
-            if (task) {
-              if (task.progress) {
-                set({ taskProgress: task.progress });
-              }
-
-              await get().syncProject();
-
-              if (task.status === 'COMPLETED') {
-                set({ taskProgress: null, activeTaskId: null });
-                await get().syncProject();
-              } else if (task.status === 'FAILED') {
-                set({
-                  taskProgress: null,
-                  activeTaskId: null,
-                  error: normalizeErrorMessage(task.error_message || task.error || t('store.generateDescFailed'))
-                });
-                await get().syncProject();
-              } else if (task.status === 'PENDING' || task.status === 'PROCESSING') {
-                setTimeout(pollAndSync, 2000);
-              }
+        set({ activeTaskId: taskId });
+        const poller = createGenerationJobPoller({
+          projectId,
+          jobId: taskId,
+          maxConsecutiveErrors: 9,
+          onUpdate: async (task) => {
+            if (task.progress) {
+              set({ taskProgress: task.progress });
             }
-          } catch (error: any) {
+            await get().syncProject();
+          },
+          onComplete: async () => {
+            set({ taskProgress: null, activeTaskId: null });
+            await get().syncProject();
+          },
+          onFailure: async (task) => {
+            set({
+              taskProgress: null,
+              activeTaskId: null,
+              error: normalizeErrorMessage(
+                task.error_message || task.error || t('store.generateDescFailed'),
+              ),
+            });
+            await get().syncProject();
+          },
+          onUnknown: async (task) => {
+            set({
+              taskProgress: null,
+              activeTaskId: null,
+              error: `${t('store.unknownTaskStatus', { status: task.status })}`,
+            });
+            await get().syncProject();
+          },
+          onError: async (error, attempt, willRetry) => {
             console.error('[生成描述] 轮询错误:', error);
-            pollErrors++;
-            if (pollErrors >= 10) {
+            if (!willRetry) {
               console.error('[生成描述] 轮询错误次数过多，停止轮询');
               set({
                 taskProgress: null,
                 activeTaskId: null,
-                error: normalizeErrorMessage(error.message || t('store.generateDescTimeout'))
+                error: normalizeErrorMessage(
+                  error instanceof Error ? error.message : t('store.generateDescTimeout'),
+                ),
               });
-              await get().syncProject();
-              return;
+            } else {
+              devLog(`[生成描述] 第 ${attempt} 次轮询失败，准备重试`);
             }
             await get().syncProject();
-            setTimeout(pollAndSync, 2000);
-          }
-        };
+          },
+        });
 
-        setTimeout(pollAndSync, 2000);
+        poller.start();
 
       } catch (error: any) {
         console.error('[生成描述] 启动任务失败:', error);

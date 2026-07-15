@@ -23,6 +23,9 @@ Progress snapshot (2026-07-15):
   bidirectional mappers, and explicit legacy-store adapters are in place. The
   history feature consumes the new domain model, and business normalization no
   longer lives in generic utilities.
+- Phase 4 is in progress. A domain-level deck repository now owns list, load,
+  rename, and delete operations; the history feature no longer imports project
+  API endpoints or DTO mappers directly.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

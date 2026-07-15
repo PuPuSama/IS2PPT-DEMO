@@ -7,11 +7,7 @@ import { DeckCard } from '@/components/history/DeckCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useT } from '@/hooks/useT';
-import { deleteProject, listProjects, updateProject } from '@/api/projectsApi';
-import {
-  deckToProjectUpdateDto,
-  projectDtoToDeck,
-} from '@/entities/deck/model/projectMapper';
+import { deleteDeck, listDecks, renameDeck } from '@/entities/deck/api/deckRepository';
 import { getDeckDisplayTitle, getDeckRoute } from '@/entities/deck/model/deckSelectors';
 import type { Deck } from '@/entities/deck/model/types';
 import { projectSession } from '@/shared/storage/projectSession';
@@ -45,11 +41,9 @@ export const History: React.FC = () => {
     setError(null);
     try {
       const offset = (page - 1) * pageSize;
-      const response = await listProjects(pageSize, offset);
-      if (response.data?.projects) {
-        setDecks(response.data.projects.map(projectDtoToDeck));
-        setTotalDecks(response.data.total ?? 0);
-      }
+      const result = await listDecks(pageSize, offset);
+      setDecks(result.decks);
+      setTotalDecks(result.total);
     } catch (err: any) {
       console.error('加载历史项目失败:', err);
       setError(err.message || t('history.loadFailed'));
@@ -143,7 +137,7 @@ export const History: React.FC = () => {
     try {
       // 批量删除 - 使用 allSettled 处理部分失败
       const results = await Promise.allSettled(
-        deckIds.map((deckId) => deleteProject(deckId))
+        deckIds.map(deleteDeck)
       );
 
       const successIds = deckIds.filter((_, i) => results[i].status === 'fulfilled');
@@ -261,7 +255,7 @@ export const History: React.FC = () => {
     try {
       const targetDeck = decks.find((deck) => deck.id === deckId);
       if (!targetDeck) return;
-      await updateProject(deckId, deckToProjectUpdateDto({ title: nextTitle }));
+      await renameDeck(deckId, nextTitle);
 
       // 更新本地状态
       setDecks((currentDecks) => currentDecks.map((deck) => (

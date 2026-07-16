@@ -6,10 +6,6 @@ import type { PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
 import { Loading, useToast, useConfirm, ProjectSettingsModal } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
-import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
-import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
-import type { ExportFormat } from '@/entities/export/model/types';
-import { isExportJobActive } from '@/entities/export/model/types';
 import type { ImageVersion, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import {
@@ -18,6 +14,10 @@ import {
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
 import type { DeckStyleMode } from '../model/deckStyleSelection';
+import {
+  useDeckWorkspaceJobs,
+  type DeckExportFormat,
+} from '../model/useDeckWorkspaceJobs';
 import { useDeckWorkspaceProject } from '../model/useDeckWorkspaceProject';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
@@ -51,22 +51,13 @@ export const DeckWorkspacePage: React.FC = () => {
     selectSlideVersion,
   } = useDeckWorkspaceProject();
   const {
-    progress: generationProgress,
-    jobsBySlideId: slideJobs,
-    warning: generationWarning,
-  } = useGenerationJobsStore();
-
-  const { jobs: exportJobs, startExport, restoreActiveJobs } = useExportJobsStore();
-
-  useEffect(() => {
-    restoreActiveJobs();
-  }, [restoreActiveJobs]);
-
-  const exportJobsForDeck = useMemo(
-    () => exportJobs.filter((job) => job.deckId === projectId),
-    [exportJobs, projectId],
-  );
-  const hasActiveExportJobs = exportJobsForDeck.some(isExportJobActive);
+    renderProgress: generationProgress,
+    slideRenderJobs: slideJobs,
+    renderWarning: generationWarning,
+    deckExportJobs: exportJobsForDeck,
+    activeDeckExport: hasActiveExportJobs,
+    startDeckExport,
+  } = useDeckWorkspaceJobs(projectId);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -440,7 +431,7 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const handleExport = async (
-    format: ExportFormat,
+    format: DeckExportFormat,
     options?: {
       pptxTransitionEnabled?: boolean;
       pptxTransitionEffects?: PptxTransitionEffect[];
@@ -450,18 +441,12 @@ export const DeckWorkspacePage: React.FC = () => {
 
     const slideIds = selectedSlideIdsForCommand();
     try {
-      const job = await startExport({
+      const job = await startDeckExport({
         deckId: projectId,
         format,
         slideIds,
-        ...(format === 'pptx'
-          ? {
-              pptxOptions: {
-                transitionEnabled: options?.pptxTransitionEnabled,
-                transitionEffects: options?.pptxTransitionEffects,
-              },
-            }
-          : {}),
+        transitionEnabled: options?.pptxTransitionEnabled,
+        transitionEffects: options?.pptxTransitionEffects,
       });
 
       if (job.status === 'ready' && job.downloadUrl) {

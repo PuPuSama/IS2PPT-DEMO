@@ -89,7 +89,9 @@ Progress snapshot (2026-07-16):
   The tested `useDeckWorkspaceProject` port now owns the global project store,
   deck settings API, template replacement, and slide-version API. The
   workspace UI consumes deck commands and no longer imports those legacy
-  dependencies directly.
+  dependencies directly. `useDeckWorkspaceJobs` now isolates generation and
+  export stores, restores and filters deck exports, and maps workspace export
+  options to the export entity contract.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

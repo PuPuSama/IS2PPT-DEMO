@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
@@ -18,6 +18,10 @@ import {
   useDeckWorkspaceJobs,
   type DeckExportFormat,
 } from '../model/useDeckWorkspaceJobs';
+import {
+  useDeckWorkspacePreferences,
+  type DeckPreferenceKey,
+} from '../model/useDeckWorkspacePreferences';
 import { useDeckWorkspaceProject } from '../model/useDeckWorkspaceProject';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
@@ -74,30 +78,7 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [imageVersions, setImageVersions] = useState<ImageVersion[]>([]);
   const [showVersionMenu, setShowVersionMenu] = useState(false);
-  const [extraRequirements, setExtraRequirements] = useState<string>('');
-  const [isSavingRequirements, setIsSavingRequirements] = useState(false);
-  const isEditingRequirements = useRef(false); // 跟踪用户是否正在编辑额外要求
-  const [templateStyle, setTemplateStyle] = useState<string>('');
-  const [isSavingTemplateStyle, setIsSavingTemplateStyle] = useState(false);
-  const isEditingTemplateStyle = useRef(false); // 跟踪用户是否正在编辑风格描述
-  const lastProjectId = useRef<string | null>(null); // 跟踪上一次的项目ID
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
-  // 导出设置
-  const [exportAllowPartial, setExportAllowPartial] = useState(false);
-  const [isSavingExportSettings, setIsSavingExportSettings] = useState(false);
-  // 画面比例
-  const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [isSavingAspectRatio, setIsSavingAspectRatio] = useState(false);
-  // 根据画面比例计算 CSS aspect-ratio
-  const aspectRatioStyle = useMemo(() => {
-    const parts = aspectRatio.split(':');
-    if (parts.length === 2) {
-      const w = parseInt(parts[0], 10);
-      const h = parseInt(parts[1], 10);
-      if (w > 0 && h > 0) return `${w}/${h}`;
-    }
-    return '16/9';
-  }, [aspectRatio]);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
   const {
@@ -112,6 +93,52 @@ export const DeckWorkspacePage: React.FC = () => {
     () => deckWorkspaceSnapshotFromProject(deckSource),
     [deckSource],
   );
+  const handlePreferenceSaved = useCallback((preference: DeckPreferenceKey) => {
+    const messageKeys: Record<DeckPreferenceKey, string> = {
+      extraRequirements: 'slidePreview.extraRequirementsSaved',
+      templateStyle: 'slidePreview.styleDescSaved',
+      partialExport: 'slidePreview.exportSettingsSaved',
+      aspectRatio: 'slidePreview.aspectRatioSaved',
+    };
+    show({ message: t(messageKeys[preference]), type: 'success' });
+  }, [show, t]);
+  const handlePreferenceSaveError = useCallback((
+    _preference: DeckPreferenceKey,
+    error: unknown,
+  ) => {
+    const errorMessage = (error as { message?: string })?.message
+      || t('slidePreview.unknownError');
+    show({
+      message: t('slidePreview.saveFailed', { error: errorMessage }),
+      type: 'error',
+    });
+  }, [show, t]);
+  const {
+    extraRequirements,
+    setExtraRequirements,
+    templateStyle,
+    setTemplateStyle,
+    partialExport: exportAllowPartial,
+    setPartialExport: setExportAllowPartial,
+    aspectRatio,
+    setAspectRatio,
+    aspectRatioStyle,
+    savingExtraRequirements: isSavingRequirements,
+    savingTemplateStyle: isSavingTemplateStyle,
+    savingPartialExport: isSavingExportSettings,
+    savingAspectRatio: isSavingAspectRatio,
+    saveExtraRequirements: handleSaveExtraRequirements,
+    saveTemplateStyle: handleSaveTemplateStyle,
+    applyTemplateStyle,
+    savePartialExport: handleSaveExportSettings,
+    saveAspectRatio: handleSaveAspectRatio,
+  } = useDeckWorkspacePreferences({
+    deckId: projectId,
+    workspace,
+    saveDeckSettings,
+    onSaved: handlePreferenceSaved,
+    onSaveError: handlePreferenceSaveError,
+  });
   const workspaceSlides = workspace?.slides ?? EMPTY_SLIDES;
   const slidesWithImages = workspace?.slidesWithImages ?? EMPTY_SLIDES;
   const hasImages = workspace?.hasImages ?? false;
@@ -138,45 +165,6 @@ export const DeckWorkspacePage: React.FC = () => {
       lastWarningRef.current = null;
     }
   }, [generationWarning, show]);
-
-  // 当项目加载后，初始化额外要求和风格描述
-  // 只在项目首次加载或项目ID变化时初始化，避免覆盖用户正在输入的内容
-  useEffect(() => {
-    if (workspace) {
-      // 检查是否是新项目
-      const isNewProject = lastProjectId.current !== workspace.deckId;
-
-      if (isNewProject) {
-        // 新项目，初始化额外要求和风格描述
-        setExtraRequirements(workspace.extraRequirements);
-        setTemplateStyle(workspace.templateStyle);
-        // 初始化导出设置
-        setExportAllowPartial(workspace.allowPartialExport);
-        setAspectRatio(workspace.aspectRatio);
-        lastProjectId.current = workspace.deckId || null;
-        isEditingRequirements.current = false;
-        isEditingTemplateStyle.current = false;
-      } else {
-        // 同一项目且用户未在编辑，可以更新（比如从服务器保存后同步回来）
-        if (!isEditingRequirements.current) {
-          setExtraRequirements(workspace.extraRequirements);
-        }
-        if (!isEditingTemplateStyle.current) {
-          setTemplateStyle(workspace.templateStyle);
-        }
-        // 非文本输入的设置项，始终从服务器同步
-        setAspectRatio(workspace.aspectRatio);
-        setExportAllowPartial(workspace.allowPartialExport);
-      }
-      // 如果用户正在编辑，则不更新本地状态
-    }
-  }, [
-    workspace?.allowPartialExport,
-    workspace?.aspectRatio,
-    workspace?.deckId,
-    workspace?.extraRequirements,
-    workspace?.templateStyle,
-  ]);
 
   // 加载当前页面的历史版本
   useEffect(() => {
@@ -211,7 +199,7 @@ export const DeckWorkspacePage: React.FC = () => {
 
     if (draftStyle) {
       try {
-        await saveDeckSettings(projectId, { template_style: draftStyle });
+        await applyTemplateStyle(draftStyle);
         return true;
       } catch (error: any) {
         const respData = error?.response?.data;
@@ -230,7 +218,7 @@ export const DeckWorkspacePage: React.FC = () => {
       type: 'error',
     });
     return false;
-  }, [deckSource, projectId, saveDeckSettings, show, templateStyle, workspace]);
+  }, [applyTemplateStyle, deckSource, projectId, show, templateStyle, workspace]);
 
   const handleGenerateAll = async () => {
     if (!(await ensureImageGenerationStyleSource())) return;
@@ -503,92 +491,10 @@ export const DeckWorkspacePage: React.FC = () => {
     }
   }, [deckSource?.id, projectId, reloadDeck, show, t]);
 
-  const handleSaveExtraRequirements = useCallback(async () => {
-    if (!deckSource || !projectId) return;
-
-    setIsSavingRequirements(true);
-    try {
-      await saveDeckSettings(projectId, { extra_requirements: extraRequirements || '' });
-      // 保存成功后，标记为不在编辑状态，允许同步更新
-      isEditingRequirements.current = false;
-      show({ message: t('slidePreview.extraRequirementsSaved'), type: 'success' });
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    } finally {
-      setIsSavingRequirements(false);
-    }
-  }, [deckSource, extraRequirements, projectId, saveDeckSettings, show, t]);
-
-  const handleSaveTemplateStyle = useCallback(async () => {
-    if (!deckSource || !projectId) return;
-
-    setIsSavingTemplateStyle(true);
-    try {
-      await saveDeckSettings(projectId, { template_style: templateStyle || '' });
-      // 保存成功后，标记为不在编辑状态，允许同步更新
-      isEditingTemplateStyle.current = false;
-      show({ message: t('slidePreview.styleDescSaved'), type: 'success' });
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    } finally {
-      setIsSavingTemplateStyle(false);
-    }
-  }, [deckSource, projectId, saveDeckSettings, show, t, templateStyle]);
-
-  const handleSaveExportSettings = useCallback(async () => {
-    if (!deckSource || !projectId) return;
-
-    setIsSavingExportSettings(true);
-    try {
-      await saveDeckSettings(projectId, {
-        export_allow_partial: exportAllowPartial,
-      });
-      show({ message: t('slidePreview.exportSettingsSaved'), type: 'success' });
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    } finally {
-      setIsSavingExportSettings(false);
-    }
-  }, [deckSource, exportAllowPartial, projectId, saveDeckSettings, show, t]);
-
-  const handleSaveAspectRatio = useCallback(async () => {
-    if (!deckSource || !projectId) return;
-
-    setIsSavingAspectRatio(true);
-    try {
-      await saveDeckSettings(projectId, { image_aspect_ratio: aspectRatio });
-      show({ message: t('slidePreview.aspectRatioSaved'), type: 'success' });
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    } finally {
-      setIsSavingAspectRatio(false);
-    }
-  }, [aspectRatio, deckSource, projectId, saveDeckSettings, show, t]);
-
   const handleApplyImageTemplate = useCallback(async (file: File) => {
     if (!projectId) return;
     await replaceDeckTemplate(projectId, file);
   }, [projectId, replaceDeckTemplate]);
-
-  const handleApplyTextStyle = useCallback(async (style: string) => {
-    if (!projectId) return;
-    isEditingTemplateStyle.current = true;
-    setTemplateStyle(style);
-    await saveDeckSettings(projectId, { template_style: style || '' });
-    isEditingTemplateStyle.current = false;
-  }, [projectId, saveDeckSettings]);
 
   if (!deckSource || !workspace) {
     return <Loading fullscreen message={t('preview.messages.loadingProject')} />;
@@ -746,7 +652,7 @@ export const DeckWorkspacePage: React.FC = () => {
           initialMode={deckStyleInitialMode}
           onClose={() => setIsTemplateModalOpen(false)}
           onApplyImageTemplate={handleApplyImageTemplate}
-          onApplyTextStyle={handleApplyTextStyle}
+          onApplyTextStyle={applyTemplateStyle}
         />
       )}
       {projectId && (
@@ -757,14 +663,8 @@ export const DeckWorkspacePage: React.FC = () => {
             onClose={() => setIsProjectSettingsOpen(false)}
             extraRequirements={extraRequirements}
             templateStyle={templateStyle}
-            onExtraRequirementsChange={(value) => {
-              isEditingRequirements.current = true;
-              setExtraRequirements(value);
-            }}
-            onTemplateStyleChange={(value) => {
-              isEditingTemplateStyle.current = true;
-              setTemplateStyle(value);
-            }}
+            onExtraRequirementsChange={setExtraRequirements}
+            onTemplateStyleChange={setTemplateStyle}
             onSaveExtraRequirements={handleSaveExtraRequirements}
             onSaveTemplateStyle={handleSaveTemplateStyle}
             isSavingRequirements={isSavingRequirements}

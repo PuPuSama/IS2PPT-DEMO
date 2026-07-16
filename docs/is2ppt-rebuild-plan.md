@@ -91,7 +91,10 @@ Progress snapshot (2026-07-16):
   workspace UI consumes deck commands and no longer imports those legacy
   dependencies directly. `useDeckWorkspaceJobs` now isolates generation and
   export stores, restores and filters deck exports, and maps workspace export
-  options to the export entity contract.
+  options to the export entity contract. `useDeckWorkspacePreferences` now
+  owns editable deck-setting drafts, server synchronization rules, per-setting
+  save state, and normalized aspect-ratio presentation. The workspace page no
+  longer duplicates preference state or persistence handlers.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

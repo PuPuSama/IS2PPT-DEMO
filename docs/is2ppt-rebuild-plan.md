@@ -74,7 +74,10 @@ Progress snapshot (2026-07-16):
   version selection, and canvas-level edit and regeneration commands. Export
   range ordering is now a tested workspace rule, while `DeckExportDialogs`
   owns PPTX transition settings and editable-PPTX range presentation without
-  starting jobs or reading project DTOs.
+  starting jobs or reading project DTOs. `SlideEditDialog` now owns the
+  per-slide edit session, reference-image lifecycle, region cropping, and
+  metadata draft UI. Its tested command boundary keeps project store access in
+  the workspace orchestrator.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

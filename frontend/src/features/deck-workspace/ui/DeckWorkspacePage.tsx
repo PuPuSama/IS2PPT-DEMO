@@ -9,33 +9,26 @@ import {
   ArrowLeft,
   Download,
   RefreshCw,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  X,
   Upload,
-  Image as ImageIcon,
   Settings,
   FileText,
   Loader2,
   Presentation,
 } from 'lucide-react';
-import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
+import { Button, Loading, Modal, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
 import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { loadTemplateAsset } from '@/entities/template/api/templateAssetRepository';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
-import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
 import type { ExportFormat } from '@/entities/export/model/types';
 import { isExportJobActive } from '@/entities/export/model/types';
-import { getImageUrl } from '@/api/client';
 import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
 import { updateProject, uploadTemplate } from '@/api/projectsApi';
 import { getSettings } from '@/api/settingsApi';
-import type { ImageVersion, DescriptionContent, Page } from '@/types';
+import type { ImageVersion, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
 import {
@@ -44,6 +37,7 @@ import {
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
 import { DeckExportDialogs } from './DeckExportDialogs';
+import { SlideEditDialog, type SlideEditCommand } from './SlideEditDialog';
 import { SlideNavigator } from './SlideNavigator';
 import { SlideCanvas } from './SlideCanvas';
 
@@ -88,11 +82,6 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [useTextStyleMode, setUseTextStyleMode] = useState(false);
   const [draftTemplateStyle, setDraftTemplateStyle] = useState('');
-  const [editPrompt, setEditPrompt] = useState('');
-  // 大纲和描述编辑状态
-  const [editOutlineTitle, setEditOutlineTitle] = useState('');
-  const [editOutlinePoints, setEditOutlinePoints] = useState('');
-  const [editDescription, setEditDescription] = useState('');
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showExportJobsPanel, setShowExportJobsPanel] = useState(false);
   const [showPptxExportDialog, setShowPptxExportDialog] = useState(false);
@@ -103,23 +92,12 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [selectedSlideIds, setSelectedSlideIds] = useState<Set<string>>(new Set());
   const [svgEditorOpen, setSvgEditorOpen] = useState(false);
-  const [isOutlineExpanded, setIsOutlineExpanded] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [imageVersions, setImageVersions] = useState<ImageVersion[]>([]);
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState<string | null>(null);
   const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
-  const [selectedContextImages, setSelectedContextImages] = useState<{
-    useTemplate: boolean;
-    descImageUrls: string[];
-    uploadedFiles: File[];
-  }>({
-    useTemplate: false,
-    descImageUrls: [],
-    uploadedFiles: [],
-  });
   const [extraRequirements, setExtraRequirements] = useState<string>('');
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
   const isEditingRequirements = useRef(false); // 跟踪用户是否正在编辑额外要求
@@ -149,22 +127,6 @@ export const DeckWorkspacePage: React.FC = () => {
   const [show1KWarningDialog, setShow1KWarningDialog] = useState(false);
   const [skip1KWarningChecked, setSkip1KWarningChecked] = useState(false);
   const [pending1KAction, setPending1KAction] = useState<(() => Promise<void>) | null>(null);
-  // 每页编辑参数缓存（前端会话内缓存，便于重复执行）
-  const [editContextByPage, setEditContextByPage] = useState<Record<string, {
-    prompt: string;
-    contextImages: {
-      useTemplate: boolean;
-      descImageUrls: string[];
-      uploadedFiles: File[];
-    };
-  }>>({});
-
-  // 预览图矩形选择状态（编辑弹窗内）
-  const imageRef = useRef<HTMLImageElement | null>(null);
-  const [isRegionSelectionMode, setIsRegionSelectionMode] = useState(false);
-  const [isSelectingRegion, setIsSelectingRegion] = useState(false);
-  const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
-  const [selectionRect, setSelectionRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -492,315 +454,29 @@ export const DeckWorkspacePage: React.FC = () => {
     }
   };
 
-  // 从描述内容中提取图片URL
-  const extractImageUrlsFromDescription = (descriptionContent: DescriptionContent | undefined): string[] => {
-    if (!descriptionContent) return [];
-
-    // 处理两种格式
-    let text: string = '';
-    if ('text' in descriptionContent) {
-      text = descriptionContent.text as string;
-    } else if ('text_content' in descriptionContent && Array.isArray(descriptionContent.text_content)) {
-      text = descriptionContent.text_content.join('\n');
-    }
-
-    if (!text) return [];
-
-    // 匹配 markdown 图片语法: ![](url) 或 ![alt](url)
-    const pattern = /!\[.*?\]\((.*?)\)/g;
-    const matches: string[] = [];
-    let match: RegExpExecArray | null;
-
-    while ((match = pattern.exec(text)) !== null) {
-      const url = match[1]?.trim();
-      // 只保留有效的HTTP/HTTPS URL
-      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-        matches.push(url);
-      }
-    }
-
-    return matches;
-  };
-
   const openSlideEditor = (targetIndex = selectedIndex) => {
-    const slide = workspaceSlides[targetIndex];
-    const slideId = slide?.id;
-
     setSelectedIndex(targetIndex);
-
-    setIsOutlineExpanded(false);
-    setIsDescriptionExpanded(false);
-
-    // 初始化大纲和描述编辑状态
-    setEditOutlineTitle(slide?.outline_content?.title || '');
-    setEditOutlinePoints(slide?.outline_content?.points?.join('\n') || '');
-    // 提取描述文本
-    const descContent = slide?.description_content;
-    let descText = '';
-    if (descContent) {
-      if ('text' in descContent) {
-        descText = descContent.text as string;
-      } else if ('text_content' in descContent && Array.isArray(descContent.text_content)) {
-        descText = descContent.text_content.join('\n');
-      }
-    }
-    setEditDescription(descText);
-
-    if (slideId && editContextByPage[slideId]) {
-      // 恢复该页上次编辑的内容和图片选择
-      const cached = editContextByPage[slideId];
-      setEditPrompt(cached.prompt);
-      setSelectedContextImages({
-        useTemplate: cached.contextImages.useTemplate,
-        descImageUrls: [...cached.contextImages.descImageUrls],
-        uploadedFiles: [...cached.contextImages.uploadedFiles],
-      });
-    } else {
-      // 首次编辑该页，使用默认值
-      setEditPrompt('');
-      setSelectedContextImages({
-        useTemplate: false,
-        descImageUrls: [],
-        uploadedFiles: [],
-      });
-    }
-
-    // 打开编辑弹窗时，清空上一次的选区和模式
-    setIsRegionSelectionMode(false);
-    setSelectionStart(null);
-    setSelectionRect(null);
-    setIsSelectingRegion(false);
-
     setIsEditModalOpen(true);
   };
 
-  // 保存大纲和描述修改
-  const handleSaveOutlineAndDescription = useCallback(() => {
-    if (!selectedSlide?.id) return;
+  const handleSaveSlideMetadata = useCallback((slideId: string, updates: Partial<Page>) => {
+    updatePageLocal(slideId, updates);
+    show({ message: t('slidePreview.outlineSaved'), type: 'success' });
+  }, [show, t, updatePageLocal]);
 
-    const updates: Partial<Page> = {};
-
-    // 检查大纲是否有变化
-    const originalTitle = selectedSlide.outline_content?.title || '';
-    const originalPoints = selectedSlide.outline_content?.points?.join('\n') || '';
-    if (editOutlineTitle !== originalTitle || editOutlinePoints !== originalPoints) {
-      updates.outline_content = {
-        title: editOutlineTitle,
-        points: editOutlinePoints.split('\n').filter((p) => p.trim()),
-      };
-    }
-
-    // 检查描述是否有变化
-    const descContent = selectedSlide.description_content;
-    let originalDesc = '';
-    if (descContent) {
-      if ('text' in descContent) {
-        originalDesc = descContent.text as string;
-      } else if ('text_content' in descContent && Array.isArray(descContent.text_content)) {
-        originalDesc = descContent.text_content.join('\n');
-      }
-    }
-    if (editDescription !== originalDesc) {
-      updates.description_content = {
-        text: editDescription,
-      } as DescriptionContent;
-    }
-
-    // 如果有修改，保存更新
-    if (Object.keys(updates).length > 0) {
-      updatePageLocal(selectedSlide.id, updates);
-      show({ message: t('slidePreview.outlineSaved'), type: 'success' });
-    }
-  }, [editDescription, editOutlinePoints, editOutlineTitle, selectedSlide, show, updatePageLocal]);
-
-  const handleSubmitEdit = useCallback(async () => {
-    const slideId = selectedSlide?.id;
-    if (!slideId || !editPrompt.trim()) return;
-
-    // 先保存大纲和描述的修改
-    handleSaveOutlineAndDescription();
-
-    // 调用后端编辑接口
-    await editPageImage(
-      slideId,
-      editPrompt,
-      {
-        useTemplate: selectedContextImages.useTemplate,
-        descImageUrls: selectedContextImages.descImageUrls,
-        uploadedFiles: selectedContextImages.uploadedFiles.length > 0
-          ? selectedContextImages.uploadedFiles
-          : undefined,
-      }
-    );
-
-    // 缓存当前页的编辑上下文，便于后续快速重复执行
-    setEditContextByPage((prev) => ({
-      ...prev,
-      [slideId]: {
-        prompt: editPrompt,
-        contextImages: {
-          useTemplate: selectedContextImages.useTemplate,
-          descImageUrls: [...selectedContextImages.descImageUrls],
-          uploadedFiles: [...selectedContextImages.uploadedFiles],
-        },
-      },
-    }));
-
-    setIsEditModalOpen(false);
-  }, [editPageImage, editPrompt, handleSaveOutlineAndDescription, selectedContextImages, selectedSlide]);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedContextImages((prev) => ({
-      ...prev,
-      uploadedFiles: [...prev.uploadedFiles, ...files],
-    }));
-  };
-
-  const removeUploadedFile = (index: number) => {
-    setSelectedContextImages((prev) => ({
-      ...prev,
-      uploadedFiles: prev.uploadedFiles.filter((_, i) => i !== index),
-    }));
-  };
-
-  // Manage object URLs for uploaded files to prevent memory leaks
-  const uploadedFileUrls = useRef<string[]>([]);
-  useEffect(() => {
-    uploadedFileUrls.current.forEach(url => URL.revokeObjectURL(url));
-    uploadedFileUrls.current = selectedContextImages.uploadedFiles.map(file => URL.createObjectURL(file));
-  }, [selectedContextImages.uploadedFiles]);
-  useEffect(() => {
-    return () => {
-      uploadedFileUrls.current.forEach(url => URL.revokeObjectURL(url));
-    };
-  }, []);
-  // 编辑弹窗打开时，实时把输入与图片选择写入缓存（前端会话内）
-  useEffect(() => {
-    const slideId = selectedSlide?.id;
-    if (!isEditModalOpen || !slideId) return;
-
-    setEditContextByPage((prev) => ({
-      ...prev,
-      [slideId]: {
-        prompt: editPrompt,
-        contextImages: {
-          useTemplate: selectedContextImages.useTemplate,
-          descImageUrls: [...selectedContextImages.descImageUrls],
-          uploadedFiles: [...selectedContextImages.uploadedFiles],
-        },
-      },
-    }));
-  }, [editPrompt, isEditModalOpen, selectedContextImages, selectedSlide?.id]);
-
-  // ========== 预览图矩形选择相关逻辑（编辑弹窗内） ==========
-  const handleSelectionMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isRegionSelectionMode || !imageRef.current) return;
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
-    setIsSelectingRegion(true);
-    setSelectionStart({ x, y });
-    setSelectionRect(null);
-  };
-
-  const handleSelectionMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isRegionSelectionMode || !isSelectingRegion || !selectionStart || !imageRef.current) return;
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const clampedX = Math.max(0, Math.min(x, rect.width));
-    const clampedY = Math.max(0, Math.min(y, rect.height));
-
-    const left = Math.min(selectionStart.x, clampedX);
-    const top = Math.min(selectionStart.y, clampedY);
-    const width = Math.abs(clampedX - selectionStart.x);
-    const height = Math.abs(clampedY - selectionStart.y);
-
-    setSelectionRect({ left, top, width, height });
-  };
-
-  const handleSelectionMouseUp = async () => {
-    if (!isRegionSelectionMode || !isSelectingRegion || !selectionRect || !imageRef.current) {
-      setIsSelectingRegion(false);
-      setSelectionStart(null);
-      return;
-    }
-
-    // 结束拖拽，但保留选中的矩形，直到用户手动退出区域选图模式
-    setIsSelectingRegion(false);
-    setSelectionStart(null);
-
-    try {
-      const img = imageRef.current;
-      const { left, top, width, height } = selectionRect;
-      if (width < 10 || height < 10) {
-        // 选区太小，忽略
-        return;
-      }
-
-      // 将选区从展示尺寸映射到原始图片尺寸
-      const naturalWidth = img.naturalWidth;
-      const naturalHeight = img.naturalHeight;
-      const displayWidth = img.clientWidth;
-      const displayHeight = img.clientHeight;
-
-      if (!naturalWidth || !naturalHeight || !displayWidth || !displayHeight) return;
-
-      const scaleX = naturalWidth / displayWidth;
-      const scaleY = naturalHeight / displayHeight;
-
-      const sx = left * scaleX;
-      const sy = top * scaleY;
-      const sWidth = width * scaleX;
-      const sHeight = height * scaleY;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(sWidth));
-      canvas.height = Math.max(1, Math.round(sHeight));
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      try {
-        ctx.drawImage(
-          img,
-          sx,
-          sy,
-          sWidth,
-          sHeight,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-
-        canvas.toBlob((blob) => {
-          if (!blob) return;
-          const file = new File([blob], `crop-${Date.now()}.png`, { type: 'image/png' });
-          // 把选中区域作为额外参考图片加入上传列表
-          setSelectedContextImages((prev) => ({
-            ...prev,
-            uploadedFiles: [...prev.uploadedFiles, file],
-          }));
-          // 给用户一个明显反馈：选区已作为图片加入下方“上传图片”
-          show({
-            message: t('slidePreview.regionCropSuccess'),
-            type: 'success',
-          });
-        }, 'image/png');
-      } catch (e: any) {
-        console.error('裁剪选中区域失败（可能是跨域图片导致 canvas 被污染）:', e);
-        show({
-          message: t('slidePreview.regionCropFailed'),
-          type: 'error',
-        });
-      }
-    } finally {
-      // 不清理 selectionRect，让选区在界面上持续显示
-    }
-  };
+  const handleSubmitSlideEdit = useCallback(async ({
+    slideId,
+    instruction,
+    references,
+  }: SlideEditCommand) => {
+    await editPageImage(slideId, instruction, {
+      useTemplate: references.useTemplate,
+      descImageUrls: references.descriptionImageUrls,
+      uploadedFiles: references.uploadedFiles.length > 0
+        ? references.uploadedFiles
+        : undefined,
+    });
+  }, [editPageImage]);
 
   // 多选相关函数
   const toggleSlideSelection = (slideId: string) => {
@@ -1078,10 +754,6 @@ export const DeckWorkspacePage: React.FC = () => {
     );
   }
 
-  const imageUrl = selectedSlide?.generated_image_path
-    ? getImageUrl(selectedSlide.generated_image_path, selectedSlide.updated_at)
-    : '';
-
   const exportSelection = exportSelectionFromWorkspace(
     workspace,
     selectedSlideIds,
@@ -1356,303 +1028,17 @@ export const DeckWorkspacePage: React.FC = () => {
         />
       </div>
 
-      {/* 编辑对话框 */}
-      <Modal
+      <SlideEditDialog
         isOpen={isEditModalOpen}
+        slide={selectedSlide}
+        templateAssetPath={workspace.templateAssetPath}
+        deckUpdatedAt={workspace.updatedAt}
+        aspectRatioStyle={aspectRatioStyle}
         onClose={() => setIsEditModalOpen(false)}
-        title={t('preview.editPage')}
-        size="lg"
-      >
-        <div className="space-y-4">
-          {/* 图片（支持矩形区域选择） */}
-          <div
-            className="bg-gray-100 dark:bg-background-secondary rounded-lg overflow-hidden relative"
-            style={{ aspectRatio: aspectRatioStyle }}
-            onMouseDown={handleSelectionMouseDown}
-            onMouseMove={handleSelectionMouseMove}
-            onMouseUp={handleSelectionMouseUp}
-            onMouseLeave={handleSelectionMouseUp}
-          >
-            {imageUrl && (
-              <>
-                {/* 左上角：区域选图模式开关（仅位图模式；SVG 走文本编辑，不显示） */}
-                {!selectedSlide?.generated_svg_url && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // 切换矩形选择模式
-                    setIsRegionSelectionMode((prev) => !prev);
-                    // 切模式时清空当前选区
-                    setSelectionStart(null);
-                    setSelectionRect(null);
-                    setIsSelectingRegion(false);
-                  }}
-                  className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
-                >
-                  <Sparkles size={12} />
-                  <span>{isRegionSelectionMode ? t('preview.endRegionSelect') : t('preview.regionSelect')}</span>
-                </button>
-                )}
-
-                {/* 右上角：编辑 SVG（仅 SVG 模式）——直接在幻灯片上改文字 / 看 SVG 代码 */}
-                {selectedSlide?.generated_svg_url && selectedSlide?.id && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setSvgEditorOpen(true); }}
-                    className="absolute top-2 right-2 z-10 px-2 py-1 rounded bg-white/80 text-[10px] text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover shadow-sm dark:shadow-background-primary/30 flex items-center gap-1"
-                  >
-                    <Sparkles size={12} />
-                    <span>编辑 SVG</span>
-                  </button>
-                )}
-
-                {selectedSlide?.generated_svg_url ? (
-                  // SVG 模式：内联矢量，放大无锯齿；区域选图（位图编辑）不适用于 SVG，
-                  // imageRef 留空，相关 handler 已 null-check 自动 no-op。
-                  <InlineSvgImage
-                    svgUrl={selectedSlide.generated_svg_url}
-                    fallbackUrl={selectedSlide.generated_image_path!}
-                    alt="Current slide"
-                    updatedAt={selectedSlide.updated_at}
-                    className="w-full h-full object-contain select-none"
-                  />
-                ) : (
-                  <img
-                    ref={imageRef}
-                    src={imageUrl}
-                    alt="Current slide"
-                    className="w-full h-full object-contain select-none"
-                    draggable={false}
-                    crossOrigin="anonymous"
-                  />
-                )}
-                {selectionRect && (
-                  <div
-                    className="absolute border-2 border-brand-500 bg-brand-400/10 pointer-events-none"
-                    style={{
-                      left: selectionRect.left,
-                      top: selectionRect.top,
-                      width: selectionRect.width,
-                      height: selectionRect.height,
-                    }}
-                  />
-                )}
-              </>
-            )}
-          </div>
-
-          {/* 大纲内容 - 可编辑 */}
-          <div className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary">
-            <button
-              onClick={() => setIsOutlineExpanded(!isOutlineExpanded)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-background-hover transition-colors"
-            >
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary">{t('preview.pageOutline')}</h4>
-              {isOutlineExpanded ? (
-                <ChevronUp size={18} className="text-gray-500 dark:text-foreground-tertiary" />
-              ) : (
-                <ChevronDown size={18} className="text-gray-500 dark:text-foreground-tertiary" />
-              )}
-            </button>
-            {isOutlineExpanded && (
-              <div className="px-4 pb-4 space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1">{t('outline.titleLabel')}</label>
-                  <input
-                    type="text"
-                    value={editOutlineTitle}
-                    onChange={(e) => setEditOutlineTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder={t('preview.enterTitle')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1">{t('preview.pointsPerLine')}</label>
-                  <textarea
-                    value={editOutlinePoints}
-                    onChange={(e) => setEditOutlinePoints(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-                    placeholder={t('preview.enterPointsPerLine')}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 描述内容 - 可编辑 */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-            >
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary">{t('preview.pageDescription')}</h4>
-              {isDescriptionExpanded ? (
-                <ChevronUp size={18} className="text-gray-500 dark:text-foreground-tertiary" />
-              ) : (
-                <ChevronDown size={18} className="text-gray-500 dark:text-foreground-tertiary" />
-              )}
-            </button>
-            {isDescriptionExpanded && (
-              <div className="px-4 pb-4">
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={8}
-                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-700 bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-                  placeholder={t('preview.enterDescription')}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* 上下文图片选择 */}
-          <div className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary p-4 space-y-4">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary mb-3">{t('preview.selectContextImages')}</h4>
-
-            {/* Template图片选择 */}
-            {workspace.templateAssetPath && (
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="use-template"
-                  checked={selectedContextImages.useTemplate}
-                  onChange={(e) =>
-                    setSelectedContextImages((prev) => ({
-                      ...prev,
-                      useTemplate: e.target.checked,
-                    }))
-                  }
-                  className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
-                />
-                <label htmlFor="use-template" className="flex items-center gap-2 cursor-pointer">
-                  <ImageIcon size={16} className="text-gray-500 dark:text-foreground-tertiary" />
-                  <span className="text-sm text-gray-700 dark:text-foreground-secondary">{t('preview.useTemplateImage')}</span>
-                  {workspace.templateAssetPath && (
-                    <img
-                      src={getImageUrl(workspace.templateAssetPath, workspace.updatedAt)}
-                      alt="Template"
-                      className="w-16 h-10 object-cover rounded border border-gray-300 dark:border-border-primary"
-                    />
-                  )}
-                </label>
-              </div>
-            )}
-
-            {/* Desc中的图片 */}
-            {selectedSlide?.description_content && (() => {
-              const descImageUrls = extractImageUrlsFromDescription(selectedSlide.description_content);
-              return descImageUrls.length > 0 ? (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('preview.imagesInDescription')}:</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {descImageUrls.map((url, idx) => (
-                      <div key={idx} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Desc image ${idx + 1}`}
-                          className="w-full h-20 object-cover rounded border-2 border-gray-300 dark:border-border-primary cursor-pointer transition-all"
-                          style={{
-                            borderColor: selectedContextImages.descImageUrls.includes(url)
-                              ? 'var(--brand-yellow)'
-                              : 'var(--border-primary)',
-                          }}
-                          onClick={() => {
-                            setSelectedContextImages((prev) => {
-                              const isSelected = prev.descImageUrls.includes(url);
-                              return {
-                                ...prev,
-                                descImageUrls: isSelected
-                                  ? prev.descImageUrls.filter((u) => u !== url)
-                                  : [...prev.descImageUrls, url],
-                              };
-                            });
-                          }}
-                        />
-                        {selectedContextImages.descImageUrls.includes(url) && (
-                          <div className="absolute inset-0 bg-brand-500/20 border-2 border-brand-500 rounded flex items-center justify-center">
-                            <div className="w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">✓</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null;
-            })()}
-
-            {/* 上传图片 */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('preview.uploadImages')}:</label>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedContextImages.uploadedFiles.map((_, idx) => (
-                  <div key={idx} className="relative group">
-                    <img
-                      src={uploadedFileUrls.current[idx] || ''}
-                      alt={`Uploaded ${idx + 1}`}
-                      className="w-20 h-20 object-cover rounded border border-gray-300 dark:border-border-primary"
-                    />
-                    <button
-                      onClick={() => removeUploadedFile(idx)}
-                      className="no-min-touch-target absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-                <label className="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-border-primary rounded flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-colors">
-                  <Upload size={20} className="text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500 dark:text-foreground-tertiary">{t('preview.upload')}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* 编辑框 */}
-          <Textarea
-            label={t('preview.editPromptLabel')}
-            placeholder={t('preview.editPromptPlaceholder')}
-            value={editPrompt}
-            onChange={(e) => setEditPrompt(e.target.value)}
-            rows={4}
-          />
-          <div className="flex justify-between gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                handleSaveOutlineAndDescription();
-                setIsEditModalOpen(false);
-              }}
-            >
-              {t('preview.saveOutlineOnly')}
-            </Button>
-            <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSubmitEdit}
-                disabled={!editPrompt.trim() || !selectedSlide?.generated_image_path}
-              >
-                {t('preview.generateImage')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+        onOpenSvgEditor={() => setSvgEditorOpen(true)}
+        onSaveMetadata={handleSaveSlideMetadata}
+        onSubmitEdit={handleSubmitSlideEdit}
+      />
       <ToastContainer />
       {ConfirmDialog}
 

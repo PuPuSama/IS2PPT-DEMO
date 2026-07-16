@@ -1,17 +1,21 @@
 import { STORAGE_KEYS } from './storageKeys';
 
-export type HomeDraftTab = 'idea' | 'outline' | 'description' | 'ppt_renovation';
+export type HomeDraftMode = 'idea' | 'outline' | 'description' | 'source-deck';
 
-const DEFAULT_TAB: HomeDraftTab = 'idea';
-const HOME_DRAFT_TABS = new Set<HomeDraftTab>([
+const DEFAULT_MODE: HomeDraftMode = 'idea';
+const HOME_DRAFT_MODES = new Set<HomeDraftMode>([
   'idea',
   'outline',
   'description',
-  'ppt_renovation',
+  'source-deck',
 ]);
 
-const isHomeDraftTab = (value: string | null): value is HomeDraftTab =>
-  Boolean(value && HOME_DRAFT_TABS.has(value as HomeDraftTab));
+const normalizeDraftMode = (value: string | null): HomeDraftMode => {
+  if (value === 'ppt_renovation') return 'source-deck';
+  return value && HOME_DRAFT_MODES.has(value as HomeDraftMode)
+    ? value as HomeDraftMode
+    : DEFAULT_MODE;
+};
 
 export const homeDraftStore = {
   getContent: () => sessionStorage.getItem(STORAGE_KEYS.homeDraftContent) || '',
@@ -27,10 +31,10 @@ export const homeDraftStore = {
 
   getTab: () => {
     const savedTab = sessionStorage.getItem(STORAGE_KEYS.homeDraftTab);
-    return isHomeDraftTab(savedTab) ? savedTab : DEFAULT_TAB;
+    return normalizeDraftMode(savedTab);
   },
 
-  saveTab: (tab: HomeDraftTab) => {
+  saveTab: (tab: HomeDraftMode) => {
     sessionStorage.setItem(STORAGE_KEYS.homeDraftTab, tab);
   },
 

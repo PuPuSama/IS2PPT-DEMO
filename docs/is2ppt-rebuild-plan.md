@@ -48,7 +48,12 @@ Progress snapshot (2026-07-15):
 - Phase 5 is in progress. `Home.tsx` is now a thin route over the public
   `features/deck-create` entry point. Reference-document selection, validation,
   upload, parsing, and deduplication are owned by the feature model with focused
-  tests instead of the route component.
+  tests instead of the route component. Standard deck creation and source-deck
+  import now share a typed, UI-independent workflow with explicit results and
+  errors. `DeckCreationPage` only validates form input and navigates; API,
+  session, draft, reference-association, and compatibility-store side effects
+  are isolated in `useDeckCreation`. Template binary loading now belongs to an
+  entity repository used by both creation and workspace flows.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

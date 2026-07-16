@@ -4,48 +4,45 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
 import { Button, Card, useToast, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
-import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
-import { createPptRenovationProject } from '@/api/renovationApi';
+import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
-import { associateFileToProject } from '@/api/referenceFilesApi';
-import { useProjectStore } from '@/store/useProjectStore';
-import { devLog } from '@/utils/logger';
 import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { homeI18n } from '@/config/homeI18n';
-import { homeDraftStore, type HomeDraftTab } from '@/shared/storage/homeDraft';
+import { homeDraftStore, type HomeDraftMode } from '@/shared/storage/homeDraft';
 import { projectSession } from '@/shared/storage/projectSession';
-import { renovationTaskSession } from '@/shared/storage/renovationTaskSession';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 import { useCreationReferences } from '../model/useCreationReferences';
+import { useDeckCreation } from '../model/useDeckCreation';
+import { DeckCreationError } from '../model/types';
 import {
   completedReferenceIds,
   isReferenceDocument,
   isReferenceParsing,
 } from '../model/referenceDocuments';
 
-type CreationType = HomeDraftTab;
+type CreationMode = HomeDraftMode;
 
 export const DeckCreationPage: React.FC = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const t = useT(homeI18n);
   const { theme, isDark, setTheme } = useTheme();
-  const { initializeProject, isGlobalLoading } = useProjectStore();
   const { show, ToastContainer } = useToast();
 
-  const [activeTab, setActiveTab] = useState<CreationType>(() => homeDraftStore.getTab());
-  const [content, setContent] = useState(() => homeDraftStore.getContent());
-  const [selectedTemplate, setSelectedTemplate] = useState<File | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState<string | null>(null);
+  const [creationMode, setCreationMode] = useState<CreationMode>(() => homeDraftStore.getTab());
+  const [brief, setBrief] = useState(() => homeDraftStore.getContent());
+  const [directTemplateFile, setDirectTemplateFile] = useState<File | null>(null);
+  const [libraryTemplateId, setLibraryTemplateId] = useState<string | null>(null);
+  const [presetTemplateId, setPresetTemplateId] = useState<string | null>(null);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
+  const [activeDeckId, setActiveDeckId] = useState<string | null>(null);
+  const [templateLibrary, setTemplateLibrary] = useState<UserTemplate[]>([]);
+  const { createDeck, isCreating } = useDeckCreation(templateLibrary);
 
   const [useTemplateStyle, setUseTemplateStyle] = useState(false);
   const [templateStyle, setTemplateStyle] = useState('');
@@ -74,25 +71,25 @@ export const DeckCreationPage: React.FC = () => {
 
   // 持久化草稿，确保跳转设置页后返回时内容不丢失
   useEffect(() => {
-    homeDraftStore.saveContent(content);
-  }, [content]);
+    homeDraftStore.saveContent(brief);
+  }, [brief]);
 
   useEffect(() => {
-    homeDraftStore.saveTab(activeTab);
-  }, [activeTab]);
+    homeDraftStore.saveTab(creationMode);
+  }, [creationMode]);
 
 
   // 检查是否有当前项目 & 加载用户模板
   useEffect(() => {
     const projectId = projectSession.getActiveProjectId();
-    setCurrentProjectId(projectId);
+    setActiveDeckId(projectId);
 
     // 加载用户模板列表（用于按需获取File）
     const loadTemplates = async () => {
       try {
         const response = await listUserTemplates();
         if (response.data?.templates) {
-          setUserTemplates(response.data.templates);
+          setTemplateLibrary(response.data.templates);
         }
       } catch (error) {
         console.error('加载用户模板失败:', error);
@@ -124,7 +121,7 @@ export const DeckCreationPage: React.FC = () => {
   // 图片粘贴使用统一 hook（批量支持，不对非图片文件发出警告，由下方 handlePaste 处理文档）
   const { handlePaste: handleImagePaste, handleFiles: handleImageFiles, isUploading: isUploadingImage } = useImagePaste({
     projectId: null,
-    setContent,
+    setContent: setBrief,
     showToast: show,
     warnUnsupportedTypes: false,
     insertAtCursor,
@@ -199,11 +196,11 @@ export const DeckCreationPage: React.FC = () => {
       description: t('home.tabDescriptions.description'),
       example: t('home.examples.description'),
     },
-    ppt_renovation: {
+    'source-deck': {
       icon: <RefreshCw size={20} />,
-      label: t('home.tabs.ppt_renovation'),
+      label: t('home.tabs.sourceDeck'),
       placeholder: '',
-      description: t('home.tabDescriptions.ppt_renovation'),
+      description: t('home.tabDescriptions.sourceDeck'),
       example: null as string | null,
     },
   };
@@ -211,7 +208,7 @@ export const DeckCreationPage: React.FC = () => {
   const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
     // 总是设置文件（如果提供）
     if (templateFile) {
-      setSelectedTemplate(templateFile);
+      setDirectTemplateFile(templateFile);
     }
 
     // 处理模板 ID
@@ -221,31 +218,29 @@ export const DeckCreationPage: React.FC = () => {
       // 用户模板 ID 通常较长（UUID 格式）
       if (templateId.length <= 3 && /^\d+$/.test(templateId)) {
         // 预设模板
-        setSelectedPresetTemplateId(templateId);
-        setSelectedTemplateId(null);
+        setPresetTemplateId(templateId);
+        setLibraryTemplateId(null);
       } else {
         // 用户模板
-        setSelectedTemplateId(templateId);
-        setSelectedPresetTemplateId(null);
+        setLibraryTemplateId(templateId);
+        setPresetTemplateId(null);
       }
     } else {
       // 如果没有 templateId，可能是直接上传的文件
       // 清空所有选择状态
-      setSelectedTemplateId(null);
-      setSelectedPresetTemplateId(null);
+      setLibraryTemplateId(null);
+      setPresetTemplateId(null);
     }
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async () => {
-    // For ppt_renovation, validate file instead of content
-    if (activeTab === 'ppt_renovation') {
+    // Source-deck mode validates an upload instead of a text brief.
+    if (creationMode === 'source-deck') {
       if (!renovationFile) {
         show({ message: t('home.renovation.uploadFile'), type: 'error' });
         return;
       }
-    } else if (!content.trim()) {
+    } else if (!brief.trim()) {
       show({ message: t('home.messages.enterContent'), type: 'error' });
       return;
     }
@@ -260,88 +255,41 @@ export const DeckCreationPage: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      // PPT 翻新模式：走独立的上传+异步解析流程
-      if (activeTab === 'ppt_renovation' && renovationFile) {
-        const styleDesc = templateStyle.trim() ? templateStyle.trim() : undefined;
-        const result = await createPptRenovationProject(renovationFile, {
-          keepLayout,
-          templateStyle: styleDesc,
-        });
+      const style = templateStyle.trim() || undefined;
+      const result = creationMode === 'source-deck' && renovationFile
+        ? await createDeck({
+            kind: 'import',
+            sourceFile: renovationFile,
+            keepLayout,
+            style,
+          })
+        : await createDeck({
+            kind: 'generate',
+            mode: creationMode as 'idea' | 'outline' | 'description',
+            brief,
+            templateFile: directTemplateFile || undefined,
+            templateId: libraryTemplateId || presetTemplateId || undefined,
+            style,
+            readyReferenceIds: completedReferenceIds(references),
+            additionalReferenceIds: references
+              .filter((reference) => reference.parse_status !== 'completed')
+              .map((reference) => reference.id),
+            aspectRatio,
+          });
 
-        const projectId = result.data?.project_id;
-        const taskId = result.data?.task_id;
-        if (!projectId) {
-          show({ message: t('home.messages.projectCreateFailed'), type: 'error' });
-          return;
-        }
-
-        projectSession.setActiveProjectId(projectId);
-        if (taskId) {
-          renovationTaskSession.trackTask(taskId);
-        }
-
-        homeDraftStore.clear();
-
-        // Navigate to detail editor (will poll for task completion with skeleton UI)
-        navigate(`/project/${projectId}/detail`);
-        return;
-      }
-
-      // 如果有模板ID但没有File，按需加载
-      let templateFile = selectedTemplate;
-      if (!templateFile && (selectedTemplateId || selectedPresetTemplateId)) {
-        const templateId = selectedTemplateId || selectedPresetTemplateId;
-        if (templateId) {
-          templateFile = await getTemplateFile(templateId, userTemplates);
-          if (!templateFile) {
-            show({ message: t('home.messages.loadTemplateFailed'), type: 'error' });
-            return;
-          }
-        }
-      }
-
-      // 传递风格描述（只要有内容就传递，不管开关状态）
-      const styleDesc = templateStyle.trim() ? templateStyle.trim() : undefined;
-
-      // 传递参考文件ID列表，确保 AI 生成时能读取参考文件内容
-      const refFileIds = completedReferenceIds(references);
-
-      await initializeProject(activeTab as 'idea' | 'outline' | 'description', content, templateFile || undefined, styleDesc, refFileIds.length > 0 ? refFileIds : undefined, aspectRatio);
-
-      // 根据类型跳转到不同页面
-      const projectId = projectSession.getActiveProjectId();
-      if (!projectId) {
-        show({ message: t('home.messages.projectCreateFailed'), type: 'error' });
-        return;
-      }
-
-      // 关联未完成解析的参考文件（已完成的在 initializeProject 中关联）
-      if (references.length > 0) {
-        const unassociatedFiles = references.filter(f => f.parse_status !== 'completed');
-        if (unassociatedFiles.length > 0) {
-          devLog(`Associating ${unassociatedFiles.length} remaining reference files to project ${projectId}:`, unassociatedFiles);
-          try {
-            await Promise.all(
-              unassociatedFiles.map(async file => {
-                const response = await associateFileToProject(file.id, projectId);
-                return response;
-              })
-            );
-          } catch (error) {
-            console.error('Failed to associate reference files:', error);
-          }
-        }
-      }
-      homeDraftStore.clear();
-      navigate(`/project/${projectId}/outline`);
+      const destination = result.destination === 'deck-plan' ? 'outline' : 'detail';
+      navigate(`/project/${result.deckId}/${destination}`);
     } catch (error: any) {
-      console.error('创建项目失败:', error);
-      const msg = error?.response?.data?.error?.message || error?.message || t('home.messages.projectCreateFailed');
-      show({ message: msg, type: 'error' });
-    } finally {
-      setIsSubmitting(false);
+      console.error('Deck creation failed:', error);
+      if (error instanceof DeckCreationError && error.code === 'template-unavailable') {
+        show({ message: t('home.messages.loadTemplateFailed'), type: 'error' });
+        return;
+      }
+      const message = error?.response?.data?.error?.message
+        || error?.message
+        || t('home.messages.projectCreateFailed');
+      show({ message, type: 'error' });
     }
   };
 
@@ -512,14 +460,14 @@ export const DeckCreationPage: React.FC = () => {
         <Card className="p-4 md:p-10 bg-white/90 dark:bg-background-secondary backdrop-blur-xl dark:backdrop-blur-none shadow-2xl dark:shadow-none border-0 dark:border dark:border-border-primary hover:shadow-3xl dark:hover:shadow-none transition-all duration-300 dark:rounded-2xl">
           {/* 选项卡 */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 md:mb-8">
-            {(Object.keys(tabConfig) as CreationType[]).map((type) => {
+            {(Object.keys(tabConfig) as CreationMode[]).map((type) => {
               const config = tabConfig[type];
               return (
                 <button
                   key={type}
-                  onClick={() => setActiveTab(type)}
+                  onClick={() => setCreationMode(type)}
                   className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 md:py-3 rounded-lg dark:rounded-xl font-medium transition-all text-sm md:text-base touch-manipulation ${
-                    activeTab === type
+                    creationMode === type
                       ? 'bg-gradient-to-r from-brand-500 to-brand-600 dark:from-brand dark:to-brand text-black shadow-yellow dark:shadow-lg dark:shadow-brand/20'
                       : 'bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-brand-50 dark:hover:bg-background-hover active:bg-brand-100'
                   }`}
@@ -537,13 +485,13 @@ export const DeckCreationPage: React.FC = () => {
               <span className="inline-flex items-center gap-2 text-gray-600 dark:text-foreground-tertiary">
                 <Lightbulb size={16} className="text-brand-600 dark:text-brand flex-shrink-0" />
                 <span className="font-semibold">
-                  {tabConfig[activeTab].description}
+                  {tabConfig[creationMode].description}
                 </span>
-                {tabConfig[activeTab].example && (
+                {tabConfig[creationMode].example && (
                   <span className="relative group/tip inline-flex">
                     <HelpCircle size={15} className="text-gray-400 dark:text-foreground-tertiary hover:text-brand-600 dark:hover:text-brand cursor-help transition-colors" />
                     <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tip:block z-50 w-72 md:w-80 p-3 bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary rounded-lg shadow-xl dark:shadow-none text-xs text-gray-700 dark:text-foreground-secondary whitespace-pre-line leading-relaxed">
-                      {tabConfig[activeTab].example}
+                      {tabConfig[creationMode].example}
                       <span className="absolute left-1/2 -translate-x-1/2 top-full -mt-px w-2 h-2 bg-white dark:bg-background-elevated border-r border-b border-gray-200 dark:border-border-primary rotate-45" />
                     </span>
                   </span>
@@ -554,7 +502,7 @@ export const DeckCreationPage: React.FC = () => {
 
           {/* 输入区 - 带工具栏 */}
           <div className="mb-2">
-            {activeTab === 'ppt_renovation' ? (
+            {creationMode === 'source-deck' ? (
               /* PPT 翻新：文件上传区 */
               <div className="space-y-4">
                 <div
@@ -636,7 +584,7 @@ export const DeckCreationPage: React.FC = () => {
                   <Button
                     size="sm"
                     onClick={handleSubmit}
-                    loading={isSubmitting || isGlobalLoading}
+                    loading={isCreating}
                     disabled={!renovationFile}
                     className="shadow-sm dark:shadow-background-primary/30 text-xs md:text-sm px-3 md:px-4"
                   >
@@ -647,13 +595,13 @@ export const DeckCreationPage: React.FC = () => {
             ) : (
             <MarkdownTextarea
               ref={textareaRef}
-              placeholder={tabConfig[activeTab].placeholder}
-              value={content}
-              onChange={setContent}
+              placeholder={tabConfig[creationMode].placeholder}
+              value={brief}
+              onChange={setBrief}
               onPaste={handlePaste}
               onFiles={handleImageFiles}
               onDocumentFiles={addDocuments}
-              rows={activeTab === 'idea' ? 4 : 8}
+              rows={creationMode === 'idea' ? 4 : 8}
               className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white focus-within:border-brand-400 dark:focus-within:border-brand transition-colors duration-200"
               toolbarLeft={
                 <div className="flex items-center gap-1">
@@ -699,9 +647,9 @@ export const DeckCreationPage: React.FC = () => {
                 <Button
                   size="sm"
                   onClick={handleSubmit}
-                  loading={isSubmitting || isGlobalLoading}
+                  loading={isCreating}
                   disabled={
-                    !content.trim() ||
+                    !brief.trim() ||
                     isUploadingImage ||
                     isUploadingReference ||
                     references.some(isReferenceParsing)
@@ -759,9 +707,9 @@ export const DeckCreationPage: React.FC = () => {
                       setUseTemplateStyle(e.target.checked);
                       // 切换到无模板图模式时，清空模板选择
                       if (e.target.checked) {
-                        setSelectedTemplate(null);
-                        setSelectedTemplateId(null);
-                        setSelectedPresetTemplateId(null);
+                        setDirectTemplateFile(null);
+                        setLibraryTemplateId(null);
+                        setPresetTemplateId(null);
                       }
                       // 不再清空风格描述，允许用户保留已输入的内容
                     }}
@@ -782,10 +730,10 @@ export const DeckCreationPage: React.FC = () => {
             ) : (
               <TemplateSelector
                 onSelect={handleTemplateSelect}
-                selectedTemplateId={selectedTemplateId}
-                selectedPresetTemplateId={selectedPresetTemplateId}
+                selectedTemplateId={libraryTemplateId}
+                selectedPresetTemplateId={presetTemplateId}
                 showUpload={true} // 在主页上传的模板保存到用户模板库
-                projectId={currentProjectId}
+                projectId={activeDeckId}
               />
             )}
           </div>

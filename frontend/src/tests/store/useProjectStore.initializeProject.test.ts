@@ -124,9 +124,10 @@ describe('initializeProject - reference file association', () => {
 
   it('should pass reference file IDs and associate them after project creation', async () => {
     const { result } = renderHook(() => useProjectStore())
+    let createdDeckId: string | undefined
 
     await act(async () => {
-      await result.current.initializeProject(
+      createdDeckId = await result.current.initializeProject(
         'idea',
         'Test idea prompt',
         undefined,
@@ -138,6 +139,7 @@ describe('initializeProject - reference file association', () => {
     expect(mockAssociateFileToProject).toHaveBeenCalledTimes(2)
     expect(mockAssociateFileToProject).toHaveBeenCalledWith('file-1', 'proj-001')
     expect(mockAssociateFileToProject).toHaveBeenCalledWith('file-2', 'proj-001')
+    expect(createdDeckId).toBe('proj-001')
   })
 
   it('should associate files before loading the created description project', async () => {

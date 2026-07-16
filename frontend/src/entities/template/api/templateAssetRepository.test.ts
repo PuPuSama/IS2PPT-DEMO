@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { getTemplateFile } from '@/components/shared/TemplateSelector';
+import { loadTemplateAsset } from './templateAssetRepository';
 
-describe('getTemplateFile', () => {
+describe('loadTemplateAsset', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -14,7 +14,7 @@ describe('getTemplateFile', () => {
       })
     );
 
-    const file = await getTemplateFile('1', []);
+    const file = await loadTemplateAsset('1', []);
 
     expect(file).toBeInstanceOf(File);
     expect(file?.name).toBe('template_y.png');
@@ -30,7 +30,7 @@ describe('getTemplateFile', () => {
       })
     );
 
-    const file = await getTemplateFile('1', []);
+    const file = await loadTemplateAsset('1', []);
 
     expect(file).toBeNull();
   });
@@ -44,7 +44,7 @@ describe('getTemplateFile', () => {
       })
     );
 
-    const file = await getTemplateFile('template-001', [
+    const file = await loadTemplateAsset('template-001', [
       {
         template_id: 'template-001',
         template_image_url: '/files/user-templates/template-001/template.png',

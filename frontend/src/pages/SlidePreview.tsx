@@ -28,7 +28,8 @@ import {
   Presentation,
 } from 'lucide-react';
 import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
-import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
+import { TemplateSelector } from '@/components/shared/TemplateSelector';
+import { loadTemplateAsset } from '@/entities/template/api/templateAssetRepository';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
 import { SlideCard } from '@/components/preview/SlideCard';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
@@ -1018,7 +1019,7 @@ export const SlidePreview: React.FC = () => {
     // 如果有templateId，按需加载File
     let file = templateFile;
     if (templateId && !file) {
-      file = await getTemplateFile(templateId, userTemplates);
+      file = await loadTemplateAsset(templateId, userTemplates);
       if (!file) {
         show({ message: t('slidePreview.loadTemplateFailed'), type: 'error' });
         return;

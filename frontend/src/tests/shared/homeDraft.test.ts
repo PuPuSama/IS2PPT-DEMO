@@ -30,6 +30,12 @@ describe('homeDraftStore', () => {
     expect(homeDraftStore.getTab()).toBe('idea');
   });
 
+  it('maps the legacy import mode to the new source-deck name', () => {
+    sessionStorage.setItem(STORAGE_KEYS.homeDraftTab, 'ppt_renovation');
+
+    expect(homeDraftStore.getTab()).toBe('source-deck');
+  });
+
   it('clears the full draft', () => {
     homeDraftStore.saveContent('Outline');
     homeDraftStore.saveTab('outline');

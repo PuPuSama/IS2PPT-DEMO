@@ -23,13 +23,13 @@ export const homeI18n = {
         idea: '一句话生成',
         outline: '从大纲生成',
         description: '从描述生成',
-        ppt_renovation: 'PPT 翻新',
+        sourceDeck: '源文件重制',
       },
       tabDescriptions: {
         idea: '输入你的想法，AI 将为你生成完整的 PPT',
         outline: '已有大纲？直接粘贴，AI 将自动切分为结构化大纲',
         description: '已有完整描述？AI 将自动解析并直接生成图片，跳过大纲步骤',
-        ppt_renovation: '上传已有的 PDF/PPTX 文件，AI 将解析内容并重新生成翻新后的PPT',
+        sourceDeck: '上传已有的 PDF/PPTX 文件，AI 将解析内容并重新生成演示文稿',
       },
       placeholders: {
         idea: '例如：生成一份关于 AI 发展史的演讲 PPT',
@@ -100,13 +100,13 @@ export const homeI18n = {
         idea: 'From Idea',
         outline: 'From Outline',
         description: 'From Description',
-        ppt_renovation: 'PPT Renovation',
+        sourceDeck: 'Rebuild Source Deck',
       },
       tabDescriptions: {
         idea: 'Enter your idea, AI will generate a complete PPT for you',
         outline: 'Have an outline? Paste it directly, AI will split it into a structured outline',
         description: 'Have detailed descriptions? AI will parse and generate images directly, skipping the outline step',
-        ppt_renovation: 'Upload an existing PDF/PPTX file, AI will parse its content and regenerate the renovated PPT',
+        sourceDeck: 'Upload an existing PDF/PPTX file and rebuild it as a new presentation',
       },
       placeholders: {
         idea: 'e.g., Generate a presentation about the history of AI',

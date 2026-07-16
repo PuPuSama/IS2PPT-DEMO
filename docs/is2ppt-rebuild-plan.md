@@ -82,7 +82,10 @@ Progress snapshot (2026-07-16):
   receiving only project-level apply commands from the workspace. Generation
   quality confirmation is now a tested policy plus hook; settings lookup,
   dismissal storage, deferred commands, and warning presentation no longer
-  live in the workspace page.
+  live in the workspace page. `DeckWorkspaceHeader` now owns responsive
+  navigation, export-job visibility, and export-format menus behind tested
+  command callbacks. This completes the workspace UI decomposition milestone;
+  remaining Phase 5 work is focused on project command and store boundaries.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

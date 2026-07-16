@@ -4,18 +4,7 @@ import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import type { PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
-import {
-  Home,
-  ArrowLeft,
-  Download,
-  RefreshCw,
-  Upload,
-  Settings,
-  FileText,
-  Loader2,
-  Presentation,
-} from 'lucide-react';
-import { Button, Loading, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel } from '@/components/shared';
+import { Loading, useToast, useConfirm, ProjectSettingsModal } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
@@ -36,6 +25,7 @@ import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
 import { DeckStyleDialog } from './DeckStyleDialog';
 import { GenerationQualityDialog } from './GenerationQualityDialog';
+import { DeckWorkspaceHeader } from './DeckWorkspaceHeader';
 import { SlideEditDialog, type SlideEditCommand } from './SlideEditDialog';
 import { SlideNavigator } from './SlideNavigator';
 import { SlideCanvas } from './SlideCanvas';
@@ -80,8 +70,6 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [deckStyleInitialMode, setDeckStyleInitialMode] = useState<DeckStyleMode>('image');
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [showExportJobsPanel, setShowExportJobsPanel] = useState(false);
   const [showPptxExportDialog, setShowPptxExportDialog] = useState(false);
   const [showEditablePptxDialog, setShowEditablePptxDialog] = useState(false);
   const [pptxTransitionsEnabled, setPptxTransitionsEnabled] = useState(false);
@@ -459,7 +447,6 @@ export const DeckWorkspacePage: React.FC = () => {
       pptxTransitionEffects?: PptxTransitionEffect[];
     },
   ) => {
-    setShowExportMenu(false);
     if (!projectId) return;
 
     const slideIds = selectedSlideIdsForCommand();
@@ -672,201 +659,30 @@ export const DeckWorkspacePage: React.FC = () => {
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
-      {/* 顶栏 */}
-      <header className="h-14 md:h-16 bg-white dark:bg-background-secondary shadow-sm dark:shadow-background-primary/30 border-b border-gray-200 dark:border-border-primary flex items-center justify-between px-3 md:px-6 flex-shrink-0">
-        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<Home size={16} className="md:w-[18px] md:h-[18px]" />}
-            onClick={() => navigate('/')}
-            className="hidden sm:inline-flex flex-shrink-0"
-            >
-              <span className="hidden md:inline">{t('nav.home')}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ArrowLeft size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => {
-                if (fromHistory) {
-                  navigate('/history');
-                } else {
-                  navigate(`/project/${projectId}/detail`);
-                }
-              }}
-              className="flex-shrink-0"
-            >
-              <span className="hidden sm:inline">{t('common.back')}</span>
-            </Button>
-            <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
-              <Presentation size={22} className="text-brand-600" />
-              <span className="text-base md:text-xl font-bold truncate">{t('home.title')}</span>
-            </div>
-            <span className="text-gray-400 hidden md:inline">|</span>
-            <span className="text-sm md:text-lg font-semibold truncate hidden sm:inline">{t('preview.title')}</span>
-            {/* 当前生成路线徽标：SVG 矢量 / 生图，让用户一眼知道走哪条线 */}
-            {workspace.renderMode === 'svg' ? (
-                <span
-                  title="当前生成路线：SVG 矢量（便当版面，可在幻灯片上直接编辑）"
-                  className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
-                >
-                  SVG 矢量
-                </span>
-              ) : (
-                <span
-                  title="当前生成路线：生图（位图）"
-                  className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
-                >
-                  生图
-                </span>
-              )}
-        </div>
-        <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Settings size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsProjectSettingsOpen(true)}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('preview.projectSettings')}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Upload size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => {
-                setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
-                setIsTemplateModalOpen(true);
-              }}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('preview.changeTemplate')}</span>
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<ArrowLeft size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => navigate(`/project/${projectId}/detail`)}
-              className="hidden sm:inline-flex"
-            >
-              <span className="hidden md:inline">{t('common.previous')}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<RefreshCw size={16} className={`md:w-[18px] md:h-[18px] ${isRefreshing ? 'animate-spin' : ''}`} />}
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="hidden md:inline-flex"
-            >
-              <span className="hidden lg:inline">{t('preview.refresh')}</span>
-            </Button>
-
-          {/* 导出任务按钮 — 始终显示，面板内部决定是否有内容 */}
-          <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setShowExportJobsPanel(!showExportJobsPanel);
-                  setShowExportMenu(false);
-                }}
-                className="relative"
-              >
-                {hasActiveExportJobs ? (
-                  <Loader2 size={16} className="animate-spin text-brand-500" />
-                ) : (
-                  <FileText size={16} />
-                )}
-                {exportJobsForDeck.length > 0 && (
-                  <span className="ml-1 text-xs">
-                    {exportJobsForDeck.length}
-                  </span>
-                )}
-              </Button>
-              {showExportJobsPanel && (
-                <div className="absolute right-0 mt-2 z-20">
-                  <ExportJobsPanel
-                    deckId={projectId}
-                    pages={workspaceSlides}
-                    className="w-96 max-h-[28rem] shadow-lg"
-                  />
-                </div>
-              )}
-            </div>
-
-          <div className="relative">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Download size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => {
-                setShowExportMenu(!showExportMenu);
-                setShowExportJobsPanel(false);
-              }}
-              disabled={isMultiSelectMode && selectedSlideIds.size === 0}
-              title={!isMultiSelectMode && !hasAllImages ? t('preview.disabledExportTip', { count: missingImageCount }) : undefined}
-              className="text-xs md:text-sm"
-            >
-              <span className="hidden sm:inline">
-                {isMultiSelectMode && selectedSlideIds.size > 0
-                  ? `${t('preview.export')} (${selectedSlideIds.size})`
-                  : t('preview.export')}
-              </span>
-              <span className="sm:hidden">
-                {isMultiSelectMode && selectedSlideIds.size > 0
-                  ? `(${selectedSlideIds.size})`
-                  : t('preview.export')}
-              </span>
-            </Button>
-            {showExportMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-background-secondary rounded-lg shadow-lg border border-gray-200 dark:border-border-primary py-2 z-10">
-                {isMultiSelectMode && selectedSlideIds.size > 0 && (
-                  <div className="px-4 py-2 text-xs text-gray-500 dark:text-foreground-tertiary border-b border-gray-100 dark:border-border-primary">
-                    {t('preview.exportSelectedPages', { count: selectedSlideIds.size })}
-                  </div>
-                )}
-                <button
-                  onClick={() => {
-                    setShowExportMenu(false);
-                    setShowPptxExportDialog(true);
-                  }}
-                  disabled={!hasAllImages}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t('preview.exportPptx')}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowExportMenu(false);
-                    setShowEditablePptxDialog(true);
-                  }}
-                  disabled={!hasAllImages}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t('preview.exportEditablePptx')}
-                </button>
-                <button
-                  onClick={() => handleExport('pdf')}
-                  disabled={!hasAllImages}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t('preview.exportPdf')}
-                </button>
-                <button
-                  onClick={() => handleExport('images')}
-                  disabled={!hasAllImages}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {t('preview.exportImages')}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <DeckWorkspaceHeader
+        projectId={projectId}
+        slides={workspaceSlides}
+        renderMode={workspace.renderMode}
+        activeExportJob={hasActiveExportJobs}
+        exportJobCount={exportJobsForDeck.length}
+        refreshing={isRefreshing}
+        multiSelectEnabled={isMultiSelectMode}
+        selectedSlideCount={selectedSlideIds.size}
+        exportReady={hasAllImages}
+        missingImageCount={missingImageCount}
+        onHome={() => navigate('/')}
+        onBack={() => navigate(fromHistory ? '/history' : `/project/${projectId}/detail`)}
+        onPrevious={() => navigate(`/project/${projectId}/detail`)}
+        onOpenSettings={() => setIsProjectSettingsOpen(true)}
+        onOpenStyle={() => {
+          setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
+          setIsTemplateModalOpen(true);
+        }}
+        onRefresh={handleRefresh}
+        onOpenPptxExport={() => setShowPptxExportDialog(true)}
+        onOpenEditablePptxExport={() => setShowEditablePptxDialog(true)}
+        onExport={(format) => void handleExport(format)}
+      />
 
       <DeckExportDialogs
         pptxOpen={showPptxExportDialog}

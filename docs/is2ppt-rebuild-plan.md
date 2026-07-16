@@ -45,6 +45,10 @@ Progress snapshot (2026-07-15):
   `useExportJobsStore`, and resumable polling. `SlidePreview` and
   `ExportJobsPanel` consume that boundary; the old export task store and the
   duplicate export methods in `useProjectStore` have been removed.
+- Phase 5 is in progress. `Home.tsx` is now a thin route over the public
+  `features/deck-create` entry point. Reference-document selection, validation,
+  upload, parsing, and deduplication are owned by the feature model with focused
+  tests instead of the route component.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

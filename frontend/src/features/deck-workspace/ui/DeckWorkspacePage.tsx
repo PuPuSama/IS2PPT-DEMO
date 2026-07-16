@@ -6,13 +6,10 @@ import type { PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
 import { Loading, useToast, useConfirm, ProjectSettingsModal } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
-import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
 import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
 import type { ExportFormat } from '@/entities/export/model/types';
 import { isExportJobActive } from '@/entities/export/model/types';
-import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
-import { updateProject, uploadTemplate } from '@/api/projectsApi';
 import type { ImageVersion, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import {
@@ -21,6 +18,7 @@ import {
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
 import type { DeckStyleMode } from '../model/deckStyleSelection';
+import { useDeckWorkspaceProject } from '../model/useDeckWorkspaceProject';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
 import { DeckStyleDialog } from './DeckStyleDialog';
@@ -39,15 +37,19 @@ export const DeckWorkspacePage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const fromHistory = (location.state as any)?.from === 'history';
   const {
-    currentProject: deckSnapshot,
-    syncProject,
-    generatePageImage,
-    generateImages,
-    editPageImage,
-    deletePageById,
-    updatePageLocal,
-    isGlobalLoading,
-  } = useProjectStore();
+    deckSource,
+    busy: deckBusy,
+    reloadDeck,
+    renderSlide,
+    renderSlides,
+    reviseSlide,
+    removeSlide,
+    patchSlide,
+    saveDeckSettings,
+    replaceDeckTemplate,
+    listSlideVersions,
+    selectSlideVersion,
+  } = useDeckWorkspaceProject();
   const {
     progress: generationProgress,
     jobsBySlideId: slideJobs,
@@ -116,8 +118,8 @@ export const DeckWorkspacePage: React.FC = () => {
 
 
   const workspace = useMemo(
-    () => deckWorkspaceSnapshotFromProject(deckSnapshot),
-    [deckSnapshot],
+    () => deckWorkspaceSnapshotFromProject(deckSource),
+    [deckSource],
   );
   const workspaceSlides = workspace?.slides ?? EMPTY_SLIDES;
   const slidesWithImages = workspace?.slidesWithImages ?? EMPTY_SLIDES;
@@ -128,9 +130,9 @@ export const DeckWorkspacePage: React.FC = () => {
   useEffect(() => {
     if (projectId && (!workspace || workspace.deckId !== projectId)) {
       // 直接使用 projectId 同步项目数据
-      syncProject(projectId);
+      reloadDeck(projectId);
     }
-  }, [projectId, workspace, syncProject]);
+  }, [projectId, reloadDeck, workspace]);
 
   // 监听警告消息
   const lastWarningRef = React.useRef<string | null>(null);
@@ -195,10 +197,7 @@ export const DeckWorkspacePage: React.FC = () => {
       }
 
       try {
-        const response = await getPageImageVersions(projectId, selectedSlide.id);
-        if (response.data?.versions) {
-          setImageVersions(response.data.versions);
-        }
+        setImageVersions(await listSlideVersions(projectId, selectedSlide.id));
       } catch (error) {
         console.error('Failed to load image versions:', error);
         setImageVersions([]);
@@ -206,10 +205,10 @@ export const DeckWorkspacePage: React.FC = () => {
     };
 
     loadVersions();
-  }, [projectId, selectedSlide?.id]);
+  }, [listSlideVersions, projectId, selectedSlide?.id]);
 
   const ensureImageGenerationStyleSource = useCallback(async () => {
-    if (!deckSnapshot || !workspace || !projectId) return false;
+    if (!deckSource || !workspace || !projectId) return false;
 
     const hasTemplateImage = workspace.hasTemplateAsset;
     const savedStyle = workspace.templateStyle.trim();
@@ -221,8 +220,7 @@ export const DeckWorkspacePage: React.FC = () => {
 
     if (draftStyle) {
       try {
-        await updateProject(projectId, { template_style: draftStyle });
-        await syncProject(projectId);
+        await saveDeckSettings(projectId, { template_style: draftStyle });
         return true;
       } catch (error: any) {
         const respData = error?.response?.data;
@@ -241,7 +239,7 @@ export const DeckWorkspacePage: React.FC = () => {
       type: 'error',
     });
     return false;
-  }, [deckSnapshot, projectId, show, syncProject, templateStyle, workspace]);
+  }, [deckSource, projectId, saveDeckSettings, show, templateStyle, workspace]);
 
   const handleGenerateAll = async () => {
     if (!(await ensureImageGenerationStyleSource())) return;
@@ -259,7 +257,7 @@ export const DeckWorkspacePage: React.FC = () => {
 
       const executeGenerate = async () => {
         try {
-          await generateImages(slideIds);
+          await renderSlides(slideIds);
         } catch (error: any) {
           console.error('批量生成错误:', error);
           console.error('错误响应:', error?.response?.data);
@@ -327,7 +325,7 @@ export const DeckWorkspacePage: React.FC = () => {
     // 先检查分辨率，如果是1K则显示警告
     await requestGenerationExecution(async () => {
       try {
-        await generatePageImage(slideId, true);
+        await renderSlide(slideId, true);
         show({ message: t('slidePreview.generationStarted'), type: 'success' });
       } catch (error: any) {
         // 提取后端返回的更具体错误信息
@@ -358,14 +356,13 @@ export const DeckWorkspacePage: React.FC = () => {
         });
       }
     });
-  }, [ensureImageGenerationStyleSource, generatePageImage, requestGenerationExecution, selectedSlide, show, slideJobs]);
+  }, [ensureImageGenerationStyleSource, renderSlide, requestGenerationExecution, selectedSlide, show, slideJobs]);
 
   const handleSwitchVersion = async (versionId: string) => {
     if (!selectedSlide?.id || !projectId) return;
 
     try {
-      await setCurrentImageVersion(projectId, selectedSlide.id, versionId);
-      await syncProject(projectId);
+      await selectSlideVersion(projectId, selectedSlide.id, versionId);
       setShowVersionMenu(false);
       show({ message: t('slidePreview.versionSwitched'), type: 'success' });
     } catch (error: any) {
@@ -382,23 +379,25 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const handleSaveSlideMetadata = useCallback((slideId: string, updates: Partial<Page>) => {
-    updatePageLocal(slideId, updates);
+    patchSlide(slideId, updates);
     show({ message: t('slidePreview.outlineSaved'), type: 'success' });
-  }, [show, t, updatePageLocal]);
+  }, [patchSlide, show, t]);
 
   const handleSubmitSlideEdit = useCallback(async ({
     slideId,
     instruction,
     references,
   }: SlideEditCommand) => {
-    await editPageImage(slideId, instruction, {
-      useTemplate: references.useTemplate,
-      descImageUrls: references.descriptionImageUrls,
+    await reviseSlide({
+      slideId,
+      instruction,
+      includeTemplate: references.useTemplate,
+      descriptionImageUrls: references.descriptionImageUrls,
       uploadedFiles: references.uploadedFiles.length > 0
         ? references.uploadedFiles
         : undefined,
     });
-  }, [editPageImage]);
+  }, [reviseSlide]);
 
   // 多选相关函数
   const toggleSlideSelection = (slideId: string) => {
@@ -499,7 +498,7 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const handleRefresh = useCallback(async () => {
-    const targetProjectId = projectId || deckSnapshot?.id;
+    const targetProjectId = projectId || deckSource?.id;
     if (!targetProjectId) {
       show({ message: t('slidePreview.cannotRefresh'), type: 'error' });
       return;
@@ -507,7 +506,7 @@ export const DeckWorkspacePage: React.FC = () => {
 
     setIsRefreshing(true);
     try {
-      await syncProject(targetProjectId);
+      await reloadDeck(targetProjectId);
       show({ message: t('slidePreview.refreshSuccess'), type: 'success' });
     } catch (error: any) {
       show({
@@ -517,18 +516,16 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [deckSnapshot?.id, projectId, show, syncProject]);
+  }, [deckSource?.id, projectId, reloadDeck, show, t]);
 
   const handleSaveExtraRequirements = useCallback(async () => {
-    if (!deckSnapshot || !projectId) return;
+    if (!deckSource || !projectId) return;
 
     setIsSavingRequirements(true);
     try {
-      await updateProject(projectId, { extra_requirements: extraRequirements || '' });
+      await saveDeckSettings(projectId, { extra_requirements: extraRequirements || '' });
       // 保存成功后，标记为不在编辑状态，允许同步更新
       isEditingRequirements.current = false;
-      // 更新本地项目状态
-      await syncProject(projectId);
       show({ message: t('slidePreview.extraRequirementsSaved'), type: 'success' });
     } catch (error: any) {
       show({
@@ -538,18 +535,16 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingRequirements(false);
     }
-  }, [deckSnapshot, extraRequirements, projectId, show, syncProject]);
+  }, [deckSource, extraRequirements, projectId, saveDeckSettings, show, t]);
 
   const handleSaveTemplateStyle = useCallback(async () => {
-    if (!deckSnapshot || !projectId) return;
+    if (!deckSource || !projectId) return;
 
     setIsSavingTemplateStyle(true);
     try {
-      await updateProject(projectId, { template_style: templateStyle || '' });
+      await saveDeckSettings(projectId, { template_style: templateStyle || '' });
       // 保存成功后，标记为不在编辑状态，允许同步更新
       isEditingTemplateStyle.current = false;
-      // 更新本地项目状态
-      await syncProject(projectId);
       show({ message: t('slidePreview.styleDescSaved'), type: 'success' });
     } catch (error: any) {
       show({
@@ -559,18 +554,16 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingTemplateStyle(false);
     }
-  }, [deckSnapshot, projectId, show, syncProject, templateStyle]);
+  }, [deckSource, projectId, saveDeckSettings, show, t, templateStyle]);
 
   const handleSaveExportSettings = useCallback(async () => {
-    if (!deckSnapshot || !projectId) return;
+    if (!deckSource || !projectId) return;
 
     setIsSavingExportSettings(true);
     try {
-      await updateProject(projectId, {
+      await saveDeckSettings(projectId, {
         export_allow_partial: exportAllowPartial,
       });
-      // 更新本地项目状态
-      await syncProject(projectId);
       show({ message: t('slidePreview.exportSettingsSaved'), type: 'success' });
     } catch (error: any) {
       show({
@@ -580,15 +573,14 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingExportSettings(false);
     }
-  }, [deckSnapshot, exportAllowPartial, projectId, show, syncProject, t]);
+  }, [deckSource, exportAllowPartial, projectId, saveDeckSettings, show, t]);
 
   const handleSaveAspectRatio = useCallback(async () => {
-    if (!deckSnapshot || !projectId) return;
+    if (!deckSource || !projectId) return;
 
     setIsSavingAspectRatio(true);
     try {
-      await updateProject(projectId, { image_aspect_ratio: aspectRatio });
-      await syncProject(projectId);
+      await saveDeckSettings(projectId, { image_aspect_ratio: aspectRatio });
       show({ message: t('slidePreview.aspectRatioSaved'), type: 'success' });
     } catch (error: any) {
       show({
@@ -598,28 +590,26 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingAspectRatio(false);
     }
-  }, [aspectRatio, deckSnapshot, projectId, show, syncProject]);
+  }, [aspectRatio, deckSource, projectId, saveDeckSettings, show, t]);
 
   const handleApplyImageTemplate = useCallback(async (file: File) => {
     if (!projectId) return;
-    await uploadTemplate(projectId, file);
-    await syncProject(projectId);
-  }, [projectId, syncProject]);
+    await replaceDeckTemplate(projectId, file);
+  }, [projectId, replaceDeckTemplate]);
 
   const handleApplyTextStyle = useCallback(async (style: string) => {
     if (!projectId) return;
     isEditingTemplateStyle.current = true;
     setTemplateStyle(style);
-    await updateProject(projectId, { template_style: style || '' });
+    await saveDeckSettings(projectId, { template_style: style || '' });
     isEditingTemplateStyle.current = false;
-    await syncProject(projectId);
-  }, [projectId, syncProject]);
+  }, [projectId, saveDeckSettings]);
 
-  if (!deckSnapshot || !workspace) {
+  if (!deckSource || !workspace) {
     return <Loading fullscreen message={t('preview.messages.loadingProject')} />;
   }
 
-  if (isGlobalLoading) {
+  if (deckBusy) {
     // 根据任务进度显示不同的消息
     let loadingMessage = t('preview.messages.processing');
     if (generationProgress?.currentStep) {
@@ -723,7 +713,7 @@ export const DeckWorkspacePage: React.FC = () => {
           onToggleSlide={toggleSlideSelection}
           onSelectSlide={setSelectedIndex}
           onEditSlide={openSlideEditor}
-          onDeleteSlide={deletePageById}
+          onDeleteSlide={removeSlide}
         />
 
         <SlideCanvas
@@ -821,7 +811,7 @@ export const DeckWorkspacePage: React.FC = () => {
           projectId={projectId}
           pageId={selectedSlide.id}
           onClose={() => setSvgEditorOpen(false)}
-          onSaved={() => syncProject(projectId)}
+          onSaved={() => reloadDeck(projectId)}
         />
       )}
 

@@ -86,6 +86,10 @@ Progress snapshot (2026-07-16):
   navigation, export-job visibility, and export-format menus behind tested
   command callbacks. This completes the workspace UI decomposition milestone;
   remaining Phase 5 work is focused on project command and store boundaries.
+  The tested `useDeckWorkspaceProject` port now owns the global project store,
+  deck settings API, template replacement, and slide-version API. The
+  workspace UI consumes deck commands and no longer imports those legacy
+  dependencies directly.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

@@ -9,8 +9,6 @@ import {
   ArrowLeft,
   Download,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
   ChevronDown,
   ChevronUp,
@@ -21,7 +19,6 @@ import {
   FileText,
   Loader2,
   Info,
-  ImageOff,
   Presentation,
 } from 'lucide-react';
 import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
@@ -42,7 +39,14 @@ import { getSettings } from '@/api/settingsApi';
 import type { ImageVersion, DescriptionContent, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
+import {
+  deckWorkspaceSnapshotFromProject,
+  exportSelectionFromWorkspace,
+} from '../model/deckWorkspaceSnapshot';
 import { SlideNavigator } from './SlideNavigator';
+import { SlideCanvas } from './SlideCanvas';
+
+const EMPTY_SLIDES: Page[] = [];
 
 export const DeckWorkspacePage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +55,7 @@ export const DeckWorkspacePage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const fromHistory = (location.state as any)?.from === 'history';
   const {
-    currentProject,
+    currentProject: deckSnapshot,
     syncProject,
     generatePageImage,
     generateImages,
@@ -96,7 +100,7 @@ export const DeckWorkspacePage: React.FC = () => {
   const [pptxTransitionEffects, setPptxTransitionEffects] = useState<PptxTransitionEffect[]>(['fade']);
   // 多选导出相关状态
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
-  const [selectedPageIds, setSelectedPageIds] = useState<Set<string>>(new Set());
+  const [selectedSlideIds, setSelectedSlideIds] = useState<Set<string>>(new Set());
   const [svgEditorOpen, setSvgEditorOpen] = useState(false);
   const [isOutlineExpanded, setIsOutlineExpanded] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -125,14 +129,10 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   // 导出设置
-  const [exportAllowPartial, setExportAllowPartial] = useState<boolean>(
-    currentProject?.export_allow_partial || false
-  );
+  const [exportAllowPartial, setExportAllowPartial] = useState(false);
   const [isSavingExportSettings, setIsSavingExportSettings] = useState(false);
   // 画面比例
-  const [aspectRatio, setAspectRatio] = useState<string>(
-    currentProject?.image_aspect_ratio || '16:9'
-  );
+  const [aspectRatio, setAspectRatio] = useState('16:9');
   const [isSavingAspectRatio, setIsSavingAspectRatio] = useState(false);
   // 根据画面比例计算 CSS aspect-ratio
   const aspectRatioStyle = useMemo(() => {
@@ -168,19 +168,18 @@ export const DeckWorkspacePage: React.FC = () => {
   const { confirm, ConfirmDialog } = useConfirm();
 
 
-  // Memoize pages with generated images to avoid re-computing in multiple places
-  const pagesWithImages = useMemo(() => {
-    return currentProject?.pages.filter(p => p.id && p.generated_image_path) || [];
-  }, [currentProject?.pages]);
-
-  const hasImages = useMemo(
-    () => currentProject?.pages?.some(p => p.generated_image_path) ?? false,
-    [currentProject?.pages]
+  const workspace = useMemo(
+    () => deckWorkspaceSnapshotFromProject(deckSnapshot),
+    [deckSnapshot],
   );
+  const workspaceSlides = workspace?.slides ?? EMPTY_SLIDES;
+  const slidesWithImages = workspace?.slidesWithImages ?? EMPTY_SLIDES;
+  const hasImages = workspace?.hasImages ?? false;
+  const selectedSlide = workspaceSlides[selectedIndex];
 
   // 加载项目数据 & 用户模板
   useEffect(() => {
-    if (projectId && (!currentProject || currentProject.id !== projectId)) {
+    if (projectId && (!workspace || workspace.deckId !== projectId)) {
       // 直接使用 projectId 同步项目数据
       syncProject(projectId);
     }
@@ -197,7 +196,7 @@ export const DeckWorkspacePage: React.FC = () => {
       }
     };
     loadTemplates();
-  }, [projectId, currentProject, syncProject]);
+  }, [projectId, workspace, syncProject]);
 
   // 监听警告消息
   const lastWarningRef = React.useRef<string | null>(null);
@@ -216,54 +215,53 @@ export const DeckWorkspacePage: React.FC = () => {
   // 当项目加载后，初始化额外要求和风格描述
   // 只在项目首次加载或项目ID变化时初始化，避免覆盖用户正在输入的内容
   useEffect(() => {
-    if (currentProject) {
+    if (workspace) {
       // 检查是否是新项目
-      const isNewProject = lastProjectId.current !== currentProject.id;
+      const isNewProject = lastProjectId.current !== workspace.deckId;
 
       if (isNewProject) {
         // 新项目，初始化额外要求和风格描述
-        setExtraRequirements(currentProject.extra_requirements || '');
-        setTemplateStyle(currentProject.template_style || '');
+        setExtraRequirements(workspace.extraRequirements);
+        setTemplateStyle(workspace.templateStyle);
         // 初始化导出设置
-        setExportAllowPartial(currentProject.export_allow_partial || false);
-        setAspectRatio(currentProject.image_aspect_ratio || '16:9');
-        lastProjectId.current = currentProject.id || null;
+        setExportAllowPartial(workspace.allowPartialExport);
+        setAspectRatio(workspace.aspectRatio);
+        lastProjectId.current = workspace.deckId || null;
         isEditingRequirements.current = false;
         isEditingTemplateStyle.current = false;
       } else {
         // 同一项目且用户未在编辑，可以更新（比如从服务器保存后同步回来）
         if (!isEditingRequirements.current) {
-          setExtraRequirements(currentProject.extra_requirements || '');
+          setExtraRequirements(workspace.extraRequirements);
         }
         if (!isEditingTemplateStyle.current) {
-          setTemplateStyle(currentProject.template_style || '');
+          setTemplateStyle(workspace.templateStyle);
         }
         // 非文本输入的设置项，始终从服务器同步
-        setAspectRatio(currentProject.image_aspect_ratio || '16:9');
-        setExportAllowPartial(currentProject.export_allow_partial || false);
+        setAspectRatio(workspace.aspectRatio);
+        setExportAllowPartial(workspace.allowPartialExport);
       }
       // 如果用户正在编辑，则不更新本地状态
     }
-  }, [currentProject?.id, currentProject?.extra_requirements, currentProject?.template_style, currentProject?.image_aspect_ratio, currentProject?.export_allow_partial]);
+  }, [
+    workspace?.allowPartialExport,
+    workspace?.aspectRatio,
+    workspace?.deckId,
+    workspace?.extraRequirements,
+    workspace?.templateStyle,
+  ]);
 
   // 加载当前页面的历史版本
   useEffect(() => {
     const loadVersions = async () => {
-      if (!currentProject || !projectId || selectedIndex < 0 || selectedIndex >= currentProject.pages.length) {
-        setImageVersions([]);
-        setShowVersionMenu(false);
-        return;
-      }
-
-      const page = currentProject.pages[selectedIndex];
-      if (!page?.id) {
+      if (!projectId || !selectedSlide?.id) {
         setImageVersions([]);
         setShowVersionMenu(false);
         return;
       }
 
       try {
-        const response = await getPageImageVersions(projectId, page.id);
+        const response = await getPageImageVersions(projectId, selectedSlide.id);
         if (response.data?.versions) {
           setImageVersions(response.data.versions);
         }
@@ -274,7 +272,7 @@ export const DeckWorkspacePage: React.FC = () => {
     };
 
     loadVersions();
-  }, [currentProject, selectedIndex, projectId]);
+  }, [projectId, selectedSlide?.id]);
 
   // 检查是否需要显示1K分辨率警告
   const checkResolutionAndExecute = useCallback(async (action: () => Promise<void>) => {
@@ -325,10 +323,10 @@ export const DeckWorkspacePage: React.FC = () => {
   }, []);
 
   const ensureImageGenerationStyleSource = useCallback(async () => {
-    if (!currentProject || !projectId) return false;
+    if (!deckSnapshot || !workspace || !projectId) return false;
 
-    const hasTemplateImage = Boolean(currentProject.template_image_path);
-    const savedStyle = (currentProject.template_style || '').trim();
+    const hasTemplateImage = workspace.hasTemplateAsset;
+    const savedStyle = workspace.templateStyle.trim();
     const draftStyle = templateStyle.trim();
 
     if (hasTemplateImage || savedStyle) {
@@ -358,25 +356,25 @@ export const DeckWorkspacePage: React.FC = () => {
       type: 'error',
     });
     return false;
-  }, [currentProject, projectId, syncProject, templateStyle, show]);
+  }, [deckSnapshot, projectId, show, syncProject, templateStyle, workspace]);
 
   const handleGenerateAll = async () => {
     if (!(await ensureImageGenerationStyleSource())) return;
 
     // 先检查分辨率，如果是1K则显示警告
     await checkResolutionAndExecute(async () => {
-      const pageIds = getSelectedPageIdsForExport();
-      const isPartialGenerate = isMultiSelectMode && selectedPageIds.size > 0;
+      const slideIds = selectedSlideIdsForCommand();
+      const isPartialGenerate = isMultiSelectMode && selectedSlideIds.size > 0;
 
       // 检查要生成的页面中是否有已有图片的
-      const pagesToGenerate = isPartialGenerate
-        ? currentProject?.pages.filter(p => p.id && selectedPageIds.has(p.id))
-        : currentProject?.pages;
-      const hasImages = pagesToGenerate?.some((p) => p.generated_image_path);
+      const slidesToGenerate = workspace
+        ? exportSelectionFromWorkspace(workspace, selectedSlideIds, isPartialGenerate).slides
+        : [];
+      const selectedSlidesHaveImages = slidesToGenerate.some((slide) => slide.generated_image_path);
 
       const executeGenerate = async () => {
         try {
-          await generateImages(pageIds);
+          await generateImages(slideIds);
         } catch (error: any) {
           console.error('批量生成错误:', error);
           console.error('错误响应:', error?.response?.data);
@@ -414,9 +412,9 @@ export const DeckWorkspacePage: React.FC = () => {
         }
       };
 
-      if (hasImages) {
+      if (selectedSlidesHaveImages) {
         const message = isPartialGenerate
-          ? t('preview.confirmRegenerateSelected', { count: selectedPageIds.size })
+          ? t('preview.confirmRegenerateSelected', { count: selectedSlideIds.size })
           : t('preview.confirmRegenerateAll');
         confirm(
           message,
@@ -430,12 +428,11 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const handleRegeneratePage = useCallback(async () => {
-    if (!currentProject) return;
-    const page = currentProject.pages[selectedIndex];
-    if (!page.id) return;
+    const slideId = selectedSlide?.id;
+    if (!slideId) return;
 
     // 如果该页面正在生成，不重复提交
-    if (slideJobs[page.id]) {
+    if (slideJobs[slideId]) {
       show({ message: t('slidePreview.pageGenerating'), type: 'info' });
       return;
     }
@@ -445,7 +442,7 @@ export const DeckWorkspacePage: React.FC = () => {
     // 先检查分辨率，如果是1K则显示警告
     await checkResolutionAndExecute(async () => {
       try {
-        await generatePageImage(page.id!, true);
+        await generatePageImage(slideId, true);
         show({ message: t('slidePreview.generationStarted'), type: 'success' });
       } catch (error: any) {
         // 提取后端返回的更具体错误信息
@@ -476,13 +473,13 @@ export const DeckWorkspacePage: React.FC = () => {
         });
       }
     });
-  }, [currentProject, selectedIndex, slideJobs, generatePageImage, show, checkResolutionAndExecute, ensureImageGenerationStyleSource]);
+  }, [checkResolutionAndExecute, ensureImageGenerationStyleSource, generatePageImage, selectedSlide, show, slideJobs]);
 
   const handleSwitchVersion = async (versionId: string) => {
-    if (!currentProject || !selectedPage?.id || !projectId) return;
+    if (!selectedSlide?.id || !projectId) return;
 
     try {
-      await setCurrentImageVersion(projectId, selectedPage.id, versionId);
+      await setCurrentImageVersion(projectId, selectedSlide.id, versionId);
       await syncProject(projectId);
       setShowVersionMenu(false);
       show({ message: t('slidePreview.versionSwitched'), type: 'success' });
@@ -525,9 +522,8 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const openSlideEditor = (targetIndex = selectedIndex) => {
-    if (!currentProject) return;
-    const page = currentProject.pages[targetIndex];
-    const pageId = page?.id;
+    const slide = workspaceSlides[targetIndex];
+    const slideId = slide?.id;
 
     setSelectedIndex(targetIndex);
 
@@ -535,10 +531,10 @@ export const DeckWorkspacePage: React.FC = () => {
     setIsDescriptionExpanded(false);
 
     // 初始化大纲和描述编辑状态
-    setEditOutlineTitle(page?.outline_content?.title || '');
-    setEditOutlinePoints(page?.outline_content?.points?.join('\n') || '');
+    setEditOutlineTitle(slide?.outline_content?.title || '');
+    setEditOutlinePoints(slide?.outline_content?.points?.join('\n') || '');
     // 提取描述文本
-    const descContent = page?.description_content;
+    const descContent = slide?.description_content;
     let descText = '';
     if (descContent) {
       if ('text' in descContent) {
@@ -549,9 +545,9 @@ export const DeckWorkspacePage: React.FC = () => {
     }
     setEditDescription(descText);
 
-    if (pageId && editContextByPage[pageId]) {
+    if (slideId && editContextByPage[slideId]) {
       // 恢复该页上次编辑的内容和图片选择
-      const cached = editContextByPage[pageId];
+      const cached = editContextByPage[slideId];
       setEditPrompt(cached.prompt);
       setSelectedContextImages({
         useTemplate: cached.contextImages.useTemplate,
@@ -579,15 +575,13 @@ export const DeckWorkspacePage: React.FC = () => {
 
   // 保存大纲和描述修改
   const handleSaveOutlineAndDescription = useCallback(() => {
-    if (!currentProject) return;
-    const page = currentProject.pages[selectedIndex];
-    if (!page?.id) return;
+    if (!selectedSlide?.id) return;
 
     const updates: Partial<Page> = {};
 
     // 检查大纲是否有变化
-    const originalTitle = page.outline_content?.title || '';
-    const originalPoints = page.outline_content?.points?.join('\n') || '';
+    const originalTitle = selectedSlide.outline_content?.title || '';
+    const originalPoints = selectedSlide.outline_content?.points?.join('\n') || '';
     if (editOutlineTitle !== originalTitle || editOutlinePoints !== originalPoints) {
       updates.outline_content = {
         title: editOutlineTitle,
@@ -596,7 +590,7 @@ export const DeckWorkspacePage: React.FC = () => {
     }
 
     // 检查描述是否有变化
-    const descContent = page.description_content;
+    const descContent = selectedSlide.description_content;
     let originalDesc = '';
     if (descContent) {
       if ('text' in descContent) {
@@ -613,23 +607,21 @@ export const DeckWorkspacePage: React.FC = () => {
 
     // 如果有修改，保存更新
     if (Object.keys(updates).length > 0) {
-      updatePageLocal(page.id, updates);
+      updatePageLocal(selectedSlide.id, updates);
       show({ message: t('slidePreview.outlineSaved'), type: 'success' });
     }
-  }, [currentProject, selectedIndex, editOutlineTitle, editOutlinePoints, editDescription, updatePageLocal, show]);
+  }, [editDescription, editOutlinePoints, editOutlineTitle, selectedSlide, show, updatePageLocal]);
 
   const handleSubmitEdit = useCallback(async () => {
-    if (!currentProject || !editPrompt.trim()) return;
-
-    const page = currentProject.pages[selectedIndex];
-    if (!page.id) return;
+    const slideId = selectedSlide?.id;
+    if (!slideId || !editPrompt.trim()) return;
 
     // 先保存大纲和描述的修改
     handleSaveOutlineAndDescription();
 
     // 调用后端编辑接口
     await editPageImage(
-      page.id,
+      slideId,
       editPrompt,
       {
         useTemplate: selectedContextImages.useTemplate,
@@ -643,7 +635,7 @@ export const DeckWorkspacePage: React.FC = () => {
     // 缓存当前页的编辑上下文，便于后续快速重复执行
     setEditContextByPage((prev) => ({
       ...prev,
-      [page.id!]: {
+      [slideId]: {
         prompt: editPrompt,
         contextImages: {
           useTemplate: selectedContextImages.useTemplate,
@@ -654,7 +646,7 @@ export const DeckWorkspacePage: React.FC = () => {
     }));
 
     setIsEditModalOpen(false);
-  }, [currentProject, selectedIndex, editPrompt, selectedContextImages, editPageImage, handleSaveOutlineAndDescription]);
+  }, [editPageImage, editPrompt, handleSaveOutlineAndDescription, selectedContextImages, selectedSlide]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -684,14 +676,12 @@ export const DeckWorkspacePage: React.FC = () => {
   }, []);
   // 编辑弹窗打开时，实时把输入与图片选择写入缓存（前端会话内）
   useEffect(() => {
-    if (!isEditModalOpen || !currentProject) return;
-    const page = currentProject.pages[selectedIndex];
-    const pageId = page?.id;
-    if (!pageId) return;
+    const slideId = selectedSlide?.id;
+    if (!isEditModalOpen || !slideId) return;
 
     setEditContextByPage((prev) => ({
       ...prev,
-      [pageId]: {
+      [slideId]: {
         prompt: editPrompt,
         contextImages: {
           useTemplate: selectedContextImages.useTemplate,
@@ -700,7 +690,7 @@ export const DeckWorkspacePage: React.FC = () => {
         },
       },
     }));
-  }, [isEditModalOpen, currentProject, selectedIndex, editPrompt, selectedContextImages]);
+  }, [editPrompt, isEditModalOpen, selectedContextImages, selectedSlide?.id]);
 
   // ========== 预览图矩形选择相关逻辑（编辑弹窗内） ==========
   const handleSelectionMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -812,43 +802,43 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   // 多选相关函数
-  const togglePageSelection = (pageId: string) => {
-    setSelectedPageIds(prev => {
+  const toggleSlideSelection = (slideId: string) => {
+    setSelectedSlideIds(prev => {
       const next = new Set(prev);
-      if (next.has(pageId)) {
-        next.delete(pageId);
+      if (next.has(slideId)) {
+        next.delete(slideId);
       } else {
-        next.add(pageId);
+        next.add(slideId);
       }
       return next;
     });
   };
 
-  const selectAllPages = () => {
-    const allPageIds = pagesWithImages.map(p => p.id!);
-    setSelectedPageIds(new Set(allPageIds));
+  const selectAllSlides = () => {
+    const allSlideIds = slidesWithImages.map((slide) => slide.id!);
+    setSelectedSlideIds(new Set(allSlideIds));
   };
 
-  const deselectAllPages = () => {
-    setSelectedPageIds(new Set());
+  const clearSlideSelection = () => {
+    setSelectedSlideIds(new Set());
   };
 
   const toggleMultiSelectMode = () => {
     setIsMultiSelectMode(prev => {
       if (prev) {
         // 退出多选模式时清空选择
-        setSelectedPageIds(new Set());
+        setSelectedSlideIds(new Set());
       }
       return !prev;
     });
   };
 
   // 获取有图片的选中页面ID列表
-  const getSelectedPageIdsForExport = (): string[] | undefined => {
-    if (!isMultiSelectMode || selectedPageIds.size === 0) {
+  const selectedSlideIdsForCommand = (): string[] | undefined => {
+    if (!isMultiSelectMode || selectedSlideIds.size === 0) {
       return undefined; // 导出全部
     }
-    return Array.from(selectedPageIds);
+    return Array.from(selectedSlideIds);
   };
 
   const handleExport = async (
@@ -861,12 +851,12 @@ export const DeckWorkspacePage: React.FC = () => {
     setShowExportMenu(false);
     if (!projectId) return;
 
-    const pageIds = getSelectedPageIdsForExport();
+    const slideIds = selectedSlideIdsForCommand();
     try {
       const job = await startExport({
         deckId: projectId,
         format,
-        slideIds: pageIds,
+        slideIds,
         ...(format === 'pptx'
           ? {
               pptxOptions: {
@@ -911,7 +901,7 @@ export const DeckWorkspacePage: React.FC = () => {
   };
 
   const handleRefresh = useCallback(async () => {
-    const targetProjectId = projectId || currentProject?.id;
+    const targetProjectId = projectId || deckSnapshot?.id;
     if (!targetProjectId) {
       show({ message: t('slidePreview.cannotRefresh'), type: 'error' });
       return;
@@ -929,10 +919,10 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [projectId, currentProject?.id, syncProject, show]);
+  }, [deckSnapshot?.id, projectId, show, syncProject]);
 
   const handleSaveExtraRequirements = useCallback(async () => {
-    if (!currentProject || !projectId) return;
+    if (!deckSnapshot || !projectId) return;
 
     setIsSavingRequirements(true);
     try {
@@ -950,10 +940,10 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingRequirements(false);
     }
-  }, [currentProject, projectId, extraRequirements, syncProject, show]);
+  }, [deckSnapshot, extraRequirements, projectId, show, syncProject]);
 
   const handleSaveTemplateStyle = useCallback(async () => {
-    if (!currentProject || !projectId) return;
+    if (!deckSnapshot || !projectId) return;
 
     setIsSavingTemplateStyle(true);
     try {
@@ -971,10 +961,10 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingTemplateStyle(false);
     }
-  }, [currentProject, projectId, templateStyle, syncProject, show]);
+  }, [deckSnapshot, projectId, show, syncProject, templateStyle]);
 
   const handleSaveExportSettings = useCallback(async () => {
-    if (!currentProject || !projectId) return;
+    if (!deckSnapshot || !projectId) return;
 
     setIsSavingExportSettings(true);
     try {
@@ -992,10 +982,10 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingExportSettings(false);
     }
-  }, [currentProject, projectId, exportAllowPartial, syncProject, show, t]);
+  }, [deckSnapshot, exportAllowPartial, projectId, show, syncProject, t]);
 
   const handleSaveAspectRatio = useCallback(async () => {
-    if (!currentProject || !projectId) return;
+    if (!deckSnapshot || !projectId) return;
 
     setIsSavingAspectRatio(true);
     try {
@@ -1010,7 +1000,7 @@ export const DeckWorkspacePage: React.FC = () => {
     } finally {
       setIsSavingAspectRatio(false);
     }
-  }, [currentProject, projectId, aspectRatio, syncProject, show]);
+  }, [aspectRatio, deckSnapshot, projectId, show, syncProject]);
 
   const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
     if (!projectId) return;
@@ -1058,7 +1048,7 @@ export const DeckWorkspacePage: React.FC = () => {
     }
   };
 
-  if (!currentProject) {
+  if (!deckSnapshot || !workspace) {
     return <Loading fullscreen message={t('preview.messages.loadingProject')} />;
   }
 
@@ -1087,18 +1077,17 @@ export const DeckWorkspacePage: React.FC = () => {
     );
   }
 
-  const selectedPage = currentProject.pages[selectedIndex];
-  const imageUrl = selectedPage?.generated_image_path
-    ? getImageUrl(selectedPage.generated_image_path, selectedPage.updated_at)
+  const imageUrl = selectedSlide?.generated_image_path
+    ? getImageUrl(selectedSlide.generated_image_path, selectedSlide.updated_at)
     : '';
 
-  const exportTargetPages = isMultiSelectMode && selectedPageIds.size > 0
-    ? currentProject.pages.filter(p => p.id && selectedPageIds.has(p.id))
-    : currentProject.pages;
-  const hasAllImages = exportTargetPages.every(
-    (p) => p.generated_image_path
+  const exportSelection = exportSelectionFromWorkspace(
+    workspace,
+    selectedSlideIds,
+    isMultiSelectMode,
   );
-  const missingImageCount = exportTargetPages.filter(p => !p.generated_image_path).length;
+  const hasAllImages = exportSelection.ready;
+  const missingImageCount = exportSelection.missingImageCount;
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
@@ -1136,8 +1125,7 @@ export const DeckWorkspacePage: React.FC = () => {
             <span className="text-gray-400 hidden md:inline">|</span>
             <span className="text-sm md:text-lg font-semibold truncate hidden sm:inline">{t('preview.title')}</span>
             {/* 当前生成路线徽标：SVG 矢量 / 生图，让用户一眼知道走哪条线 */}
-            {currentProject && (
-              (currentProject.generation_mode || 'image') === 'svg' ? (
+            {workspace.renderMode === 'svg' ? (
                 <span
                   title="当前生成路线：SVG 矢量（便当版面，可在幻灯片上直接编辑）"
                   className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
@@ -1151,8 +1139,7 @@ export const DeckWorkspacePage: React.FC = () => {
                 >
                   生图
                 </span>
-              )
-            )}
+              )}
         </div>
         <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
             <Button
@@ -1219,7 +1206,7 @@ export const DeckWorkspacePage: React.FC = () => {
                 <div className="absolute right-0 mt-2 z-20">
                   <ExportJobsPanel
                     deckId={projectId}
-                    pages={currentProject?.pages || []}
+                    pages={workspaceSlides}
                     className="w-96 max-h-[28rem] shadow-lg"
                   />
                 </div>
@@ -1235,26 +1222,26 @@ export const DeckWorkspacePage: React.FC = () => {
                 setShowExportMenu(!showExportMenu);
                 setShowExportJobsPanel(false);
               }}
-              disabled={isMultiSelectMode && selectedPageIds.size === 0}
+              disabled={isMultiSelectMode && selectedSlideIds.size === 0}
               title={!isMultiSelectMode && !hasAllImages ? t('preview.disabledExportTip', { count: missingImageCount }) : undefined}
               className="text-xs md:text-sm"
             >
               <span className="hidden sm:inline">
-                {isMultiSelectMode && selectedPageIds.size > 0
-                  ? `${t('preview.export')} (${selectedPageIds.size})`
+                {isMultiSelectMode && selectedSlideIds.size > 0
+                  ? `${t('preview.export')} (${selectedSlideIds.size})`
                   : t('preview.export')}
               </span>
               <span className="sm:hidden">
-                {isMultiSelectMode && selectedPageIds.size > 0
-                  ? `(${selectedPageIds.size})`
+                {isMultiSelectMode && selectedSlideIds.size > 0
+                  ? `(${selectedSlideIds.size})`
                   : t('preview.export')}
               </span>
             </Button>
             {showExportMenu && (
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-background-secondary rounded-lg shadow-lg border border-gray-200 dark:border-border-primary py-2 z-10">
-                {isMultiSelectMode && selectedPageIds.size > 0 && (
+                {isMultiSelectMode && selectedSlideIds.size > 0 && (
                   <div className="px-4 py-2 text-xs text-gray-500 dark:text-foreground-tertiary border-b border-gray-100 dark:border-border-primary">
-                    {t('preview.exportSelectedPages', { count: selectedPageIds.size })}
+                    {t('preview.exportSelectedPages', { count: selectedSlideIds.size })}
                   </div>
                 )}
                 <button
@@ -1390,12 +1377,12 @@ export const DeckWorkspacePage: React.FC = () => {
             <h3 className="text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
             {(() => {
-              const totalPages = currentProject?.pages?.length ?? 0;
-              const isPartial = isMultiSelectMode && selectedPageIds.size > 0;
-              const selectedNumbers = isPartial && currentProject
-                ? currentProject.pages
+              const totalPages = workspaceSlides.length;
+              const isPartial = isMultiSelectMode && selectedSlideIds.size > 0;
+              const selectedNumbers = isPartial
+                ? workspaceSlides
                     .map((p, i) => ({ id: p.id, num: i + 1 }))
-                    .filter(({ id }) => id && selectedPageIds.has(id))
+                    .filter(({ id }) => id && selectedSlideIds.has(id))
                     .map(({ num }) => num)
                 : [];
               const rangeText = isPartial
@@ -1437,225 +1424,44 @@ export const DeckWorkspacePage: React.FC = () => {
       {/* 主内容区 */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-w-0 min-h-0">
         <SlideNavigator
-          slides={currentProject.pages}
+          slides={workspaceSlides}
           selectedIndex={selectedIndex}
-          selectedSlideIds={selectedPageIds}
+          selectedSlideIds={selectedSlideIds}
           multiSelectEnabled={isMultiSelectMode}
           jobsBySlideId={slideJobs}
           aspectRatio={aspectRatio}
           onGenerate={handleGenerateAll}
           onToggleMultiSelect={toggleMultiSelectMode}
-          onSelectAll={selectAllPages}
-          onClearSelection={deselectAllPages}
-          onToggleSlide={togglePageSelection}
+          onSelectAll={selectAllSlides}
+          onClearSelection={clearSlideSelection}
+          onToggleSlide={toggleSlideSelection}
           onSelectSlide={setSelectedIndex}
           onEditSlide={openSlideEditor}
           onDeleteSlide={deletePageById}
         />
 
-        {/* 右侧：大图预览 */}
-        <main className="flex-1 flex flex-col bg-gradient-to-br from-brand-50 dark:from-background-primary via-white dark:via-background-primary to-gray-50 dark:to-background-primary min-w-0 overflow-hidden">
-          {currentProject.pages.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center overflow-y-auto">
-              <div className="text-center">
-                <div className="text-4xl md:text-6xl mb-4">📊</div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-700 dark:text-foreground-secondary mb-2">
-                  {t('preview.noPages')}
-                </h3>
-                <p className="text-sm md:text-base text-gray-500 dark:text-foreground-tertiary mb-6">
-                  {t('preview.noPagesHint')}
-                </p>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate(`/project/${projectId}/outline`)}
-                  className="text-sm md:text-base"
-                >
-                  {t('preview.backToEdit')}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* 预览区 */}
-              <div className="flex-1 overflow-y-auto min-h-0 flex items-center justify-center p-4 md:p-8">
-                <div className="max-w-5xl w-full">
-                  <div className="relative bg-white dark:bg-background-secondary rounded-lg shadow-xl overflow-hidden touch-manipulation" style={{ aspectRatio: aspectRatioStyle }}>
-                    {selectedPage?.generated_image_path ? (
-                      selectedPage.generated_svg_url ? (
-                        <InlineSvgImage
-                          svgUrl={selectedPage.generated_svg_url}
-                          fallbackUrl={selectedPage.generated_image_path}
-                          alt={`Slide ${selectedIndex + 1}`}
-                          updatedAt={selectedPage.updated_at}
-                          className="w-full h-full object-contain select-none"
-                        />
-                      ) : (
-                        <img
-                          src={imageUrl}
-                          alt={`Slide ${selectedIndex + 1}`}
-                          className="w-full h-full object-cover select-none"
-                          draggable={false}
-                        />
-                      )
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-background-secondary">
-                        <div className="text-center">
-                          <ImageOff size={56} className="mx-auto mb-4 text-gray-400" />
-                          <p className="text-gray-500 dark:text-foreground-tertiary mb-4">
-                            {selectedPage?.status === 'QUEUED'
-                              ? t('preview.queued')
-                              : (selectedPage?.id && slideJobs[selectedPage.id]) ||
-                                selectedPage?.status === 'GENERATING'
-                              ? t('preview.generating')
-                              : t('preview.notGenerated')}
-                          </p>
-                          {(!selectedPage?.id || !slideJobs[selectedPage.id]) &&
-                           selectedPage?.status !== 'QUEUED' &&
-                           selectedPage?.status !== 'GENERATING' && (
-                            <Button
-                              variant="primary"
-                              onClick={handleRegeneratePage}
-                            >
-                              {t('preview.generateThisPage')}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 控制栏 */}
-              <div className="bg-white dark:bg-background-secondary border-t border-gray-200 dark:border-border-primary px-3 md:px-6 py-3 md:py-4 flex-shrink-0">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-5xl mx-auto">
-                  {/* 导航 */}
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />}
-                      onClick={() => setSelectedIndex(Math.max(0, selectedIndex - 1))}
-                      disabled={selectedIndex === 0}
-                      className="text-xs md:text-sm"
-                    >
-                      <span className="hidden sm:inline">{t('preview.prevPage')}</span>
-                      <span className="sm:hidden">{t('preview.prevPage')}</span>
-                    </Button>
-                    <span className="px-2 md:px-4 text-xs md:text-sm text-gray-600 dark:text-foreground-tertiary whitespace-nowrap">
-                      {selectedIndex + 1} / {currentProject.pages.length}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />}
-                      onClick={() =>
-                        setSelectedIndex(
-                          Math.min(currentProject.pages.length - 1, selectedIndex + 1)
-                        )
-                      }
-                      disabled={selectedIndex === currentProject.pages.length - 1}
-                      className="text-xs md:text-sm"
-                    >
-                      <span className="hidden sm:inline">{t('preview.nextPage')}</span>
-                      <span className="sm:hidden">{t('preview.nextPage')}</span>
-                    </Button>
-                  </div>
-
-                  {/* 操作 */}
-                  <div className="flex items-center gap-1.5 md:gap-2 w-full sm:w-auto justify-center">
-                    {/* 手机端：模板更换按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<Upload size={16} />}
-                      onClick={() => { setDraftTemplateStyle(templateStyle); setUseTextStyleMode(!!templateStyle.trim()); setIsTemplateModalOpen(true); }}
-                      className="lg:hidden text-xs"
-                      title={t('preview.changeTemplate')}
-                    />
-                    {/* 手机端：刷新按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />}
-                      onClick={handleRefresh}
-                      disabled={isRefreshing}
-                      className="md:hidden text-xs"
-                      title={t('preview.refresh')}
-                    />
-                    {imageVersions.length > 1 && (
-                      <div className="relative">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowVersionMenu(!showVersionMenu)}
-                          className="text-xs md:text-sm"
-                        >
-                          <span className="hidden md:inline">{t('preview.historyVersions')} ({imageVersions.length})</span>
-                          <span className="md:hidden">{t('preview.versions')}</span>
-                        </Button>
-                        {showVersionMenu && (
-                          <div className="absolute right-0 bottom-full mb-2 w-56 md:w-64 bg-white dark:bg-background-secondary rounded-lg shadow-lg border border-gray-200 dark:border-border-primary py-2 z-20 max-h-96 overflow-y-auto">
-                            {imageVersions.map((version) => (
-                              <button
-                                key={version.version_id}
-                                onClick={() => handleSwitchVersion(version.version_id)}
-                                className={`w-full px-3 md:px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors flex items-center justify-between text-xs md:text-sm ${
-                                  version.is_current ? 'bg-brand-50 dark:bg-background-secondary' : ''
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span>
-                                    {t('preview.version')} {version.version_number}
-                                  </span>
-                                  {version.is_current && (
-                                    <span className="text-xs text-brand-600 font-medium">
-                                      ({t('preview.current')})
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-xs text-gray-400 hidden md:inline">
-                                  {version.created_at
-                                    ? new Date(version.created_at).toLocaleString('zh-CN', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })
-                                    : ''}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => openSlideEditor()}
-                      disabled={!selectedPage}
-                      className="text-xs md:text-sm flex-1 sm:flex-initial"
-                    >
-                      {t('common.edit')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRegeneratePage}
-                      disabled={selectedPage?.id && slideJobs[selectedPage.id] ? true : false}
-                      className="text-xs md:text-sm flex-1 sm:flex-initial"
-                    >
-                      {selectedPage?.id && slideJobs[selectedPage.id]
-                        ? t('preview.regenerating')
-                        : t('preview.regenerate')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </main>
+        <SlideCanvas
+          slides={workspaceSlides}
+          selectedIndex={selectedIndex}
+          jobsBySlideId={slideJobs}
+          aspectRatioStyle={aspectRatioStyle}
+          imageVersions={imageVersions}
+          versionMenuOpen={showVersionMenu}
+          refreshing={isRefreshing}
+          onBackToPlan={() => navigate(`/project/${projectId}/outline`)}
+          onSelectSlide={setSelectedIndex}
+          onGenerateSlide={handleRegeneratePage}
+          onOpenTemplate={() => {
+            setDraftTemplateStyle(templateStyle);
+            setUseTextStyleMode(Boolean(templateStyle.trim()));
+            setIsTemplateModalOpen(true);
+          }}
+          onRefresh={handleRefresh}
+          onToggleVersionMenu={() => setShowVersionMenu(!showVersionMenu)}
+          onSwitchVersion={handleSwitchVersion}
+          onEditSlide={() => openSlideEditor()}
+          onRegenerateSlide={handleRegeneratePage}
+        />
       </div>
 
       {/* 编辑对话框 */}
@@ -1678,7 +1484,7 @@ export const DeckWorkspacePage: React.FC = () => {
             {imageUrl && (
               <>
                 {/* 左上角：区域选图模式开关（仅位图模式；SVG 走文本编辑，不显示） */}
-                {!selectedPage?.generated_svg_url && (
+                {!selectedSlide?.generated_svg_url && (
                 <button
                   type="button"
                   onClick={(e) => {
@@ -1698,7 +1504,7 @@ export const DeckWorkspacePage: React.FC = () => {
                 )}
 
                 {/* 右上角：编辑 SVG（仅 SVG 模式）——直接在幻灯片上改文字 / 看 SVG 代码 */}
-                {selectedPage?.generated_svg_url && selectedPage?.id && (
+                {selectedSlide?.generated_svg_url && selectedSlide?.id && (
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setSvgEditorOpen(true); }}
@@ -1709,14 +1515,14 @@ export const DeckWorkspacePage: React.FC = () => {
                   </button>
                 )}
 
-                {selectedPage?.generated_svg_url ? (
+                {selectedSlide?.generated_svg_url ? (
                   // SVG 模式：内联矢量，放大无锯齿；区域选图（位图编辑）不适用于 SVG，
                   // imageRef 留空，相关 handler 已 null-check 自动 no-op。
                   <InlineSvgImage
-                    svgUrl={selectedPage.generated_svg_url}
-                    fallbackUrl={selectedPage.generated_image_path!}
+                    svgUrl={selectedSlide.generated_svg_url}
+                    fallbackUrl={selectedSlide.generated_image_path!}
                     alt="Current slide"
-                    updatedAt={selectedPage.updated_at}
+                    updatedAt={selectedSlide.updated_at}
                     className="w-full h-full object-contain select-none"
                   />
                 ) : (
@@ -1814,7 +1620,7 @@ export const DeckWorkspacePage: React.FC = () => {
             <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary mb-3">{t('preview.selectContextImages')}</h4>
 
             {/* Template图片选择 */}
-            {currentProject?.template_image_path && (
+            {workspace.templateAssetPath && (
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -1831,9 +1637,9 @@ export const DeckWorkspacePage: React.FC = () => {
                 <label htmlFor="use-template" className="flex items-center gap-2 cursor-pointer">
                   <ImageIcon size={16} className="text-gray-500 dark:text-foreground-tertiary" />
                   <span className="text-sm text-gray-700 dark:text-foreground-secondary">{t('preview.useTemplateImage')}</span>
-                  {currentProject.template_image_path && (
+                  {workspace.templateAssetPath && (
                     <img
-                      src={getImageUrl(currentProject.template_image_path, currentProject.updated_at)}
+                      src={getImageUrl(workspace.templateAssetPath, workspace.updatedAt)}
                       alt="Template"
                       className="w-16 h-10 object-cover rounded border border-gray-300 dark:border-border-primary"
                     />
@@ -1843,8 +1649,8 @@ export const DeckWorkspacePage: React.FC = () => {
             )}
 
             {/* Desc中的图片 */}
-            {selectedPage?.description_content && (() => {
-              const descImageUrls = extractImageUrlsFromDescription(selectedPage.description_content);
+            {selectedSlide?.description_content && (() => {
+              const descImageUrls = extractImageUrlsFromDescription(selectedSlide.description_content);
               return descImageUrls.length > 0 ? (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('preview.imagesInDescription')}:</label>
@@ -1947,7 +1753,7 @@ export const DeckWorkspacePage: React.FC = () => {
               <Button
                 variant="primary"
                 onClick={handleSubmitEdit}
-                disabled={!editPrompt.trim() || !selectedPage?.generated_image_path}
+                disabled={!editPrompt.trim() || !selectedSlide?.generated_image_path}
               >
                 {t('preview.generateImage')}
               </Button>
@@ -2118,10 +1924,10 @@ export const DeckWorkspacePage: React.FC = () => {
       </Modal>
 
       {/* SVG 幻灯片编辑器（文字直改 + SVG 代码面板，仅 SVG 模式） */}
-      {svgEditorOpen && projectId && selectedPage?.id && (
+      {svgEditorOpen && projectId && selectedSlide?.id && (
         <SvgSlideEditor
           projectId={projectId}
-          pageId={selectedPage.id}
+          pageId={selectedSlide.id}
           onClose={() => setSvgEditorOpen(false)}
           onSaved={() => syncProject(projectId)}
         />

@@ -64,14 +64,7 @@ vi.mock('@/api/exportsApi', () => ({
 
 describe('useProjectStore', () => {
   beforeEach(() => {
-    useProjectStore.setState({
-      activeTaskId: null,
-      taskProgress: null,
-      pageGeneratingTasks: {},
-      warningMessage: null,
-      isOutlineStreaming: false,
-      isDescriptionStreaming: false,
-    })
+    useGenerationJobsStore.getState().reset()
     // 重置store状态
     const { result } = renderHook(() => useProjectStore())
     act(() => {
@@ -88,34 +81,7 @@ describe('useProjectStore', () => {
       expect(result.current.currentProject).toBeNull()
       expect(result.current.isGlobalLoading).toBe(false)
       expect(result.current.error).toBeNull()
-      expect(result.current.activeTaskId).toBeNull()
       expect(useGenerationJobsStore.getState().activeJobId).toBeNull()
-    })
-  })
-
-  describe('生成任务兼容层', () => {
-    it('should mirror legacy task state into the generation jobs store', () => {
-      act(() => {
-        useProjectStore.setState({
-          activeTaskId: 'job-1',
-          taskProgress: {
-            total: 3,
-            completed: 1,
-            current_step: 'Rendering',
-          } as any,
-          pageGeneratingTasks: { 'page-1': 'job-1' },
-          warningMessage: 'Partial output',
-          isOutlineStreaming: true,
-        })
-      })
-
-      expect(useGenerationJobsStore.getState()).toMatchObject({
-        activeJobId: 'job-1',
-        progress: { total: 3, completed: 1, currentStep: 'Rendering' },
-        jobsBySlideId: { 'page-1': 'job-1' },
-        warning: 'Partial output',
-        outlineStreamActive: true,
-      })
     })
   })
 
@@ -214,6 +180,8 @@ describe('useProjectStore', () => {
       })
       
       expect(result.current.currentProject).not.toBeNull()
+      useGenerationJobsStore.getState().startJob('job-1')
+      useGenerationJobsStore.getState().assignSlides('job-1', ['page-1'])
       
       // 清除
       act(() => {
@@ -222,6 +190,10 @@ describe('useProjectStore', () => {
       
       expect(result.current.currentProject).toBeNull()
       expect(useSlidesStore.getState().slides).toEqual([])
+      expect(useGenerationJobsStore.getState()).toMatchObject({
+        activeJobId: null,
+        jobsBySlideId: {},
+      })
     })
   })
 })

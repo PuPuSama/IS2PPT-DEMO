@@ -34,6 +34,16 @@ describe('useGenerationJobsStore', () => {
     });
   });
 
+  test('replaces slide jobs without retaining the source map', () => {
+    const jobsBySlideId: Record<string, string> = { 'slide-1': 'job-a' };
+    useGenerationJobsStore.getState().replaceSlideJobs(jobsBySlideId);
+    jobsBySlideId['slide-2'] = 'job-b';
+
+    expect(useGenerationJobsStore.getState().jobsBySlideId).toEqual({
+      'slide-1': 'job-a',
+    });
+  });
+
   test('syncs compatibility snapshots without retaining mutable maps', () => {
     const jobsBySlideId: Record<string, string> = { 'slide-1': 'job-a' };
     useGenerationJobsStore.getState().syncSnapshot({

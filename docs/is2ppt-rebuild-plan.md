@@ -31,16 +31,16 @@ Progress snapshot (2026-07-15):
   `useSlidesStore` now owns domain-level slide snapshots, local edits, ordering,
   additions, removals, and clearing. The compatibility facade mirrors full
   project syncs plus optimistic page edits and reorders into that store.
-  `useGenerationJobsStore` now exposes the active job, normalized progress,
+  `useGenerationJobsStore` now owns the active job, normalized progress,
   per-slide job assignments, warnings, and stream activity through independent
-  domain names. `OutlineEditor` and `SlidePreview` consume this read model while
-  compatibility writes are still mirrored from the legacy store. A reusable,
-  cancellable generation job poller now owns status normalization, scheduling,
-  and retry limits. General async jobs, description generation, and image
-  generation all use it. An image-generation coordinator now owns per-slide job
-  release, warning propagation, terminal failure handling, and generated-asset
-  synchronization retries. `useProjectStore` supplies only compatibility state
-  adapters to that coordinator.
+  domain names. `OutlineEditor` and `SlidePreview` consume it directly, and all
+  generation actions write to it without legacy state fields or a subscription
+  bridge. A reusable, cancellable generation job poller owns status
+  normalization, scheduling, and retry limits. General async jobs, description
+  generation, and image generation all use it. An image-generation coordinator
+  owns per-slide job release, warning propagation, terminal failure handling,
+  and generated-asset synchronization retries. `useProjectStore` supplies only
+  project-data and error adapters to that coordinator.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

@@ -43,8 +43,8 @@ import { projectDtoToDeck } from '@/entities/deck/model/projectMapper';
 import { useDeckStore } from '@/entities/deck/model/useDeckStore';
 import { pageUpdateDtoToSlideUpdate } from '@/entities/slide/model/slideMapper';
 import { useSlidesStore } from '@/entities/slide/model/useSlidesStore';
-import type { GenerationProgress } from '@/entities/generation/model/types';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
+import { generationProgressFromDto } from '@/entities/generation/model/jobMapper';
 import { createGenerationJobPoller } from '@/entities/generation/api/generationJobPoller';
 import { createImageGenerationJobCallbacks } from '@/entities/generation/model/imageGenerationJobService';
 import { devLog } from '@/utils/logger';
@@ -53,6 +53,7 @@ import { projectSession } from '@/shared/storage/projectSession';
 import { projectStoreI18n } from './projectStoreI18n';
 
 const t = getT(projectStoreI18n);
+const generationJobs = () => useGenerationJobsStore.getState();
 
 const syncDomainStores = (project: Project) => {
   const deck = projectDtoToDeck(project);
@@ -63,23 +64,14 @@ const syncDomainStores = (project: Project) => {
 const clearDomainStores = () => {
   useDeckStore.getState().clearDeck();
   useSlidesStore.getState().clearSlides();
+  generationJobs().reset();
 };
 
 interface ProjectState {
   // 状态
   currentProject: Project | null;
   isGlobalLoading: boolean;
-  activeTaskId: string | null;
-  taskProgress: { total: number; completed: number } | null;
   error: string | null;
-  // 每个页面的生成任务ID映射 (pageId -> taskId)
-  pageGeneratingTasks: Record<string, string>;
-  // 警告消息
-  warningMessage: string | null;
-  // 流式大纲生成中
-  isOutlineStreaming: boolean;
-  // 流式描述生成中
-  isDescriptionStreaming: boolean;
 
   // Actions
   setCurrentProject: (project: Project | null) => void;
@@ -159,8 +151,8 @@ const debouncedUpdatePage = debounce(
         
         // API调用成功后，同步项目状态以更新updated_at
         // 图片生成期间 poll 已在 2s 同步，跳过以避免并发竞态
-        const { syncProject, pageGeneratingTasks } = get();
-        if (Object.keys(pageGeneratingTasks).length === 0) {
+        const { syncProject } = get();
+        if (Object.keys(generationJobs().jobsBySlideId).length === 0) {
           await syncProject(projectId);
         }
       } catch (error: any) {
@@ -176,13 +168,7 @@ const debouncedUpdatePage = debounce(
   // 初始状态
   currentProject: null,
   isGlobalLoading: false,
-  activeTaskId: null,
-  taskProgress: null,
   error: null,
-  pageGeneratingTasks: {},
-  warningMessage: null,
-  isOutlineStreaming: false,
-  isDescriptionStreaming: false,
 
   // Setters
   setCurrentProject: (project) => {
@@ -447,7 +433,7 @@ const debouncedUpdatePage = debounce(
       const taskId = response.data?.task_id;
       if (taskId) {
         devLog('[异步任务] 收到task_id:', taskId, '开始轮询...');
-        set({ activeTaskId: taskId });
+        generationJobs().startJob(taskId);
         await get().pollTask(taskId);
       } else {
         console.warn('[异步任务] 响应中没有task_id，可能是同步操作:', response);
@@ -477,7 +463,7 @@ const debouncedUpdatePage = debounce(
       jobId: taskId,
       onUpdate: (task) => {
         if (task.progress) {
-          set({ taskProgress: task.progress });
+          generationJobs().updateProgress(generationProgressFromDto(task.progress));
         }
         devLog(`[轮询] Task ${taskId} 状态: ${task.status}`, task);
       },
@@ -496,38 +482,33 @@ const debouncedUpdatePage = debounce(
           }
         }
 
-        set({
-          activeTaskId: null,
-          taskProgress: null,
-          isGlobalLoading: false,
-        });
+        generationJobs().finishActiveJob();
+        set({ isGlobalLoading: false });
         await get().syncProject();
       },
       onFailure: (task) => {
         console.error(`[轮询] Task ${taskId} 失败:`, task.error_message || task.error);
+        generationJobs().finishActiveJob();
         set({
           error: normalizeErrorMessage(task.error_message || task.error || t('store.taskFailed')),
-          activeTaskId: null,
-          taskProgress: null,
           isGlobalLoading: false,
         });
       },
       onUnknown: (task) => {
         console.warn(`[轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
+        generationJobs().finishActiveJob();
         set({
           error: `${t('store.unknownTaskStatus', { status: task.status })}`,
-          activeTaskId: null,
-          taskProgress: null,
           isGlobalLoading: false,
         });
       },
       onError: (error) => {
         console.error('任务轮询错误:', error);
+        generationJobs().finishActiveJob();
         set({
           error: normalizeErrorMessage(
             error instanceof Error ? error.message : t('store.taskQueryFailed'),
           ),
-          activeTaskId: null,
           isGlobalLoading: false,
         });
       },
@@ -571,7 +552,8 @@ const debouncedUpdatePage = debounce(
     const { currentProject } = get();
     if (!currentProject) return;
 
-    set({ isOutlineStreaming: true, error: null });
+    generationJobs().setStreamActive('outline', true);
+    set({ error: null });
 
     // Clear existing pages for fresh streaming display
     set({
@@ -622,7 +604,8 @@ const debouncedUpdatePage = debounce(
         onDone: (data) => { doneData = data; },
         onError: (message) => {
           console.error('[流式大纲] 错误:', message);
-          set({ error: normalizeErrorMessage(message), isOutlineStreaming: false });
+          generationJobs().setStreamActive('outline', false);
+          set({ error: normalizeErrorMessage(message) });
           streamDone = true;
         },
       }, undefined /* language */, lockPageCount, enableWebResearch);
@@ -635,20 +618,21 @@ const debouncedUpdatePage = debounce(
         const { currentProject: proj } = get();
         if (proj) {
           const normalized = projectDtoToLegacyProject({ ...proj, pages: doneData.pages });
-          set({ currentProject: normalized, isOutlineStreaming: false });
+          set({ currentProject: normalized });
         }
+        generationJobs().setStreamActive('outline', false);
         devLog('[流式大纲] 完成:', doneData.total, '个页面');
         return { complete: doneData.complete ?? false };
       } else {
-        set({ isOutlineStreaming: false });
+        generationJobs().setStreamActive('outline', false);
         return { complete: false };
       }
     } catch (error: any) {
       console.error('[流式大纲] 错误:', error);
       streamDone = true;
+      generationJobs().setStreamActive('outline', false);
       set({
         error: normalizeErrorMessage(error.message || t('store.generateOutlineFailed')),
-        isOutlineStreaming: false,
       });
       throw error;
     }
@@ -694,7 +678,8 @@ const debouncedUpdatePage = debounce(
 
     if (mode === 'streaming') {
       // 流式模式
-      set({ isDescriptionStreaming: true, error: null });
+      generationJobs().setStreamActive('description', true);
+      set({ error: null });
 
       const updatedPages = currentProject.pages.map((page) =>
         page.id ? { ...page, status: 'GENERATING_DESCRIPTION' as const } : page
@@ -758,23 +743,23 @@ const debouncedUpdatePage = debounce(
             const normalized = projectDtoToLegacyProject({ ...proj, pages: doneData.pages });
             set({
               currentProject: normalized,
-              isDescriptionStreaming: false,
               ...(doneData.warning ? { error: doneData.warning } : {}),
             });
           }
+          generationJobs().setStreamActive('description', false);
           devLog('[流式描述] 完成:', doneData.total, '个页面');
         } else {
           // 无 doneData（SSE error 或连接中断）→ 从后端恢复真实状态
           await get().syncProject();
-          set({ isDescriptionStreaming: false });
+          generationJobs().setStreamActive('description', false);
         }
       } catch (error: any) {
         console.error('[流式描述] 错误:', error);
         streamDone = true;
         await get().syncProject();
+        generationJobs().setStreamActive('description', false);
         set({
           error: normalizeErrorMessage(error.message || t('store.generateDescFailed')),
-          isDescriptionStreaming: false,
         });
         throw error;
       }
@@ -800,25 +785,24 @@ const debouncedUpdatePage = debounce(
           throw new Error(t('store.noTaskId'));
         }
 
-        set({ activeTaskId: taskId });
+        generationJobs().startJob(taskId);
         const poller = createGenerationJobPoller({
           projectId,
           jobId: taskId,
           maxConsecutiveErrors: 9,
           onUpdate: async (task) => {
             if (task.progress) {
-              set({ taskProgress: task.progress });
+              generationJobs().updateProgress(generationProgressFromDto(task.progress));
             }
             await get().syncProject();
           },
           onComplete: async () => {
-            set({ taskProgress: null, activeTaskId: null });
+            generationJobs().finishActiveJob();
             await get().syncProject();
           },
           onFailure: async (task) => {
+            generationJobs().finishActiveJob();
             set({
-              taskProgress: null,
-              activeTaskId: null,
               error: normalizeErrorMessage(
                 task.error_message || task.error || t('store.generateDescFailed'),
               ),
@@ -826,9 +810,8 @@ const debouncedUpdatePage = debounce(
             await get().syncProject();
           },
           onUnknown: async (task) => {
+            generationJobs().finishActiveJob();
             set({
-              taskProgress: null,
-              activeTaskId: null,
               error: `${t('store.unknownTaskStatus', { status: task.status })}`,
             });
             await get().syncProject();
@@ -837,9 +820,8 @@ const debouncedUpdatePage = debounce(
             console.error('[生成描述] 轮询错误:', error);
             if (!willRetry) {
               console.error('[生成描述] 轮询错误次数过多，停止轮询');
+              generationJobs().finishActiveJob();
               set({
-                taskProgress: null,
-                activeTaskId: null,
                 error: normalizeErrorMessage(
                   error instanceof Error ? error.message : t('store.generateDescTimeout'),
                 ),
@@ -950,12 +932,13 @@ const debouncedUpdatePage = debounce(
     const { currentProject } = get();
     if (!currentProject) return;
 
-    if (get().pageGeneratingTasks[pageId]) {
+    if (generationJobs().jobsBySlideId[pageId]) {
       devLog(`[单页生成] 页面 ${pageId} 正在生成中，跳过重复请求`);
       return;
     }
 
-    set({ error: null, warningMessage: null });
+    generationJobs().setWarning(null);
+    set({ error: null });
 
     try {
       const response = await requestPageImageGeneration(currentProject.id, pageId, forceRegenerate);
@@ -963,12 +946,7 @@ const debouncedUpdatePage = debounce(
 
       if (taskId) {
         devLog(`[单页生成] 收到 task_id: ${taskId}，开始轮询页面 ${pageId}`);
-        set((state) => ({
-          pageGeneratingTasks: {
-            ...state.pageGeneratingTasks,
-            [pageId]: taskId,
-          },
-        }));
+        generationJobs().assignSlides(taskId, [pageId]);
 
         await get().syncProject();
         get().pollImageTask(taskId, [pageId]);
@@ -984,25 +962,27 @@ const debouncedUpdatePage = debounce(
 
   // 生成图片（非阻塞，每个页面显示生成状态）
   generateImages: async (pageIds?: string[]) => {
-    const { currentProject, pageGeneratingTasks } = get();
+    const { currentProject } = get();
     if (!currentProject) return;
+    const { jobsBySlideId } = generationJobs();
 
     // 确定要生成的页面ID列表
     const targetPageIds = pageIds || currentProject.pages.map(p => p.id).filter((id): id is string => !!id);
     
     // 检查是否有页面正在生成
-    const alreadyGenerating = targetPageIds.filter(id => pageGeneratingTasks[id]);
+    const alreadyGenerating = targetPageIds.filter(id => jobsBySlideId[id]);
     if (alreadyGenerating.length > 0) {
       devLog(`[批量生成] ${alreadyGenerating.length} 个页面正在生成中，跳过`);
       // 过滤掉已经在生成的页面
-      const newPageIds = targetPageIds.filter(id => !pageGeneratingTasks[id]);
+      const newPageIds = targetPageIds.filter(id => !jobsBySlideId[id]);
       if (newPageIds.length === 0) {
         devLog('[批量生成] 所有页面都在生成中，跳过请求');
         return;
       }
     }
 
-    set({ error: null, warningMessage: null });
+    generationJobs().setWarning(null);
+    set({ error: null });
     
     try {
       // 调用批量生成 API
@@ -1012,12 +992,7 @@ const debouncedUpdatePage = debounce(
       if (taskId) {
         devLog(`[批量生成] 收到 task_id: ${taskId}，标记 ${targetPageIds.length} 个页面为生成中`);
         
-        // 为所有目标页面设置任务ID
-        const newPageGeneratingTasks = { ...pageGeneratingTasks };
-        targetPageIds.forEach(id => {
-          newPageGeneratingTasks[id] = taskId;
-        });
-        set({ pageGeneratingTasks: newPageGeneratingTasks });
+        generationJobs().assignSlides(taskId, targetPageIds);
         
         // 立即同步一次项目数据，以获取后端设置的 'QUEUED' 状态
         await get().syncProject();
@@ -1046,8 +1021,8 @@ const debouncedUpdatePage = debounce(
     const imageJobCallbacks = createImageGenerationJobCallbacks({
       jobId: taskId,
       slideIds: pageIds,
-      readAssignments: () => get().pageGeneratingTasks,
-      writeAssignments: (pageGeneratingTasks) => set({ pageGeneratingTasks }),
+      readAssignments: () => generationJobs().jobsBySlideId,
+      writeAssignments: (jobsBySlideId) => generationJobs().replaceSlideJobs(jobsBySlideId),
       refreshDeck: () => get().syncProject(),
       isSlideSettled: (slideId) => {
         const page = get().currentProject?.pages.find((candidate) => candidate.id === slideId);
@@ -1062,7 +1037,9 @@ const debouncedUpdatePage = debounce(
         });
       },
       setWarning: (warningMessage) => {
-        if (get().warningMessage !== warningMessage) set({ warningMessage });
+        if (generationJobs().warning !== warningMessage) {
+          generationJobs().setWarning(warningMessage);
+        }
       },
       setError: (error) => set({ error }),
       failureMessage: (task) => normalizeErrorMessage(
@@ -1086,11 +1063,12 @@ const debouncedUpdatePage = debounce(
 
   // 编辑页面图片（异步）
   editPageImage: async (pageId, editPrompt, contextImages) => {
-    const { currentProject, pageGeneratingTasks } = get();
+    const { currentProject } = get();
     if (!currentProject) return;
+    const { jobsBySlideId } = generationJobs();
 
     // 如果该页面正在生成，不重复提交
-    if (pageGeneratingTasks[pageId]) {
+    if (jobsBySlideId[pageId]) {
       devLog(`[编辑] 页面 ${pageId} 正在生成中，跳过重复请求`);
       return;
     }
@@ -1102,9 +1080,7 @@ const debouncedUpdatePage = debounce(
       
       if (taskId) {
         // 记录该页面的任务ID
-        set({ 
-          pageGeneratingTasks: { ...pageGeneratingTasks, [pageId]: taskId }
-        });
+        generationJobs().assignSlides(taskId, [pageId]);
         
         // 立即同步一次项目数据，以获取后端设置的'GENERATING'状态
         await get().syncProject();
@@ -1117,10 +1093,8 @@ const debouncedUpdatePage = debounce(
       }
     } catch (error: any) {
       // 清除该页面的任务记录
-      const { pageGeneratingTasks } = get();
-      const newTasks = { ...pageGeneratingTasks };
-      delete newTasks[pageId];
-      set({ pageGeneratingTasks: newTasks, error: normalizeErrorMessage(error.message || t('store.editImageFailed')) });
+      generationJobs().releaseSlides([pageId]);
+      set({ error: normalizeErrorMessage(error.message || t('store.editImageFailed')) });
       throw error;
     }
   },
@@ -1191,45 +1165,3 @@ const debouncedUpdatePage = debounce(
     }
   },
 };});
-
-const toGenerationProgress = (
-  progress: ProjectState['taskProgress'],
-): GenerationProgress | null => {
-  if (!progress) return null;
-
-  const details = progress as typeof progress & Record<string, unknown>;
-  return {
-    total: progress.total,
-    completed: progress.completed,
-    ...(typeof details.failed === 'number' ? { failed: details.failed } : {}),
-    ...(typeof details.percent === 'number' ? { percent: details.percent } : {}),
-    ...(typeof details.current_step === 'string'
-      ? { currentStep: details.current_step }
-      : {}),
-    ...(Array.isArray(details.messages)
-      ? { messages: details.messages.filter((message): message is string => typeof message === 'string') }
-      : {}),
-  };
-};
-
-useProjectStore.subscribe((state, previousState) => {
-  if (
-    state.activeTaskId === previousState.activeTaskId
-    && state.taskProgress === previousState.taskProgress
-    && state.pageGeneratingTasks === previousState.pageGeneratingTasks
-    && state.warningMessage === previousState.warningMessage
-    && state.isOutlineStreaming === previousState.isOutlineStreaming
-    && state.isDescriptionStreaming === previousState.isDescriptionStreaming
-  ) {
-    return;
-  }
-
-  useGenerationJobsStore.getState().syncSnapshot({
-    activeJobId: state.activeTaskId,
-    progress: toGenerationProgress(state.taskProgress),
-    jobsBySlideId: state.pageGeneratingTasks,
-    warning: state.warningMessage,
-    outlineStreamActive: state.isOutlineStreaming,
-    descriptionStreamActive: state.isDescriptionStreaming,
-  });
-});

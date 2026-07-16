@@ -11,6 +11,7 @@ interface GenerationJobsState extends GenerationJobsSnapshot {
   updateProgress: (progress: GenerationProgress | null) => void;
   finishActiveJob: () => void;
   assignSlides: (jobId: string, slideIds: string[]) => void;
+  replaceSlideJobs: (jobsBySlideId: Record<string, string>) => void;
   releaseSlides: (slideIds: string[], jobId?: string) => void;
   setWarning: (warning: string | null) => void;
   setStreamActive: (stream: GenerationStream, active: boolean) => void;
@@ -56,6 +57,10 @@ export const useGenerationJobsStore = create<GenerationJobsState>((set) => ({
       jobsBySlideId[slideId] = jobId;
     });
     return { jobsBySlideId };
+  }),
+
+  replaceSlideJobs: (jobsBySlideId) => set({
+    jobsBySlideId: { ...jobsBySlideId },
   }),
 
   releaseSlides: (slideIds, jobId) => set((state) => {

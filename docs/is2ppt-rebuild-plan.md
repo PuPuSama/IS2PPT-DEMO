@@ -59,6 +59,11 @@ Progress snapshot (2026-07-16):
   AI refinement, imported-slide persistence, and focused mapping tests. Legacy
   project/page DTO vocabulary is contained at model, repository, store, and
   component compatibility boundaries instead of being used by the feature UI.
+  `DetailEditor` is now a thin route over `features/slide-spec`. The feature
+  owns slide-spec completion rules, source-deck processing state, requirement
+  and import persistence, AI refinement, generation-preference mapping, field
+  catalog storage, and backend job normalization. Its UI no longer imports API
+  or storage modules or reads legacy project DTO fields directly.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

@@ -13,7 +13,7 @@ the project easier to maintain as `is2ppt`.
 
 ## Current State
 
-Progress snapshot (2026-07-15):
+Progress snapshot (2026-07-16):
 
 - Phase 1 identity work is complete across frontend, backend identity constants,
   and the CLI package.
@@ -53,7 +53,12 @@ Progress snapshot (2026-07-15):
   errors. `DeckCreationPage` only validates form input and navigates; API,
   session, draft, reference-association, and compatibility-store side effects
   are isolated in `useDeckCreation`. Template binary loading now belongs to an
-  entity repository used by both creation and workspace flows.
+  entity repository used by both creation and workspace flows. `OutlineEditor`
+  is now a thin route over `features/deck-plan`. That feature owns a UI-facing
+  deck-plan snapshot, source-type normalization, source and requirement saves,
+  AI refinement, imported-slide persistence, and focused mapping tests. Legacy
+  project/page DTO vocabulary is contained at model, repository, store, and
+  component compatibility boundaries instead of being used by the feature UI.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

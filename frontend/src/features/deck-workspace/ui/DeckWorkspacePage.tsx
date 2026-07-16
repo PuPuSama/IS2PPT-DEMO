@@ -15,10 +15,7 @@ import {
   Loader2,
   Presentation,
 } from 'lucide-react';
-import { Button, Loading, Modal, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
-import { TemplateSelector } from '@/components/shared/TemplateSelector';
-import { loadTemplateAsset } from '@/entities/template/api/templateAssetRepository';
-import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
+import { Button, Loading, Modal, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
@@ -36,7 +33,9 @@ import {
   exportRangeFromWorkspace,
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
+import type { DeckStyleMode } from '../model/deckStyleSelection';
 import { DeckExportDialogs } from './DeckExportDialogs';
+import { DeckStyleDialog } from './DeckStyleDialog';
 import { SlideEditDialog, type SlideEditCommand } from './SlideEditDialog';
 import { SlideNavigator } from './SlideNavigator';
 import { SlideCanvas } from './SlideCanvas';
@@ -80,8 +79,7 @@ export const DeckWorkspacePage: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [useTextStyleMode, setUseTextStyleMode] = useState(false);
-  const [draftTemplateStyle, setDraftTemplateStyle] = useState('');
+  const [deckStyleInitialMode, setDeckStyleInitialMode] = useState<DeckStyleMode>('image');
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showExportJobsPanel, setShowExportJobsPanel] = useState(false);
   const [showPptxExportDialog, setShowPptxExportDialog] = useState(false);
@@ -95,9 +93,6 @@ export const DeckWorkspacePage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [imageVersions, setImageVersions] = useState<ImageVersion[]>([]);
   const [showVersionMenu, setShowVersionMenu] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [selectedPresetTemplateId, setSelectedPresetTemplateId] = useState<string | null>(null);
-  const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
   const [extraRequirements, setExtraRequirements] = useState<string>('');
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
   const isEditingRequirements = useRef(false); // 跟踪用户是否正在编辑额外要求
@@ -106,7 +101,6 @@ export const DeckWorkspacePage: React.FC = () => {
   const isEditingTemplateStyle = useRef(false); // 跟踪用户是否正在编辑风格描述
   const lastProjectId = useRef<string | null>(null); // 跟踪上一次的项目ID
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
-  const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   // 导出设置
   const [exportAllowPartial, setExportAllowPartial] = useState(false);
   const [isSavingExportSettings, setIsSavingExportSettings] = useState(false);
@@ -140,25 +134,12 @@ export const DeckWorkspacePage: React.FC = () => {
   const hasImages = workspace?.hasImages ?? false;
   const selectedSlide = workspaceSlides[selectedIndex];
 
-  // 加载项目数据 & 用户模板
+  // 加载项目数据
   useEffect(() => {
     if (projectId && (!workspace || workspace.deckId !== projectId)) {
       // 直接使用 projectId 同步项目数据
       syncProject(projectId);
     }
-
-    // 加载用户模板列表（用于按需获取File）
-    const loadTemplates = async () => {
-      try {
-        const response = await listUserTemplates();
-        if (response.data?.templates) {
-          setUserTemplates(response.data.templates);
-        }
-      } catch (error) {
-        console.error('Failed to load user templates:', error);
-      }
-    };
-    loadTemplates();
   }, [projectId, workspace, syncProject]);
 
   // 监听警告消息
@@ -311,8 +292,7 @@ export const DeckWorkspacePage: React.FC = () => {
       }
     }
 
-    setDraftTemplateStyle(savedStyle || draftStyle);
-    setUseTextStyleMode(true);
+    setDeckStyleInitialMode('text');
     setIsTemplateModalOpen(true);
     show({
       message: normalizeErrorMessage('no template image or style description'),
@@ -679,51 +659,20 @@ export const DeckWorkspacePage: React.FC = () => {
     }
   }, [aspectRatio, deckSnapshot, projectId, show, syncProject]);
 
-  const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
+  const handleApplyImageTemplate = useCallback(async (file: File) => {
     if (!projectId) return;
+    await uploadTemplate(projectId, file);
+    await syncProject(projectId);
+  }, [projectId, syncProject]);
 
-    // 如果有templateId，按需加载File
-    let file = templateFile;
-    if (templateId && !file) {
-      file = await loadTemplateAsset(templateId, userTemplates);
-      if (!file) {
-        show({ message: t('slidePreview.loadTemplateFailed'), type: 'error' });
-        return;
-      }
-    }
-
-    if (!file) {
-      // 如果没有文件也没有 ID，可能是取消选择
-      return;
-    }
-
-    setIsUploadingTemplate(true);
-    try {
-      await uploadTemplate(projectId, file);
-      await syncProject(projectId);
-      setIsTemplateModalOpen(false);
-      show({ message: t('slidePreview.templateChanged'), type: 'success' });
-
-      // 更新选择状态
-      if (templateId) {
-        // 判断是用户模板还是预设模板（短ID通常是预设模板）
-        if (templateId.length <= 3 && /^\d+$/.test(templateId)) {
-          setSelectedPresetTemplateId(templateId);
-          setSelectedTemplateId(null);
-        } else {
-          setSelectedTemplateId(templateId);
-          setSelectedPresetTemplateId(null);
-        }
-      }
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.templateChangeFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    } finally {
-      setIsUploadingTemplate(false);
-    }
-  };
+  const handleApplyTextStyle = useCallback(async (style: string) => {
+    if (!projectId) return;
+    isEditingTemplateStyle.current = true;
+    setTemplateStyle(style);
+    await updateProject(projectId, { template_style: style || '' });
+    isEditingTemplateStyle.current = false;
+    await syncProject(projectId);
+  }, [projectId, syncProject]);
 
   if (!deckSnapshot || !workspace) {
     return <Loading fullscreen message={t('preview.messages.loadingProject')} />;
@@ -833,7 +782,10 @@ export const DeckWorkspacePage: React.FC = () => {
               variant="ghost"
               size="sm"
               icon={<Upload size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => { setDraftTemplateStyle(templateStyle); setUseTextStyleMode(!!templateStyle.trim()); setIsTemplateModalOpen(true); }}
+              onClick={() => {
+                setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
+                setIsTemplateModalOpen(true);
+              }}
               className="hidden lg:inline-flex"
             >
               <span className="hidden xl:inline">{t('preview.changeTemplate')}</span>
@@ -1016,8 +968,7 @@ export const DeckWorkspacePage: React.FC = () => {
           onSelectSlide={setSelectedIndex}
           onGenerateSlide={handleRegeneratePage}
           onOpenTemplate={() => {
-            setDraftTemplateStyle(templateStyle);
-            setUseTextStyleMode(Boolean(templateStyle.trim()));
+            setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
             setIsTemplateModalOpen(true);
           }}
           onRefresh={handleRefresh}
@@ -1042,89 +993,17 @@ export const DeckWorkspacePage: React.FC = () => {
       <ToastContainer />
       {ConfirmDialog}
 
-      {/* 模板选择 Modal */}
-      <Modal
-        isOpen={isTemplateModalOpen}
-        onClose={() => setIsTemplateModalOpen(false)}
-        title={t('preview.changeTemplate')}
-        size="lg"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-foreground-tertiary mb-4">
-            {t('preview.templateModalDesc')}
-          </p>
-          {/* 图片模板 / 文字风格 切换 */}
-          <label className="flex items-center gap-2 cursor-pointer group">
-            <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-              {t('preview.useTextStyle')}
-            </span>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={useTextStyleMode}
-                onChange={(e) => setUseTextStyleMode(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 dark:peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
-            </div>
-          </label>
-          {useTextStyleMode ? (
-            <TextStyleSelector
-              value={draftTemplateStyle}
-              onChange={setDraftTemplateStyle}
-              onToast={show}
-            />
-          ) : (
-            <>
-              <TemplateSelector
-                onSelect={handleTemplateSelect}
-                selectedTemplateId={selectedTemplateId}
-                selectedPresetTemplateId={selectedPresetTemplateId}
-                showUpload={false}
-                projectId={projectId || null}
-              />
-              {isUploadingTemplate && (
-                <div className="text-center py-2 text-sm text-gray-500 dark:text-foreground-tertiary">
-                  {t('preview.uploadingTemplate')}
-                </div>
-              )}
-            </>
-          )}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            {useTextStyleMode && (
-              <Button
-                variant="primary"
-                loading={isSavingTemplateStyle}
-                onClick={async () => {
-                  isEditingTemplateStyle.current = true;
-                  setTemplateStyle(draftTemplateStyle);
-                  setIsSavingTemplateStyle(true);
-                  try {
-                    await updateProject(projectId!, { template_style: draftTemplateStyle || '' });
-                    isEditingTemplateStyle.current = false;
-                    await syncProject(projectId!);
-                    show({ message: t('slidePreview.styleDescSaved'), type: 'success' });
-                    setIsTemplateModalOpen(false);
-                  } catch (error: any) {
-                    show({ message: t('slidePreview.saveFailed', { error: error.message || t('slidePreview.unknownError') }), type: 'error' });
-                  } finally {
-                    setIsSavingTemplateStyle(false);
-                  }
-                }}
-              >
-                {t('preview.applyStyle')}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              onClick={() => setIsTemplateModalOpen(false)}
-              disabled={isUploadingTemplate || isSavingTemplateStyle}
-            >
-              {t('common.close')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {projectId && (
+        <DeckStyleDialog
+          isOpen={isTemplateModalOpen}
+          projectId={projectId}
+          currentTextStyle={templateStyle}
+          initialMode={deckStyleInitialMode}
+          onClose={() => setIsTemplateModalOpen(false)}
+          onApplyImageTemplate={handleApplyImageTemplate}
+          onApplyTextStyle={handleApplyTextStyle}
+        />
+      )}
       {projectId && (
         <>
           {/* 项目设置模态框 */}

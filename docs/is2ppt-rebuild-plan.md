@@ -77,7 +77,9 @@ Progress snapshot (2026-07-16):
   starting jobs or reading project DTOs. `SlideEditDialog` now owns the
   per-slide edit session, reference-image lifecycle, region cropping, and
   metadata draft UI. Its tested command boundary keeps project store access in
-  the workspace orchestrator.
+  the workspace orchestrator. `DeckStyleDialog` now owns template catalog
+  loading, image-vs-text style selection, and template identity state while
+  receiving only project-level apply commands from the workspace.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

@@ -63,7 +63,11 @@ Progress snapshot (2026-07-16):
   owns slide-spec completion rules, source-deck processing state, requirement
   and import persistence, AI refinement, generation-preference mapping, field
   catalog storage, and backend job normalization. Its UI no longer imports API
-  or storage modules or reads legacy project DTO fields directly.
+  or storage modules or reads legacy project DTO fields directly. `SlidePreview`
+  is now a thin route over the new `features/deck-workspace` entry point. The
+  workspace rebuild is still in progress; its first extracted submodule is an
+  independently tested slide navigator that owns thumbnail selection,
+  multi-select controls, generation entry, and legacy slide-card adaptation.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

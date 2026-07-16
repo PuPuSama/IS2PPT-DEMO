@@ -23,7 +23,7 @@ Progress snapshot (2026-07-15):
   bidirectional mappers, and explicit legacy-store adapters are in place. The
   history feature consumes the new domain model, and business normalization no
   longer lives in generic utilities.
-- Phase 4 is in progress. A domain-level deck repository now owns list, load,
+- Phase 4 is complete. A domain-level deck repository now owns list, load,
   rename, and delete operations; the history feature no longer imports project
   API endpoints or DTO mappers directly. `useDeckStore` owns the synchronized
   Deck snapshot, session restore, and load errors, while `useProjectStore`
@@ -35,12 +35,16 @@ Progress snapshot (2026-07-15):
   per-slide job assignments, warnings, and stream activity through independent
   domain names. `OutlineEditor` and `SlidePreview` consume it directly, and all
   generation actions write to it without legacy state fields or a subscription
-  bridge. A reusable, cancellable generation job poller owns status
-  normalization, scheduling, and retry limits. General async jobs, description
-  generation, and image generation all use it. An image-generation coordinator
+  bridge. A reusable, cancellable backend job poller in `shared/api` owns status
+  normalization, scheduling, and retry limits; generation and export modules
+  depend on it through their own domain adapters. An image-generation coordinator
   owns per-slide job release, warning propagation, terminal failure handling,
   and generated-asset synchronization retries. `useProjectStore` supplies only
-  project-data and error adapters to that coordinator.
+  project-data and error adapters to that coordinator. Export behavior now has
+  an independent `ExportJob` model, DTO mapper, repository, persistent
+  `useExportJobsStore`, and resumable polling. `SlidePreview` and
+  `ExportJobsPanel` consume that boundary; the old export task store and the
+  duplicate export methods in `useProjectStore` have been removed.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.
@@ -305,6 +309,7 @@ Tasks:
 - Extract deck sync and persistence into `useDeckStore`.
 - Extract slide local updates into `useSlidesStore`.
 - Extract async generation state into `useGenerationJobsStore`.
+- Extract export state and requests into `useExportJobsStore`.
 - Extract polling helpers into services.
 - Keep a temporary `useProjectStore` adapter that delegates to new stores.
 - Migrate tests from `useProjectStore` behavior to new store behavior.

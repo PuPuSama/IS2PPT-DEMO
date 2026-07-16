@@ -27,7 +27,7 @@ import {
   ImageOff,
   Presentation,
 } from 'lucide-react';
-import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
+import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
 import { SlideCard } from '@/components/preview/SlideCard';
@@ -35,10 +35,11 @@ import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
-import { useExportTasksStore, type ExportTaskType } from '@/store/useExportTasksStore';
+import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
+import type { ExportFormat } from '@/entities/export/model/types';
+import { isExportJobActive } from '@/entities/export/model/types';
 import { getImageUrl } from '@/api/client';
 import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
-import { exportPPTX as apiExportPPTX, exportPDF as apiExportPDF, exportImages as apiExportImages, exportEditablePPTX as apiExportEditablePPTX } from '@/api/exportsApi';
 import { updateProject, uploadTemplate } from '@/api/projectsApi';
 import { getSettings } from '@/api/settingsApi';
 import type { ImageVersion, DescriptionContent, Page } from '@/types';
@@ -67,12 +68,17 @@ export const SlidePreview: React.FC = () => {
     warning: generationWarning,
   } = useGenerationJobsStore();
 
-  const { addTask, pollTask: pollExportTask, tasks: exportTasks, restoreActiveTasks } = useExportTasksStore();
+  const { jobs: exportJobs, startExport, restoreActiveJobs } = useExportJobsStore();
 
-  // 页面挂载时恢复正在进行的导出任务（页面刷新后）
   useEffect(() => {
-    restoreActiveTasks();
-  }, [restoreActiveTasks]);
+    restoreActiveJobs();
+  }, [restoreActiveJobs]);
+
+  const exportJobsForDeck = useMemo(
+    () => exportJobs.filter((job) => job.deckId === projectId),
+    [exportJobs, projectId],
+  );
+  const hasActiveExportJobs = exportJobsForDeck.some(isExportJobActive);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -85,7 +91,7 @@ export const SlidePreview: React.FC = () => {
   const [editOutlinePoints, setEditOutlinePoints] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [showExportTasksPanel, setShowExportTasksPanel] = useState(false);
+  const [showExportJobsPanel, setShowExportJobsPanel] = useState(false);
   const [showPptxExportDialog, setShowPptxExportDialog] = useState(false);
   const [showEditablePptxDialog, setShowEditablePptxDialog] = useState(false);
   const [pptxTransitionsEnabled, setPptxTransitionsEnabled] = useState(false);
@@ -846,7 +852,7 @@ export const SlidePreview: React.FC = () => {
   };
 
   const handleExport = async (
-    type: 'pptx' | 'pdf' | 'editable-pptx' | 'images',
+    format: ExportFormat,
     options?: {
       pptxTransitionEnabled?: boolean;
       pptxTransitionEffects?: PptxTransitionEffect[];
@@ -856,62 +862,28 @@ export const SlidePreview: React.FC = () => {
     if (!projectId) return;
 
     const pageIds = getSelectedPageIdsForExport();
-    const exportTaskId = `export-${Date.now()}`;
-
     try {
-      if (type === 'pptx' || type === 'pdf' || type === 'images') {
-        // Synchronous export - direct download, create completed task directly
-        const response = type === 'pptx'
-          ? await apiExportPPTX(projectId, pageIds, {
-              transitionEnabled: options?.pptxTransitionEnabled,
-              transitionEffects: options?.pptxTransitionEffects,
-            })
-          : type === 'pdf'
-            ? await apiExportPDF(projectId, pageIds)
-            : await apiExportImages(projectId, pageIds);
-        const downloadUrl = response.data?.download_url || response.data?.download_url_absolute;
-        if (downloadUrl) {
-          addTask({
-            id: exportTaskId,
-            taskId: '',
-            projectId,
-            type: type as ExportTaskType,
-            status: 'COMPLETED',
-            downloadUrl,
-            pageIds: pageIds,
-          });
-          window.open(downloadUrl, '_blank');
-        }
-      } else if (type === 'editable-pptx') {
-        // Async export - create processing task and start polling
-        addTask({
-          id: exportTaskId,
-          taskId: '', // Will be updated below
-          projectId,
-          type: 'editable-pptx',
-          status: 'PROCESSING',
-          pageIds: pageIds,
+      const job = await startExport({
+        deckId: projectId,
+        format,
+        slideIds: pageIds,
+        ...(format === 'pptx'
+          ? {
+              pptxOptions: {
+                transitionEnabled: options?.pptxTransitionEnabled,
+                transitionEffects: options?.pptxTransitionEffects,
+              },
+            }
+          : {}),
+      });
+
+      if (job.status === 'ready' && job.downloadUrl) {
+        window.open(job.downloadUrl, '_blank');
+      } else if (job.status === 'running') {
+        show({
+          message: t('slidePreview.exportStarted'),
+          type: 'success',
         });
-
-        show({ message: t('slidePreview.exportStarted'), type: 'success' });
-
-        const response = await apiExportEditablePPTX(projectId, undefined, pageIds);
-        const taskId = response.data?.task_id;
-
-        if (taskId) {
-          // Update task with real taskId
-          addTask({
-            id: exportTaskId,
-            taskId,
-            projectId,
-            type: 'editable-pptx',
-            status: 'PROCESSING',
-            pageIds: pageIds,
-          });
-
-          // Start polling in background (non-blocking)
-          pollExportTask(exportTaskId, projectId, taskId);
-        }
       }
     } catch (error: any) {
       let errorMessage = t('preview.messages.exportFailed');
@@ -934,16 +906,6 @@ export const SlidePreview: React.FC = () => {
 
       const normalizedErrorMessage = normalizeErrorMessage(errorMessage);
 
-      // Update task as failed
-      addTask({
-        id: exportTaskId,
-        taskId: '',
-        projectId,
-        type: type as ExportTaskType,
-        status: 'FAILED',
-        errorMessage: normalizedErrorMessage,
-        pageIds: pageIds,
-      });
       show({ message: normalizedErrorMessage, type: 'error' });
     }
   };
@@ -1237,26 +1199,26 @@ export const SlidePreview: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setShowExportTasksPanel(!showExportTasksPanel);
+                  setShowExportJobsPanel(!showExportJobsPanel);
                   setShowExportMenu(false);
                 }}
                 className="relative"
               >
-                {exportTasks.filter(t => t.projectId === projectId && (t.status === 'PROCESSING' || t.status === 'RUNNING' || t.status === 'PENDING')).length > 0 ? (
+                {hasActiveExportJobs ? (
                   <Loader2 size={16} className="animate-spin text-brand-500" />
                 ) : (
                   <FileText size={16} />
                 )}
-                {exportTasks.filter(t => t.projectId === projectId).length > 0 && (
+                {exportJobsForDeck.length > 0 && (
                   <span className="ml-1 text-xs">
-                    {exportTasks.filter(t => t.projectId === projectId).length}
+                    {exportJobsForDeck.length}
                   </span>
                 )}
               </Button>
-              {showExportTasksPanel && (
+              {showExportJobsPanel && (
                 <div className="absolute right-0 mt-2 z-20">
-                  <ExportTasksPanel
-                    projectId={projectId}
+                  <ExportJobsPanel
+                    deckId={projectId}
                     pages={currentProject?.pages || []}
                     className="w-96 max-h-[28rem] shadow-lg"
                   />
@@ -1271,7 +1233,7 @@ export const SlidePreview: React.FC = () => {
               icon={<Download size={16} className="md:w-[18px] md:h-[18px]" />}
               onClick={() => {
                 setShowExportMenu(!showExportMenu);
-                setShowExportTasksPanel(false);
+                setShowExportJobsPanel(false);
               }}
               disabled={isMultiSelectMode && selectedPageIds.size === 0}
               title={!isMultiSelectMode && !hasAllImages ? t('preview.disabledExportTip', { count: missingImageCount }) : undefined}

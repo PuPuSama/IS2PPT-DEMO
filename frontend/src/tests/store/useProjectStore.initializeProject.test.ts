@@ -80,12 +80,6 @@ vi.mock('@/api/renovationApi', () => ({
   regenerateRenovationPage: vi.fn(),
 }))
 
-vi.mock('@/api/exportsApi', () => ({
-  exportPPTX: vi.fn(),
-  exportPDF: vi.fn(),
-  exportEditablePPTX: vi.fn(),
-}))
-
 vi.mock('@/api/auth', () => ({
   refreshCredits: vi.fn(),
 }))

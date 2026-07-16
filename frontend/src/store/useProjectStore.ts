@@ -29,13 +29,7 @@ import {
   generatePageImage as requestPageImageGeneration,
 } from '@/api/imageGenerationApi';
 import {
-  exportEditablePPTX as requestEditablePptxExport,
-  exportPDF as requestPdfExport,
-  exportPPTX as requestPptxExport,
-} from '@/api/exportsApi';
-import {
   debounce,
-  downloadFromUrl,
   normalizeErrorMessage,
 } from '@/utils';
 import { projectDtoToLegacyProject } from '@/entities/deck/model/legacyProjectAdapter';
@@ -90,8 +84,6 @@ interface ProjectState {
   deletePageById: (pageId: string) => Promise<void>;
   
   // 异步任务
-  startAsyncTask: (apiCall: () => Promise<any>) => Promise<void>;
-  pollTask: (taskId: string) => Promise<void>;
   pollImageTask: (taskId: string, pageIds: string[]) => void;
 
   // 生成操作
@@ -112,11 +104,6 @@ interface ProjectState {
       uploadedFiles?: File[];
     }
   ) => Promise<void>;
-  
-  // 导出
-  exportPPTX: (pageIds?: string[]) => Promise<void>;
-  exportPDF: (pageIds?: string[]) => Promise<void>;
-  exportEditablePPTX: (filename?: string, pageIds?: string[]) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => {
@@ -419,102 +406,6 @@ const debouncedUpdatePage = debounce(
     } catch (error: any) {
       set({ error: error.message || t('store.deletePageFailed') });
     }
-  },
-
-  // 启动异步任务
-  startAsyncTask: async (apiCall) => {
-    devLog('[异步任务] 启动异步任务...');
-    set({ isGlobalLoading: true, error: null });
-    try {
-      const response = await apiCall();
-      devLog('[异步任务] API响应:', response);
-      
-      // task_id 在 response.data 中
-      const taskId = response.data?.task_id;
-      if (taskId) {
-        devLog('[异步任务] 收到task_id:', taskId, '开始轮询...');
-        generationJobs().startJob(taskId);
-        await get().pollTask(taskId);
-      } else {
-        console.warn('[异步任务] 响应中没有task_id，可能是同步操作:', response);
-        // 同步操作完成后，刷新项目数据
-        await get().syncProject();
-        set({ isGlobalLoading: false });
-      }
-    } catch (error: any) {
-      console.error('[异步任务] 启动失败:', error);
-      set({ error: error.message || t('store.taskStartFailed'), isGlobalLoading: false });
-      throw error;
-    }
-  },
-
-  // 轮询任务状态
-  pollTask: async (taskId) => {
-    devLog(`[轮询] 开始轮询任务: ${taskId}`);
-    const { currentProject } = get();
-    if (!currentProject) {
-      console.warn('[轮询] 没有当前项目，停止轮询');
-      return;
-    }
-    const projectId = currentProject.id!;
-
-    const poller = createGenerationJobPoller({
-      projectId,
-      jobId: taskId,
-      onUpdate: (task) => {
-        if (task.progress) {
-          generationJobs().updateProgress(generationProgressFromDto(task.progress));
-        }
-        devLog(`[轮询] Task ${taskId} 状态: ${task.status}`, task);
-      },
-      onComplete: async (task) => {
-        devLog(`[轮询] Task ${taskId} 已完成，刷新项目数据`);
-
-        if (task.task_type === 'EXPORT_EDITABLE_PPTX' && task.progress) {
-          const downloadUrl = task.progress.download_url;
-          if (downloadUrl) {
-            devLog('[导出可编辑PPTX] 从任务响应中获取下载链接:', downloadUrl);
-            setTimeout(() => {
-              window.open(downloadUrl, '_blank');
-            }, 500);
-          } else {
-            console.warn('[导出可编辑PPTX] 任务完成但没有下载链接');
-          }
-        }
-
-        generationJobs().finishActiveJob();
-        set({ isGlobalLoading: false });
-        await get().syncProject();
-      },
-      onFailure: (task) => {
-        console.error(`[轮询] Task ${taskId} 失败:`, task.error_message || task.error);
-        generationJobs().finishActiveJob();
-        set({
-          error: normalizeErrorMessage(task.error_message || task.error || t('store.taskFailed')),
-          isGlobalLoading: false,
-        });
-      },
-      onUnknown: (task) => {
-        console.warn(`[轮询] Task ${taskId} 未知状态: ${task.status}，停止轮询`);
-        generationJobs().finishActiveJob();
-        set({
-          error: `${t('store.unknownTaskStatus', { status: task.status })}`,
-          isGlobalLoading: false,
-        });
-      },
-      onError: (error) => {
-        console.error('任务轮询错误:', error);
-        generationJobs().finishActiveJob();
-        set({
-          error: normalizeErrorMessage(
-            error instanceof Error ? error.message : t('store.taskQueryFailed'),
-          ),
-          isGlobalLoading: false,
-        });
-      },
-    });
-
-    await poller.checkNow();
   },
 
   // 生成大纲（同步操作，不需要轮询）
@@ -1099,69 +990,4 @@ const debouncedUpdatePage = debounce(
     }
   },
 
-  // 导出PPTX
-  exportPPTX: async (pageIds?: string[]) => {
-    const { currentProject } = get();
-    if (!currentProject) return;
-
-    set({ isGlobalLoading: true, error: null });
-    try {
-      const response = await requestPptxExport(currentProject.id, pageIds);
-      // 优先使用相对路径，避免 Docker 环境下的端口问题
-      const downloadUrl =
-        response.data?.download_url || response.data?.download_url_absolute;
-
-      if (!downloadUrl) {
-        throw new Error(t('store.exportLinkFailed'));
-      }
-
-      const filename = downloadUrl.split('/').pop()?.split('?')[0] || 'presentation.pptx';
-      downloadFromUrl(downloadUrl, filename);
-    } catch (error: any) {
-      set({ error: error.message || t('store.exportFailed') });
-    } finally {
-      set({ isGlobalLoading: false });
-    }
-  },
-
-  // 导出PDF
-  exportPDF: async (pageIds?: string[]) => {
-    const { currentProject } = get();
-    if (!currentProject) return;
-
-    set({ isGlobalLoading: true, error: null });
-    try {
-      const response = await requestPdfExport(currentProject.id, pageIds);
-      // 优先使用相对路径，避免 Docker 环境下的端口问题
-      const downloadUrl =
-        response.data?.download_url || response.data?.download_url_absolute;
-
-      if (!downloadUrl) {
-        throw new Error(t('store.exportLinkFailed'));
-      }
-
-      const filename = downloadUrl.split('/').pop()?.split('?')[0] || 'presentation.pdf';
-      downloadFromUrl(downloadUrl, filename);
-    } catch (error: any) {
-      set({ error: error.message || t('store.exportFailed') });
-    } finally {
-      set({ isGlobalLoading: false });
-    }
-  },
-
-  // 导出可编辑PPTX（异步任务）
-  exportEditablePPTX: async (filename?: string, pageIds?: string[]) => {
-    const { currentProject, startAsyncTask } = get();
-    if (!currentProject) return;
-
-    try {
-      devLog('[导出可编辑PPTX] 启动异步导出任务...');
-      // startAsyncTask 中的 pollTask 会在任务完成时自动处理下载
-      await startAsyncTask(() => requestEditablePptxExport(currentProject.id, filename, pageIds));
-      devLog('[导出可编辑PPTX] 异步任务完成');
-    } catch (error: any) {
-      console.error('[导出可编辑PPTX] 导出失败:', error);
-      set({ error: error.message || t('store.exportEditableFailed') });
-    }
-  },
 };});

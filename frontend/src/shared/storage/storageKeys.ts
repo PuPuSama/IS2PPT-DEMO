@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   githubBadgeStats: `${prefix}-github-badge-stats`,
   availableExtraFields: `${prefix}-available-extra-fields`,
   detailLevel: `${prefix}-detail-level`,
+  exportJobs: `${prefix}-export-jobs`,
 } as const;
 
 export const getPresetCapsulesStorageKey = (type: string) =>

@@ -23,7 +23,7 @@ export { ImportMarkdownModal } from './ImportMarkdownModal';
 export { ProjectResourcesList } from './ProjectResourcesList';
 export { HelpModal } from './HelpModal';
 export { ProjectSettingsModal } from './ProjectSettingsModal';
-export { ExportTasksPanel } from './ExportTasksPanel';
+export { ExportJobsPanel } from './ExportJobsPanel';
 export { AccessCodeGuard } from './AccessCodeGuard';
 export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from './Pagination';

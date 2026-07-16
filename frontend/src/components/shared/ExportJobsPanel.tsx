@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Trash2, FileText, Clock, CheckCircle, XCircle, Loader2, AlertTriangle, HelpCircle, Settings, FileSpreadsheet, Image } from 'lucide-react';
-import { useExportTasksStore, type ExportTask, type ExportTaskType } from '@/store/useExportTasksStore';
+import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
+import type {
+  ExportFormat,
+  ExportJob,
+  ExportedFile,
+  ExportWarningDetails,
+} from '@/entities/export/model/types';
+import { isExportJobActive, isExportJobFinished } from '@/entities/export/model/types';
+import { listDeckExports } from '@/entities/export/api/exportRepository';
 import { useT } from '@/hooks/useT';
 import type { Page } from '@/types';
 import { Button } from './Button';
 import { cn } from '@/utils';
-import { listExports } from '@/api/exportsApi';
-import { exportTasksPanelI18n } from '@/config/exportTasksPanelI18n';
+import { exportJobsPanelI18n } from '@/config/exportJobsPanelI18n';
 
 const getPageRangeText = (pageIds: string[] | undefined, pages: Page[], t: (key: string, options?: any) => string): string => {
   if (!pageIds || pageIds.length === 0) {
@@ -39,16 +46,15 @@ const getPageRangeText = (pageIds: string[] | undefined, pages: Page[], t: (key:
   }
 };
 
-const TaskStatusIcon: React.FC<{ status: ExportTask['status'] }> = ({ status }) => {
+const ExportStatusIcon: React.FC<{ status: ExportJob['status'] }> = ({ status }) => {
   switch (status) {
-    case 'PENDING':
+    case 'queued':
       return <Clock size={16} className="text-gray-400" />;
-    case 'PROCESSING':
-    case 'RUNNING':
+    case 'running':
       return <Loader2 size={16} className="text-brand-500 animate-spin" />;
-    case 'COMPLETED':
+    case 'ready':
       return <CheckCircle size={16} className="text-green-500" />;
-    case 'FAILED':
+    case 'failed':
       return <XCircle size={16} className="text-red-500" />;
     default:
       return null;
@@ -59,9 +65,11 @@ const WarningsModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   warnings: string[];
-  warningDetails?: any;
+  warningDetails?: ExportWarningDetails;
 }> = ({ isOpen, onClose, warnings, warningDetails }) => {
-  const t = useT(exportTasksPanelI18n);
+  const t = useT(exportJobsPanelI18n);
+  const styleFailures = warningDetails?.styleExtractionFailed ?? [];
+  const textFailures = warningDetails?.textRenderFailed ?? [];
   
   if (!isOpen) return null;
   
@@ -102,33 +110,33 @@ const WarningsModal: React.FC<{
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border-primary">
               <h4 className="text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">{t('export.detailInfo')}</h4>
               
-              {warningDetails.style_extraction_failed?.length > 0 && (
+              {styleFailures.length > 0 && (
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 dark:text-foreground-tertiary mb-1">
-                    {t('export.styleExtractionFailed', { count: warningDetails.style_extraction_failed.length })}
+                    {t('export.styleExtractionFailed', { count: styleFailures.length })}
                   </p>
                   <div className="text-xs text-gray-600 dark:text-foreground-tertiary bg-gray-50 dark:bg-background-primary p-2 rounded max-h-32 overflow-y-auto">
-                    {warningDetails.style_extraction_failed.slice(0, 10).map((item: any, idx: number) => (
+                    {styleFailures.slice(0, 10).map((item, idx) => (
                       <div key={idx} className="truncate" title={item.reason}>
-                        • {item.element_id}: {item.reason}
+                        • {item.elementId}: {item.reason}
                       </div>
                     ))}
-                    {warningDetails.style_extraction_failed.length > 10 && (
+                    {styleFailures.length > 10 && (
                       <div className="text-gray-400 mt-1">
-                        {t('export.moreItems', { count: warningDetails.style_extraction_failed.length - 10 })}
+                        {t('export.moreItems', { count: styleFailures.length - 10 })}
                       </div>
                     )}
                   </div>
                 </div>
               )}
               
-              {warningDetails.text_render_failed?.length > 0 && (
+              {textFailures.length > 0 && (
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 dark:text-foreground-tertiary mb-1">
-                    {t('export.textRenderFailed', { count: warningDetails.text_render_failed.length })}
+                    {t('export.textRenderFailed', { count: textFailures.length })}
                   </p>
                   <div className="text-xs text-gray-600 dark:text-foreground-tertiary bg-gray-50 dark:bg-background-primary p-2 rounded max-h-32 overflow-y-auto">
-                    {warningDetails.text_render_failed.slice(0, 10).map((item: any, idx: number) => (
+                    {textFailures.slice(0, 10).map((item, idx) => (
                       <div key={idx} className="truncate" title={item.reason}>
                         • "{item.text}": {item.reason}
                       </div>
@@ -153,11 +161,11 @@ const WarningsModal: React.FC<{
   );
 };
 
-const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void }> = ({ task, pages, onRemove }) => {
-  const t = useT(exportTasksPanelI18n);
+const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => void }> = ({ job, pages, onRemove }) => {
+  const t = useT(exportJobsPanelI18n);
   const [showWarningsModal, setShowWarningsModal] = useState(false);
   
-  const taskTypeLabels: Record<ExportTaskType, string> = {
+  const formatLabels: Record<ExportFormat, string> = {
     'pptx': t('export.exportPptx'),
     'pdf': t('export.exportPdf'),
     'editable-pptx': t('export.exportEditablePptx'),
@@ -169,52 +177,52 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const pageRangeText = getPageRangeText(task.pageIds, pages, t);
+  const pageRangeText = getPageRangeText(job.slideIds, pages, t);
 
   const getProgressPercent = () => {
-    if (!task.progress) return 0;
-    if (task.progress.percent !== undefined) return task.progress.percent;
-    if (task.progress.total > 0) {
-      return Math.round((task.progress.completed / task.progress.total) * 100);
+    if (!job.progress) return 0;
+    if (job.progress.percent !== undefined) return job.progress.percent;
+    if (job.progress.total > 0) {
+      return Math.round((job.progress.completed / job.progress.total) * 100);
     }
     return 0;
   };
 
   const progressPercent = getProgressPercent();
-  const isProcessing = task.status === 'PROCESSING' || task.status === 'RUNNING' || task.status === 'PENDING';
+  const isProcessing = isExportJobActive(job);
   
-  const hasWarnings = task.status === 'COMPLETED' && task.progress?.warnings && task.progress.warnings.length > 0;
+  const hasWarnings = job.status === 'ready' && job.progress?.warnings && job.progress.warnings.length > 0;
 
   return (
     <div className="flex items-start gap-3 py-2.5 px-3 hover:bg-gray-50 dark:hover:bg-background-hover rounded-lg transition-colors">
       <div className="mt-0.5">
-        <TaskStatusIcon status={task.status} />
+        <ExportStatusIcon status={job.status} />
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary truncate">
-            {taskTypeLabels[task.type]}
+            {formatLabels[job.format]}
           </span>
           <span className="text-xs text-gray-500 dark:text-foreground-tertiary">
             {pageRangeText}
           </span>
           <span className="text-xs text-gray-400">
-            {formatTime(task.createdAt)}
+            {formatTime(job.createdAt)}
           </span>
         </div>
         
         {isProcessing && (
           <div className="mt-2 space-y-1.5">
-            {task.progress ? (
+            {job.progress ? (
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-brand-600">
                     {progressPercent > 0 ? `${progressPercent}%` : t('export.preparing')}
                   </span>
-                  {task.progress.current_step && (
-                    <span className="text-xs text-gray-500 dark:text-foreground-tertiary truncate max-w-[140px]" title={task.progress.current_step}>
-                      {task.progress.current_step}
+                  {job.progress.currentStep && (
+                    <span className="text-xs text-gray-500 dark:text-foreground-tertiary truncate max-w-[140px]" title={job.progress.currentStep}>
+                      {job.progress.currentStep}
                     </span>
                   )}
                 </div>
@@ -226,9 +234,9 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
                   />
                 </div>
                 
-                {task.progress.messages && task.progress.messages.length > 0 && (
+                {job.progress.messages && job.progress.messages.length > 0 && (
                   <div className="mt-1.5 space-y-0.5">
-                    {task.progress.messages.slice(-2).map((msg, idx) => (
+                    {job.progress.messages.slice(-2).map((msg, idx) => (
                       <div key={idx} className="text-xs text-gray-500 dark:text-foreground-tertiary truncate" title={msg}>
                         {msg}
                       </div>
@@ -247,7 +255,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
           </div>
         )}
         
-        {task.status === 'FAILED' && task.errorMessage && (
+        {job.status === 'failed' && job.errorMessage && (
           <div className="mt-2 space-y-2">
             <div className="p-2 bg-red-50 border border-red-200 rounded">
               <div className="flex items-start gap-2">
@@ -255,18 +263,18 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-red-700 font-medium">{t('export.exportFailed')}</p>
                   <p className="text-xs text-red-600 mt-1 whitespace-pre-wrap break-words">
-                    {task.errorMessage}
+                    {job.errorMessage}
                   </p>
                 </div>
               </div>
             </div>
 
-            {task.progress?.help_text && (
+            {job.progress?.helpText && (
               <div className="p-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded">
                 <div className="flex items-start gap-2">
                   <HelpCircle size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-blue-700">
-                    {task.progress.help_text}
+                    {job.progress.helpText}
                   </p>
                 </div>
               </div>
@@ -277,7 +285,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
               <span>{t('export.settingsTip')}</span>
             </div>
 
-            {task.errorMessage.toLowerCase().includes('codex') && (
+            {job.errorMessage.toLowerCase().includes('codex') && (
               <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-foreground-tertiary">
                 <Settings size={12} />
                 <span>{t('export.codexReconnectTip')}</span>
@@ -295,7 +303,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
               <div className="flex items-center gap-1.5">
                 <AlertTriangle size={12} className="text-amber-500 flex-shrink-0" />
                 <span className="text-xs font-medium text-amber-700">
-                  {t('export.warnings', { count: task.progress?.warnings?.length ?? 0 })}
+                  {t('export.warnings', { count: job.progress?.warnings?.length ?? 0 })}
                 </span>
                 <span className="text-[11px] text-amber-500 ml-auto">
                   {t('export.clickToView')}
@@ -306,23 +314,23 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
             <WarningsModal
               isOpen={showWarningsModal}
               onClose={() => setShowWarningsModal(false)}
-              warnings={task.progress?.warnings ?? []}
-              warningDetails={task.progress?.warning_details}
+              warnings={job.progress?.warnings ?? []}
+              warningDetails={job.progress?.warningDetails}
             />
           </>
         )}
       </div>
       
       <div className="flex items-center gap-1 flex-shrink-0">
-        {task.status === 'COMPLETED' && task.downloadUrl && (
+        {job.status === 'ready' && job.downloadUrl && (
           <Button
             variant="primary"
             size="sm"
             icon={<Download size={14} />}
             onClick={() => {
               const a = document.createElement('a');
-              a.href = task.downloadUrl!;
-              a.download = task.filename || '';
+              a.href = job.downloadUrl!;
+              a.download = job.filename || '';
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
@@ -345,18 +353,10 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
   );
 };
 
-interface ExportTasksPanelProps {
-  projectId?: string;
+interface ExportJobsPanelProps {
+  deckId?: string;
   pages?: Page[];
   className?: string;
-}
-
-interface ExportedFile {
-  filename: string;
-  type: string;
-  size: number;
-  modified_at: string;
-  download_url: string;
 }
 
 const FileTypeIcon: React.FC<{ type: string }> = ({ type }) => {
@@ -374,43 +374,39 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, pages = [], className }) => {
-  const t = useT(exportTasksPanelI18n);
+export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages = [], className }) => {
+  const t = useT(exportJobsPanelI18n);
   const [isExpanded, setIsExpanded] = useState(true);
-  const { tasks, removeTask, clearCompleted, restoreActiveTasks } = useExportTasksStore();
+  const { jobs, removeJob, clearFinished, restoreActiveJobs } = useExportJobsStore();
   const [exportedFiles, setExportedFiles] = useState<ExportedFile[]>([]);
 
-  const filteredTasks = projectId
-    ? tasks.filter(task => task.projectId === projectId)
-    : tasks;
+  const filteredJobs = deckId
+    ? jobs.filter((job) => job.deckId === deckId)
+    : jobs;
 
-  const activeTasks = filteredTasks.filter(
-    task => task.status === 'PENDING' || task.status === 'PROCESSING' || task.status === 'RUNNING'
-  );
-  const completedTasks = filteredTasks.filter(
-    task => task.status === 'COMPLETED' || task.status === 'FAILED'
-  );
+  const activeJobs = filteredJobs.filter(isExportJobActive);
+  const finishedJobs = filteredJobs.filter(isExportJobFinished);
 
   useEffect(() => {
-    restoreActiveTasks();
-  }, []);
+    restoreActiveJobs();
+  }, [restoreActiveJobs]);
 
   // 从服务端加载已导出文件列表
   useEffect(() => {
-    if (!projectId) return;
-    listExports(projectId)
-      .then(res => setExportedFiles(res.data?.files || []))
+    if (!deckId) return;
+    listDeckExports(deckId)
+      .then(setExportedFiles)
       .catch(() => {});
-  }, [projectId, completedTasks.length]);
+  }, [deckId, finishedJobs.length]);
 
   useEffect(() => {
-    if (activeTasks.length > 0 && !isExpanded) {
+    if (activeJobs.length > 0 && !isExpanded) {
       setIsExpanded(true);
     }
-  }, [activeTasks.length, isExpanded]);
+  }, [activeJobs.length, isExpanded]);
 
   // 同时没有任务也没有文件时隐藏面板
-  if (filteredTasks.length === 0 && exportedFiles.length === 0) {
+  if (filteredJobs.length === 0 && exportedFiles.length === 0) {
     return null;
   }
   
@@ -426,11 +422,11 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
         <div className="flex items-center gap-2">
           <FileText size={18} className="text-gray-600 dark:text-foreground-tertiary" />
           <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-            {t('export.tasks')}
+            {t('export.jobs')}
           </span>
-          {activeTasks.length > 0 && (
+          {activeJobs.length > 0 && (
             <span className="px-1.5 py-0.5 text-xs bg-brand-100 text-brand-700 rounded-full">
-              {t('export.inProgress', { count: activeTasks.length })}
+              {t('export.inProgress', { count: activeJobs.length })}
             </span>
           )}
         </div>
@@ -438,37 +434,37 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
       
       {isExpanded && (
         <div className="max-h-96 overflow-y-auto">
-          {activeTasks.length > 0 && (
+          {activeJobs.length > 0 && (
             <div className="p-2 border-b border-gray-100 dark:border-border-primary">
-              {activeTasks.map(task => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task}
+              {activeJobs.map((job) => (
+                <ExportJobItem
+                  key={job.id}
+                  job={job}
                   pages={pages}
-                  onRemove={() => removeTask(task.id)}
+                  onRemove={() => removeJob(job.id)}
                 />
               ))}
             </div>
           )}
           
-          {completedTasks.length > 0 && (
+          {finishedJobs.length > 0 && (
             <div className="p-2">
               <div className="flex items-center justify-between px-3 py-1 mb-1">
                 <span className="text-xs text-gray-400">{t('shared.historyRecords')}</span>
                 <button
-                  onClick={clearCompleted}
+                  onClick={clearFinished}
                   className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
                 >
                   <Trash2 size={12} />
                   {t('export.clearHistory')}
                 </button>
               </div>
-              {completedTasks.map(task => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
+              {finishedJobs.map((job) => (
+                <ExportJobItem
+                  key={job.id}
+                  job={job}
                   pages={pages}
-                  onRemove={() => removeTask(task.id)}
+                  onRemove={() => removeJob(job.id)}
                 />
               ))}
             </div>
@@ -482,13 +478,13 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
               </div>
               {exportedFiles.map(file => (
                 <div key={file.filename} className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 dark:hover:bg-background-hover rounded-lg transition-colors">
-                  <FileTypeIcon type={file.type} />
+                    <FileTypeIcon type={file.format} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-gray-700 dark:text-foreground-secondary truncate" title={file.filename}>
                       {file.filename}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {formatFileSize(file.size)} · {new Date(file.modified_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {formatFileSize(file.size)} · {new Date(file.modifiedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
                   <Button
@@ -497,7 +493,7 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
                     icon={<Download size={14} />}
                     onClick={() => {
                       const a = document.createElement('a');
-                      a.href = file.download_url;
+                      a.href = file.downloadUrl;
                       a.download = file.filename;
                       document.body.appendChild(a);
                       a.click();

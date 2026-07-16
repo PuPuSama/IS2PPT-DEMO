@@ -71,7 +71,10 @@ Progress snapshot (2026-07-16):
   A tested `DeckWorkspaceSnapshot` now normalizes render mode, slide lists,
   template context, aspect ratio, and export readiness. The independently
   tested `SlideCanvas` owns empty state, bitmap/SVG display, slide navigation,
-  version selection, and canvas-level edit and regeneration commands.
+  version selection, and canvas-level edit and regeneration commands. Export
+  range ordering is now a tested workspace rule, while `DeckExportDialogs`
+  owns PPTX transition settings and editable-PPTX range presentation without
+  starting jobs or reading project DTOs.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

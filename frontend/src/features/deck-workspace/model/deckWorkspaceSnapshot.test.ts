@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import type { Page as LegacySlide } from '@/types';
 import {
   deckWorkspaceSnapshotFromProject,
+  exportRangeFromWorkspace,
   exportSelectionFromWorkspace,
 } from './deckWorkspaceSnapshot';
 
@@ -48,6 +49,21 @@ describe('deck workspace snapshot', () => {
     expect(exportSelectionFromWorkspace(workspace!, new Set(), false)).toMatchObject({
       ready: false,
       missingImageCount: 1,
+    });
+  });
+
+  test('preserves deck order when describing a partial export range', () => {
+    const workspace = deckWorkspaceSnapshotFromProject({
+      pages: [slide('slide-1', true), slide('slide-2', true), slide('slide-3', true)],
+    });
+    expect(exportRangeFromWorkspace(
+      workspace!,
+      new Set(['slide-3', 'slide-1']),
+      true,
+    )).toEqual({
+      partial: true,
+      totalSlideCount: 3,
+      selectedSlideNumbers: [1, 3],
     });
   });
 });

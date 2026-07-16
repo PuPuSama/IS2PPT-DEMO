@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
-import { PPTX_TRANSITION_OPTIONS, type PptxTransitionEffect } from '@/config/slideExportOptions';
+import type { PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
 import {
   Home,
@@ -18,7 +18,6 @@ import {
   Settings,
   FileText,
   Loader2,
-  Info,
   Presentation,
 } from 'lucide-react';
 import { Button, Loading, Modal, Textarea, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel, TextStyleSelector } from '@/components/shared';
@@ -41,8 +40,10 @@ import { normalizeErrorMessage } from '@/utils';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
 import {
   deckWorkspaceSnapshotFromProject,
+  exportRangeFromWorkspace,
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
+import { DeckExportDialogs } from './DeckExportDialogs';
 import { SlideNavigator } from './SlideNavigator';
 import { SlideCanvas } from './SlideCanvas';
 
@@ -1088,6 +1089,11 @@ export const DeckWorkspacePage: React.FC = () => {
   );
   const hasAllImages = exportSelection.ready;
   const missingImageCount = exportSelection.missingImageCount;
+  const exportRange = exportRangeFromWorkspace(
+    workspace,
+    selectedSlideIds,
+    isMultiSelectMode,
+  );
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-background-primary flex flex-col overflow-hidden">
@@ -1284,142 +1290,28 @@ export const DeckWorkspacePage: React.FC = () => {
         </div>
       </header>
 
-      {/* PPTX 导出设置弹窗 */}
-      {showPptxExportDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPptxExportDialog(false)}>
-          <div className="bg-white dark:bg-background-secondary rounded-2xl shadow-xl p-6 w-full max-w-xl mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">{t('preview.pptxExportTitle')}</h3>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.pptxExportSubtitle')}</p>
-
-            <div className="space-y-4">
-              <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
-                <input
-                  type="checkbox"
-                  checked={pptxTransitionsEnabled}
-                  onChange={e => setPptxTransitionsEnabled(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{t('preview.pptxTransitionToggle')}</div>
-                  <div className="text-xs text-gray-500 dark:text-foreground-tertiary mt-1">{t('preview.pptxTransitionDesc')}</div>
-                </div>
-              </label>
-
-              {pptxTransitionsEnabled && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {PPTX_TRANSITION_OPTIONS.map(option => {
-                    const checked = pptxTransitionEffects.includes(option.value);
-                    return (
-                      <label
-                        key={option.value}
-                        className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
-                          checked
-                            ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/10 dark:text-brand-300'
-                            : 'border-gray-200 dark:border-border-primary hover:bg-gray-50 dark:hover:bg-background-hover'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={e => {
-                            setPptxTransitionEffects(prev => {
-                              if (e.target.checked) {
-                                return prev.includes(option.value) ? prev : [...prev, option.value];
-                              }
-                              return prev.filter(effect => effect !== option.value);
-                            });
-                          }}
-                          className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-                        />
-                        <span>{t(`preview.${option.labelKey}`)}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-
-              {pptxTransitionsEnabled && pptxTransitionEffects.length === 0 && (
-                <div className="text-xs text-amber-600 dark:text-amber-400 px-1">
-                  {t('preview.pptxTransitionRequired')}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowPptxExportDialog(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-              >
-                {t('preview.pptxCancel')}
-              </button>
-              <button
-                onClick={() => {
-                  setShowPptxExportDialog(false);
-                  handleExport('pptx', {
-                    pptxTransitionEnabled: pptxTransitionsEnabled,
-                    pptxTransitionEffects,
-                  });
-                }}
-                disabled={pptxTransitionsEnabled && pptxTransitionEffects.length === 0}
-                className="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                {t('preview.pptxStartExport')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 可编辑 PPTX 导出设置弹窗 */}
-      {showEditablePptxDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowEditablePptxDialog(false)}>
-          <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
-            {(() => {
-              const totalPages = workspaceSlides.length;
-              const isPartial = isMultiSelectMode && selectedSlideIds.size > 0;
-              const selectedNumbers = isPartial
-                ? workspaceSlides
-                    .map((p, i) => ({ id: p.id, num: i + 1 }))
-                    .filter(({ id }) => id && selectedSlideIds.has(id))
-                    .map(({ num }) => num)
-                : [];
-              const rangeText = isPartial
-                ? t('preview.editablePptxRangePages', { pages: selectedNumbers.join(', '), count: selectedNumbers.length })
-                : t('preview.editablePptxRangeAll', { count: totalPages });
-              return (
-                <div className="mt-3 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-background-tertiary flex items-start gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-gray-500 dark:text-foreground-tertiary">{t('preview.editablePptxRangeLabel')}</div>
-                    <div className="text-sm mt-0.5 break-words">{rangeText}</div>
-                  </div>
-                  <span className="flex-shrink-0 text-gray-400 dark:text-foreground-tertiary cursor-help" title={t('preview.editablePptxRangeTip')}>
-                    <Info size={16} />
-                  </span>
-                </div>
-              );
-            })()}
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowEditablePptxDialog(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-              >
-                {t('preview.editablePptxCancel')}
-              </button>
-              <button
-                onClick={() => {
-                  setShowEditablePptxDialog(false);
-                  handleExport('editable-pptx');
-                }}
-                className="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
-              >
-                {t('preview.editablePptxStartExport')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeckExportDialogs
+        pptxOpen={showPptxExportDialog}
+        editablePptxOpen={showEditablePptxDialog}
+        transitionsEnabled={pptxTransitionsEnabled}
+        transitionEffects={pptxTransitionEffects}
+        exportRange={exportRange}
+        onClosePptx={() => setShowPptxExportDialog(false)}
+        onCloseEditablePptx={() => setShowEditablePptxDialog(false)}
+        onTransitionsEnabledChange={setPptxTransitionsEnabled}
+        onTransitionEffectsChange={setPptxTransitionEffects}
+        onStartPptx={(options) => {
+          setShowPptxExportDialog(false);
+          void handleExport('pptx', {
+            pptxTransitionEnabled: options.transitionEnabled,
+            pptxTransitionEffects: options.transitionEffects,
+          });
+        }}
+        onStartEditablePptx={() => {
+          setShowEditablePptxDialog(false);
+          void handleExport('editable-pptx');
+        }}
+      />
 
       {/* 主内容区 */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-w-0 min-h-0">

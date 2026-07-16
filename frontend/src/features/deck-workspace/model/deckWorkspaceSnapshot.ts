@@ -35,6 +35,12 @@ export interface ExportSelectionSnapshot {
   missingImageCount: number;
 }
 
+export interface ExportRangeSnapshot {
+  partial: boolean;
+  totalSlideCount: number;
+  selectedSlideNumbers: number[];
+}
+
 export const deckWorkspaceSnapshotFromProject = (
   project: LegacyWorkspaceProject | null,
 ): DeckWorkspaceSnapshot | null => {
@@ -70,5 +76,23 @@ export const exportSelectionFromWorkspace = (
     slides,
     ready: missingImageCount === 0,
     missingImageCount,
+  };
+};
+
+export const exportRangeFromWorkspace = (
+  workspace: DeckWorkspaceSnapshot,
+  selectedSlideIds: Set<string>,
+  multiSelectEnabled: boolean,
+): ExportRangeSnapshot => {
+  const partial = multiSelectEnabled && selectedSlideIds.size > 0;
+  return {
+    partial,
+    totalSlideCount: workspace.slides.length,
+    selectedSlideNumbers: partial
+      ? workspace.slides
+          .map((slide, index) => ({ id: slide.id, number: index + 1 }))
+          .filter(({ id }) => Boolean(id && selectedSlideIds.has(id)))
+          .map(({ number }) => number)
+      : [],
   };
 };

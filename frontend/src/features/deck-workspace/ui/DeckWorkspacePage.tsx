@@ -15,7 +15,7 @@ import {
   Loader2,
   Presentation,
 } from 'lucide-react';
-import { Button, Loading, Modal, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel } from '@/components/shared';
+import { Button, Loading, useToast, useConfirm, ProjectSettingsModal, ExportJobsPanel } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useGenerationJobsStore } from '@/entities/generation/model/useGenerationJobsStore';
@@ -24,18 +24,18 @@ import type { ExportFormat } from '@/entities/export/model/types';
 import { isExportJobActive } from '@/entities/export/model/types';
 import { getPageImageVersions, setCurrentImageVersion } from '@/api/pagesApi';
 import { updateProject, uploadTemplate } from '@/api/projectsApi';
-import { getSettings } from '@/api/settingsApi';
 import type { ImageVersion, Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
-import { uiDismissals } from '@/shared/storage/uiDismissals';
 import {
   deckWorkspaceSnapshotFromProject,
   exportRangeFromWorkspace,
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
 import type { DeckStyleMode } from '../model/deckStyleSelection';
+import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
 import { DeckStyleDialog } from './DeckStyleDialog';
+import { GenerationQualityDialog } from './GenerationQualityDialog';
 import { SlideEditDialog, type SlideEditCommand } from './SlideEditDialog';
 import { SlideNavigator } from './SlideNavigator';
 import { SlideCanvas } from './SlideCanvas';
@@ -117,12 +117,14 @@ export const DeckWorkspacePage: React.FC = () => {
     }
     return '16/9';
   }, [aspectRatio]);
-  // 1K分辨率警告对话框状态
-  const [show1KWarningDialog, setShow1KWarningDialog] = useState(false);
-  const [skip1KWarningChecked, setSkip1KWarningChecked] = useState(false);
-  const [pending1KAction, setPending1KAction] = useState<(() => Promise<void>) | null>(null);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
+  const {
+    confirmationOpen: generationQualityConfirmationOpen,
+    requestExecution: requestGenerationExecution,
+    confirmExecution: confirmGenerationExecution,
+    cancelExecution: cancelGenerationExecution,
+  } = useGenerationQualityGate();
 
 
   const workspace = useMemo(
@@ -218,54 +220,6 @@ export const DeckWorkspacePage: React.FC = () => {
     loadVersions();
   }, [projectId, selectedSlide?.id]);
 
-  // 检查是否需要显示1K分辨率警告
-  const checkResolutionAndExecute = useCallback(async (action: () => Promise<void>) => {
-    if (uiDismissals.shouldSkipLowResolutionWarning()) {
-      await action();
-      return;
-    }
-
-    try {
-      const response = await getSettings();
-      const resolution = response.data?.image_resolution;
-
-      // 如果是1K分辨率，显示警告对话框
-      if (resolution === '1K') {
-        setPending1KAction(() => action);
-        setSkip1KWarningChecked(false);
-        setShow1KWarningDialog(true);
-      } else {
-        // 不是1K分辨率，直接执行
-        await action();
-      }
-    } catch (error) {
-      console.error('获取设置失败:', error);
-      // 获取设置失败时，直接执行（不阻塞用户）
-      await action();
-    }
-  }, []);
-
-  // 确认1K分辨率警告后执行
-  const handleConfirm1KWarning = useCallback(async () => {
-    if (skip1KWarningChecked) {
-      uiDismissals.skipLowResolutionWarning();
-    }
-
-    setShow1KWarningDialog(false);
-
-    // 执行待处理的操作
-    if (pending1KAction) {
-      await pending1KAction();
-      setPending1KAction(null);
-    }
-  }, [skip1KWarningChecked, pending1KAction]);
-
-  // 取消1K分辨率警告
-  const handleCancel1KWarning = useCallback(() => {
-    setShow1KWarningDialog(false);
-    setPending1KAction(null);
-  }, []);
-
   const ensureImageGenerationStyleSource = useCallback(async () => {
     if (!deckSnapshot || !workspace || !projectId) return false;
 
@@ -305,7 +259,7 @@ export const DeckWorkspacePage: React.FC = () => {
     if (!(await ensureImageGenerationStyleSource())) return;
 
     // 先检查分辨率，如果是1K则显示警告
-    await checkResolutionAndExecute(async () => {
+    await requestGenerationExecution(async () => {
       const slideIds = selectedSlideIdsForCommand();
       const isPartialGenerate = isMultiSelectMode && selectedSlideIds.size > 0;
 
@@ -383,7 +337,7 @@ export const DeckWorkspacePage: React.FC = () => {
     if (!(await ensureImageGenerationStyleSource())) return;
 
     // 先检查分辨率，如果是1K则显示警告
-    await checkResolutionAndExecute(async () => {
+    await requestGenerationExecution(async () => {
       try {
         await generatePageImage(slideId, true);
         show({ message: t('slidePreview.generationStarted'), type: 'success' });
@@ -416,7 +370,7 @@ export const DeckWorkspacePage: React.FC = () => {
         });
       }
     });
-  }, [checkResolutionAndExecute, ensureImageGenerationStyleSource, generatePageImage, selectedSlide, show, slideJobs]);
+  }, [ensureImageGenerationStyleSource, generatePageImage, requestGenerationExecution, selectedSlide, show, slideJobs]);
 
   const handleSwitchVersion = async (versionId: string) => {
     if (!selectedSlide?.id || !projectId) return;
@@ -1039,46 +993,11 @@ export const DeckWorkspacePage: React.FC = () => {
         </>
       )}
 
-      {/* 1K分辨率警告对话框 */}
-      <Modal
-        isOpen={show1KWarningDialog}
-        onClose={handleCancel1KWarning}
-        title={t('preview.resolution1KWarning')}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-2xl">⚠️</div>
-            <div className="flex-1">
-              <p className="text-sm text-amber-800">
-                {t('preview.resolution1KWarningText')}
-              </p>
-              <p className="text-sm text-amber-700 mt-2">
-                {t('preview.resolution1KWarningHint')}
-              </p>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={skip1KWarningChecked}
-              onChange={(e) => setSkip1KWarningChecked(e.target.checked)}
-              className="w-4 h-4 text-brand-600 rounded focus:ring-brand-500"
-            />
-            <span className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('preview.dontShowAgain')}</span>
-          </label>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={handleCancel1KWarning}>
-              {t('common.cancel')}
-            </Button>
-            <Button variant="primary" onClick={handleConfirm1KWarning}>
-              {t('preview.generateAnyway')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <GenerationQualityDialog
+        isOpen={generationQualityConfirmationOpen}
+        onCancel={cancelGenerationExecution}
+        onConfirm={confirmGenerationExecution}
+      />
 
       {/* SVG 幻灯片编辑器（文字直改 + SVG 代码面板，仅 SVG 模式） */}
       {svgEditorOpen && projectId && selectedSlide?.id && (

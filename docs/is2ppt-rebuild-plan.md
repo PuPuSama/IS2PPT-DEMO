@@ -79,7 +79,10 @@ Progress snapshot (2026-07-16):
   metadata draft UI. Its tested command boundary keeps project store access in
   the workspace orchestrator. `DeckStyleDialog` now owns template catalog
   loading, image-vs-text style selection, and template identity state while
-  receiving only project-level apply commands from the workspace.
+  receiving only project-level apply commands from the workspace. Generation
+  quality confirmation is now a tested policy plus hook; settings lookup,
+  dismissal storage, deferred commands, and warning presentation no longer
+  live in the workspace page.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

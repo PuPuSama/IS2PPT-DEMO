@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, TextStyleSelector } from '@/components/shared';
+import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, TextStyleSelector } from '@/components/shared';
 import { Button, Card, useToast } from '@/shared/ui';
 import { AppFooter } from '@/widgets/app-footer/ui/AppFooter';
+import { CreationGuideDialog } from './CreationGuideDialog';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
@@ -40,7 +41,7 @@ export const DeckCreationPage: React.FC = () => {
   const [directTemplateFile, setDirectTemplateFile] = useState<File | null>(null);
   const [libraryTemplateId, setLibraryTemplateId] = useState<string | null>(null);
   const [presetTemplateId, setPresetTemplateId] = useState<string | null>(null);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [activeDeckId, setActiveDeckId] = useState<string | null>(null);
   const [templateLibrary, setTemplateLibrary] = useState<UserTemplate[]>([]);
@@ -105,7 +106,7 @@ export const DeckCreationPage: React.FC = () => {
     if (!uiDismissals.hasSeenHomeHelp()) {
       // 延迟500ms打开，让页面先渲染完成
       const timer = setTimeout(() => {
-        setIsHelpModalOpen(true);
+        setGuideOpen(true);
         uiDismissals.markHomeHelpSeen();
       }, 500);
       return () => clearTimeout(timer);
@@ -342,7 +343,7 @@ export const DeckCreationPage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsHelpModalOpen(true)}
+              onClick={() => setGuideOpen(true)}
               className="hidden md:inline-flex hover:bg-brand-50/50"
             >
               {t('nav.help')}
@@ -352,7 +353,7 @@ export const DeckCreationPage: React.FC = () => {
               variant="ghost"
               size="sm"
               icon={<HelpCircle size={16} />}
-              onClick={() => setIsHelpModalOpen(true)}
+              onClick={() => setGuideOpen(true)}
               className="md:hidden hover:bg-brand-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.help')}
             />
@@ -751,9 +752,9 @@ export const DeckCreationPage: React.FC = () => {
 
       <FilePreviewModal fileId={previewReferenceId} onClose={() => setPreviewReferenceId(null)} />
       {/* 帮助模态框 */}
-      <HelpModal
-        isOpen={isHelpModalOpen}
-        onClose={() => setIsHelpModalOpen(false)}
+      <CreationGuideDialog
+        isOpen={guideOpen}
+        onClose={() => setGuideOpen(false)}
       />
       <AppFooter />
     </div>

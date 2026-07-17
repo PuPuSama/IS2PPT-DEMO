@@ -11,7 +11,7 @@ export { Markdown } from '@/shared/ui';
 export { AiRefineInput } from './AiRefineInput';
 export { ShimmerOverlay } from '@/shared/ui';
 export { ImportMarkdownModal } from './ImportMarkdownModal';
-export { HelpModal } from './HelpModal';
+export { CreationGuideDialog as HelpModal } from '@/features/deck-create/ui/CreationGuideDialog';
 export { DeckSettingsDialog as ProjectSettingsModal } from '@/features/deck-workspace/ui/DeckSettingsDialog';
 export { ExportActivityPanel as ExportJobsPanel } from '@/entities/export/ui/ExportActivityPanel';
 export { AccessGate as AccessCodeGuard } from '@/app/AccessGate';

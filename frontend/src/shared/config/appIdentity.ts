@@ -5,6 +5,4 @@ export const APP_IDENTITY = {
   storagePrefix: 'is2ppt',
   repository: 'is2ppt/is2ppt',
   repositoryUrl: 'https://github.com/is2ppt/is2ppt',
-  repositoryIssuesUrl: 'https://github.com/is2ppt/is2ppt/issues',
-  repositoryShowcasesUrl: 'https://github.com/is2ppt/is2ppt/issues',
 } as const;

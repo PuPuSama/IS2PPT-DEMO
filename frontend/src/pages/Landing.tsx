@@ -18,7 +18,8 @@ const landingI18n = {
         title_highlight: "瞬间落地",
         title_end: "无需繁琐排版",
         subtitle: "专注于您的内容与想法，剩下的交给 is2ppt。从大纲到精美幻灯片，只需几分钟。",
-        cta_primary: "免费开始使用"
+        cta_primary: "免费开始使用",
+        showcases: { tech: '现代科技', business: '简约商务', nature: '自然清新', creative: '创意表达' }
       }
     }
   },
@@ -31,21 +32,18 @@ const landingI18n = {
         title_highlight: "Reality Instantly",
         title_end: "No Formatting Hassle",
         subtitle: "Focus on your content and ideas, leave the rest to is2ppt. From outline to beautiful slides in seconds.",
-        cta_primary: "Get Started for Free"
+        cta_primary: "Get Started for Free",
+        showcases: { tech: 'Modern Technology', business: 'Simple Business', nature: 'Fresh Nature', creative: 'Creative Expression' }
       }
     }
   }
 };
 
-// Feature keys consistent with HelpModal
-const _featureKeys = ['flexiblePaths', 'materialParsing', 'vibeEditing', 'easyExport'] as const;
-
-// Showcase data consistent with HelpModal
-const showcaseKeys = [
-  { image: 'https://github.com/user-attachments/assets/d58ce3f7-bcec-451d-a3b9-ca3c16223644', titleKey: 'softwareDev' },
-  { image: 'https://github.com/user-attachments/assets/c64cd952-2cdf-4a92-8c34-0322cbf3de4e', titleKey: 'deepseek' },
-  { image: 'https://github.com/user-attachments/assets/383eb011-a167-4343-99eb-e1d0568830c7', titleKey: 'prefabFood' },
-  { image: 'https://github.com/user-attachments/assets/1a63afc9-ad05-4755-8480-fc4aa64987f1', titleKey: 'moneyHistory' },
+const landingShowcases = [
+  { image: '/preset-previews/tech-modern.webp', titleKey: 'tech' },
+  { image: '/preset-previews/business-simple.webp', titleKey: 'business' },
+  { image: '/preset-previews/nature-fresh.webp', titleKey: 'nature' },
+  { image: '/preset-previews/creative-fun.webp', titleKey: 'creative' },
 ];
 
 export const Landing: React.FC = () => {
@@ -57,7 +55,7 @@ export const Landing: React.FC = () => {
   // Auto-rotate showcase
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentShowcase((prev) => (prev + 1) % showcaseKeys.length);
+      setCurrentShowcase((prev) => (prev + 1) % landingShowcases.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
@@ -176,16 +174,16 @@ export const Landing: React.FC = () => {
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
               <div className="flex-1 text-center text-xs text-gray-400 dark:text-gray-500 font-mono">
-                {t(`help.showcaseTitles.${showcaseKeys[currentShowcase].titleKey}`)}
+                {t(`landing.hero.showcases.${landingShowcases[currentShowcase].titleKey}`)}
               </div>
             </div>
 
             <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
-               {showcaseKeys.map((showcase, idx) => (
+               {landingShowcases.map((showcase, idx) => (
                 <img 
                   key={idx}
                   src={showcase.image}
-                  alt={t(`help.showcaseTitles.${showcase.titleKey}`)}
+                  alt={t(`landing.hero.showcases.${showcase.titleKey}`)}
                   className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
                     idx === currentShowcase ? 'opacity-100' : 'opacity-0'
                   }`}
@@ -195,20 +193,20 @@ export const Landing: React.FC = () => {
               {/* 左右切换按钮 */}
               <button 
                 className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg backdrop-blur-sm"
-                onClick={() => setCurrentShowcase((prev) => (prev === 0 ? showcaseKeys.length - 1 : prev - 1))}
+                onClick={() => setCurrentShowcase((prev) => (prev === 0 ? landingShowcases.length - 1 : prev - 1))}
               >
                 <ChevronLeft size={24} />
               </button>
               <button 
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg backdrop-blur-sm"
-                onClick={() => setCurrentShowcase((prev) => (prev + 1) % showcaseKeys.length)}
+                onClick={() => setCurrentShowcase((prev) => (prev + 1) % landingShowcases.length)}
               >
                 <ChevronRight size={24} />
               </button>
 
               {/* 底部指示器 */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {showcaseKeys.map((_, idx) => (
+                {landingShowcases.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentShowcase(idx)}

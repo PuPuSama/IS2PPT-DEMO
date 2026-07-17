@@ -125,6 +125,9 @@ Progress snapshot (2026-07-16):
   the `widgets/app-footer` entry instead of the shared component barrel. Unused
   image-preview and project-resource components have been deleted, and remaining
   shared components no longer import their own barrel.
+  The creation guide has been rebuilt without the legacy showcase and issue
+  links, and Landing now uses local is2ppt preset previews instead of external
+  GitHub attachment assets.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

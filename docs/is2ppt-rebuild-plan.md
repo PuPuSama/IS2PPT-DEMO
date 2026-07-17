@@ -116,7 +116,9 @@ Progress snapshot (2026-07-16):
   and their context policy now live under `entities/slide`; the old shared barrel
   only keeps temporary aliases for compatibility. Export activity UI and its
   selection-label policy now live under `entities/export`, including stale and
-  duplicate slide-id handling.
+  duplicate slide-id handling. The workspace-only project settings modal is now
+  `DeckSettingsDialog`, with deck, export, and application sections owned by the
+  deck workspace feature.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

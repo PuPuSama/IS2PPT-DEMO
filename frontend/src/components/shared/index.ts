@@ -16,7 +16,7 @@ export { ImagePreviewList } from './ImagePreviewList';
 export { ImportMarkdownModal } from './ImportMarkdownModal';
 export { ProjectResourcesList } from './ProjectResourcesList';
 export { HelpModal } from './HelpModal';
-export { ProjectSettingsModal } from './ProjectSettingsModal';
+export { DeckSettingsDialog as ProjectSettingsModal } from '@/features/deck-workspace/ui/DeckSettingsDialog';
 export { ExportActivityPanel as ExportJobsPanel } from '@/entities/export/ui/ExportActivityPanel';
 export { AccessCodeGuard } from './AccessCodeGuard';
 export { TextStyleSelector } from './TextStyleSelector';

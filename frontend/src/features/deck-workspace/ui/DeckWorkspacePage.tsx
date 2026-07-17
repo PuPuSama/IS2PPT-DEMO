@@ -3,7 +3,6 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import type { PptxTransitionEffect } from '@/config/slideExportOptions';
-import { ProjectSettingsModal } from '@/components/shared';
 import { Loading, useToast, useConfirm } from '@/shared/ui';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import type { Page } from '@/types';
@@ -29,6 +28,7 @@ import {
 import { useDeckWorkspaceSlides } from '../model/useDeckWorkspaceSlides';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
+import { DeckSettingsDialog } from './DeckSettingsDialog';
 import { DeckStyleDialog } from './DeckStyleDialog';
 import { GenerationQualityDialog } from './GenerationQualityDialog';
 import { DeckWorkspaceHeader } from './DeckWorkspaceHeader';
@@ -76,7 +76,7 @@ export const DeckWorkspacePage: React.FC = () => {
   const [pptxTransitionEffects, setPptxTransitionEffects] = useState<PptxTransitionEffect[]>(['fade']);
   const [svgEditorOpen, setSvgEditorOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
   const {
@@ -403,7 +403,7 @@ export const DeckWorkspacePage: React.FC = () => {
         onHome={() => navigate('/')}
         onBack={() => navigate(fromHistory ? '/history' : `/project/${projectId}/detail`)}
         onPrevious={() => navigate(`/project/${projectId}/detail`)}
-        onOpenSettings={() => setIsProjectSettingsOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
         onOpenStyle={() => {
           setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
           setIsTemplateModalOpen(true);
@@ -505,32 +505,27 @@ export const DeckWorkspacePage: React.FC = () => {
         />
       )}
       {projectId && (
-        <>
-          {/* 项目设置模态框 */}
-          <ProjectSettingsModal
-            isOpen={isProjectSettingsOpen}
-            onClose={() => setIsProjectSettingsOpen(false)}
-            extraRequirements={extraRequirements}
-            templateStyle={templateStyle}
-            onExtraRequirementsChange={setExtraRequirements}
-            onTemplateStyleChange={setTemplateStyle}
-            onSaveExtraRequirements={handleSaveExtraRequirements}
-            onSaveTemplateStyle={handleSaveTemplateStyle}
-            isSavingRequirements={isSavingRequirements}
-            isSavingTemplateStyle={isSavingTemplateStyle}
-            // 导出设置
-            exportAllowPartial={exportAllowPartial}
-            onExportAllowPartialChange={setExportAllowPartial}
-            onSaveExportSettings={handleSaveExportSettings}
-            isSavingExportSettings={isSavingExportSettings}
-            // 画面比例
-            aspectRatio={aspectRatio}
-            onAspectRatioChange={setAspectRatio}
-            onSaveAspectRatio={handleSaveAspectRatio}
-            isSavingAspectRatio={isSavingAspectRatio}
-            hasImages={hasImages}
-          />
-        </>
+        <DeckSettingsDialog
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          extraRequirements={extraRequirements}
+          templateStyle={templateStyle}
+          onExtraRequirementsChange={setExtraRequirements}
+          onTemplateStyleChange={setTemplateStyle}
+          onSaveExtraRequirements={handleSaveExtraRequirements}
+          onSaveTemplateStyle={handleSaveTemplateStyle}
+          isSavingRequirements={isSavingRequirements}
+          isSavingTemplateStyle={isSavingTemplateStyle}
+          exportAllowPartial={exportAllowPartial}
+          onExportAllowPartialChange={setExportAllowPartial}
+          onSaveExportSettings={handleSaveExportSettings}
+          isSavingExportSettings={isSavingExportSettings}
+          aspectRatio={aspectRatio}
+          onAspectRatioChange={setAspectRatio}
+          onSaveAspectRatio={handleSaveAspectRatio}
+          isSavingAspectRatio={isSavingAspectRatio}
+          hasImages={hasImages}
+        />
       )}
 
       <GenerationQualityDialog

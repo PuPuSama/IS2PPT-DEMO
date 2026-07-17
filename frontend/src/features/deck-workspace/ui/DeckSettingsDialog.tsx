@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { X, FileText, Settings as SettingsIcon, Download, AlertTriangle, HelpCircle } from 'lucide-react';
-import { Button, Textarea } from '@/components/shared';
+import { X, FileText, Settings as SettingsIcon, Download, AlertTriangle, HelpCircle, Info } from 'lucide-react';
+import { Button, Textarea } from '@/shared/ui';
 import { useT } from '@/hooks/useT';
 import { SettingsWorkspace } from '@/components/settings/SettingsWorkspace';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 
-// ProjectSettings 组件自包含翻译
-const projectSettingsI18n = {
+const deckSettingsI18n = {
   zh: {
-    projectSettings: {
+    deckSettings: {
       title: "设置", projectConfig: "项目设置", exportConfig: "导出设置", globalConfig: "全局设置",
       projectConfigTitle: "项目级配置", projectConfigDesc: "这些设置仅应用于当前项目，不影响其他项目",
       globalConfigTitle: "全局设置", globalConfigDesc: "这些设置应用于所有项目",
@@ -32,7 +31,7 @@ const projectSettingsI18n = {
     shared: { saving: "保存中..." }
   },
   en: {
-    projectSettings: {
+    deckSettings: {
       title: "Settings", projectConfig: "Project Settings", exportConfig: "Export Settings", globalConfig: "Global Settings",
       projectConfigTitle: "Project-level Configuration", projectConfigDesc: "These settings only apply to the current project",
       globalConfigTitle: "Global Settings", globalConfigDesc: "These settings apply to all projects",
@@ -57,7 +56,7 @@ const projectSettingsI18n = {
   }
 };
 
-interface ProjectSettingsModalProps {
+interface DeckSettingsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   extraRequirements: string;
@@ -79,9 +78,9 @@ interface ProjectSettingsModalProps {
   hasImages?: boolean;
 }
 
-type SettingsTab = 'project' | 'global' | 'export';
+type DeckSettingsSection = 'deck' | 'export' | 'application';
 
-export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
+export const DeckSettingsDialog: React.FC<DeckSettingsDialogProps> = ({
   isOpen,
   onClose,
   extraRequirements,
@@ -102,16 +101,16 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
   isSavingAspectRatio = false,
   hasImages = false,
 }) => {
-  const t = useT(projectSettingsI18n);
-  const [activeTab, setActiveTab] = useState<SettingsTab>('project');
+  const t = useT(deckSettingsI18n);
+  const [activeSection, setActiveSection] = useState<DeckSettingsSection>('deck');
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-background-secondary rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-background-secondary rounded-lg shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-border-primary flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('projectSettings.title')}</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('deckSettings.title')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
@@ -125,48 +124,51 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
           <aside className="w-64 bg-gray-50 dark:bg-background-primary border-r border-gray-200 dark:border-border-primary flex-shrink-0">
             <nav className="p-4 space-y-2">
               <button
-                onClick={() => setActiveTab('project')}
+                type="button"
+                onClick={() => setActiveSection('deck')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  activeTab === 'project'
+                  activeSection === 'deck'
                     ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
                 <FileText size={20} />
-                <span className="font-medium">{t('projectSettings.projectConfig')}</span>
+                <span className="font-medium">{t('deckSettings.projectConfig')}</span>
               </button>
               <button
-                onClick={() => setActiveTab('export')}
+                type="button"
+                onClick={() => setActiveSection('export')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  activeTab === 'export'
+                  activeSection === 'export'
                     ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
                 <Download size={20} />
-                <span className="font-medium">{t('projectSettings.exportConfig')}</span>
+                <span className="font-medium">{t('deckSettings.exportConfig')}</span>
               </button>
               <button
-                onClick={() => setActiveTab('global')}
+                type="button"
+                onClick={() => setActiveSection('application')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  activeTab === 'global'
+                  activeSection === 'application'
                     ? 'bg-brand-500 text-white shadow-md'
                     : 'bg-white dark:bg-background-secondary text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover'
                 }`}
               >
                 <SettingsIcon size={20} />
-                <span className="font-medium">{t('projectSettings.globalConfig')}</span>
+                <span className="font-medium">{t('deckSettings.globalConfig')}</span>
               </button>
             </nav>
           </aside>
 
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === 'project' ? (
+            {activeSection === 'deck' ? (
               <div className="max-w-3xl space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-4">{t('projectSettings.projectConfigTitle')}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-4">{t('deckSettings.projectConfigTitle')}</h3>
                   <p className="text-sm text-gray-600 dark:text-foreground-tertiary mb-6">
-                    {t('projectSettings.projectConfigDesc')}
+                    {t('deckSettings.projectConfigDesc')}
                   </p>
                 </div>
 
@@ -174,18 +176,18 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                 <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">{t('projectSettings.aspectRatio')}</h4>
+                      <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">{t('deckSettings.aspectRatio')}</h4>
                       <div className="relative group">
                         <button type="button" className="p-1 -m-1 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-500">
                           <HelpCircle size={16} className="text-gray-400 dark:text-foreground-tertiary cursor-help" />
                         </button>
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-10 pointer-events-none">
-                          {t('projectSettings.aspectRatioHelp')}
+                          {t('deckSettings.aspectRatioHelp')}
                         </div>
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                      {hasImages ? t('projectSettings.aspectRatioLocked') : t('projectSettings.aspectRatioDesc')}
+                      {hasImages ? t('deckSettings.aspectRatioLocked') : t('deckSettings.aspectRatioDesc')}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -220,15 +222,15 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
 
                 <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
                   <div>
-                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.extraRequirements')}</h4>
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('deckSettings.extraRequirements')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                      {t('projectSettings.extraRequirementsDesc')}
+                      {t('deckSettings.extraRequirementsDesc')}
                     </p>
                   </div>
                   <Textarea
                     value={extraRequirements}
                     onChange={(e) => onExtraRequirementsChange(e.target.value)}
-                    placeholder={t('projectSettings.extraRequirementsPlaceholder')}
+                    placeholder={t('deckSettings.extraRequirementsPlaceholder')}
                     rows={4}
                     className="text-sm"
                   />
@@ -239,21 +241,21 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     disabled={isSavingRequirements}
                     className="w-full sm:w-auto"
                   >
-                    {isSavingRequirements ? t('shared.saving') : t('projectSettings.saveExtraRequirements')}
+                    {isSavingRequirements ? t('shared.saving') : t('deckSettings.saveExtraRequirements')}
                   </Button>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.styleDescription')}</h4>
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('deckSettings.styleDescription')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                      {t('projectSettings.styleDescriptionDesc')}
+                      {t('deckSettings.styleDescriptionDesc')}
                     </p>
                   </div>
                   <Textarea
                     value={templateStyle}
                     onChange={(e) => onTemplateStyleChange(e.target.value)}
-                    placeholder={t('projectSettings.styleDescriptionPlaceholder')}
+                    placeholder={t('deckSettings.styleDescriptionPlaceholder')}
                     rows={5}
                     className="text-sm"
                   />
@@ -265,30 +267,31 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       disabled={isSavingTemplateStyle}
                       className="w-full sm:w-auto"
                     >
-                      {isSavingTemplateStyle ? t('shared.saving') : t('projectSettings.saveStyleDescription')}
+                      {isSavingTemplateStyle ? t('shared.saving') : t('deckSettings.saveStyleDescription')}
                     </Button>
                   </div>
-                  <div className="pl-4 border-l-4 border-blue-300 dark:border-blue-600">
+                  <div className="flex items-start gap-2 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
+                    <Info size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
-                      💡 <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.styleTip')}
+                      <strong>{t('deckSettings.tip')}:</strong> {t('deckSettings.styleTip')}
                     </p>
                   </div>
                 </div>
               </div>
-            ) : activeTab === 'export' ? (
+            ) : activeSection === 'export' ? (
               <div className="max-w-3xl space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-4">{t('projectSettings.editablePptxExport')}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-4">{t('deckSettings.editablePptxExport')}</h3>
                   <p className="text-sm text-gray-600 dark:text-foreground-tertiary mb-6">
-                    {t('projectSettings.editablePptxExportDesc')}
+                    {t('deckSettings.editablePptxExportDesc')}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.errorHandling')}</h4>
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('deckSettings.errorHandling')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                      {t('projectSettings.errorHandlingDesc')}
+                      {t('deckSettings.errorHandlingDesc')}
                     </p>
                   </div>
                   <label className="flex items-start gap-3 cursor-pointer">
@@ -299,16 +302,16 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       className="mt-1 w-4 h-4 text-red-500 focus:ring-red-500 rounded"
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-foreground-primary">{t('projectSettings.allowPartialResult')}</div>
+                      <div className="font-medium text-gray-900 dark:text-foreground-primary">{t('deckSettings.allowPartialResult')}</div>
                       <div className="text-sm text-gray-600 dark:text-foreground-tertiary mt-1">
-                        {t('projectSettings.allowPartialResultDesc')}
+                        {t('deckSettings.allowPartialResultDesc')}
                       </div>
                     </div>
                   </label>
                   <div className="pl-4 border-l-4 border-red-300 dark:border-red-600 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
-                      <strong>{t('common.warning')}：</strong>{t('projectSettings.allowPartialResultWarning')}
+                      <strong>{t('common.warning')}:</strong> {t('deckSettings.allowPartialResultWarning')}
                     </p>
                   </div>
                 </div>
@@ -320,7 +323,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       onClick={onSaveExportSettings}
                       disabled={isSavingExportSettings}
                     >
-                      {isSavingExportSettings ? t('shared.saving') : t('projectSettings.saveExportSettings')}
+                      {isSavingExportSettings ? t('shared.saving') : t('deckSettings.saveExportSettings')}
                     </Button>
                   </div>
                 )}
@@ -328,9 +331,9 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
             ) : (
               <div className="max-w-4xl">
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.globalConfigTitle')}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('deckSettings.globalConfigTitle')}</h3>
                   <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
-                    {t('projectSettings.globalConfigDesc')}
+                    {t('deckSettings.globalConfigDesc')}
                   </p>
                 </div>
                 <SettingsWorkspace />

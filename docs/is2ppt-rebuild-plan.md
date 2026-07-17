@@ -113,7 +113,8 @@ Progress snapshot (2026-07-16):
   entry. Feature modules and settings controls consume that entry directly,
   while `components/shared` temporarily re-exports the same API for
   compatibility with unmigrated business components. Slide-aware status badges
-  remain outside the generic layer because they still depend on legacy DTOs.
+  and their context policy now live under `entities/slide`; the old shared barrel
+  only keeps temporary aliases for compatibility.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

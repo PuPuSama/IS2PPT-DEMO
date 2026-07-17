@@ -1,6 +1,6 @@
 export { Button, Input, Textarea, Card, Modal, Loading, Skeleton, Toast, useToast } from '@/shared/ui';
-export { StatusBadge } from './StatusBadge';
-export { ContextualStatusBadge } from './ContextualStatusBadge';
+export { SlideStatusBadge as StatusBadge } from '@/entities/slide/ui/SlideStatusBadge';
+export { ContextualSlideStatusBadge as ContextualStatusBadge } from '@/entities/slide/ui/ContextualSlideStatusBadge';
 export { ConfirmDialog, useConfirm } from '@/shared/ui';
 export { ReferenceFileCard } from './ReferenceFileCard';
 export { ReferenceFileSelector } from './ReferenceFileSelector';

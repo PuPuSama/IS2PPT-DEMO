@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Edit2, FileText, RefreshCw, Tag, Layout, Image, Focus, MessageSquare, ImageOff } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { useImagePaste } from '@/hooks/useImagePaste';
-import { ContextualStatusBadge } from '@/components/shared';
+import { ContextualSlideStatusBadge } from '@/entities/slide/ui/ContextualSlideStatusBadge';
 import { Card, Button, Modal, Skeleton, Markdown } from '@/shared/ui';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { useDescriptionGeneratingState } from '@/hooks/useGeneratingState';
@@ -175,7 +175,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
                 </span>
               )}
             </div>
-            <ContextualStatusBadge page={page} context="description" />
+            <ContextualSlideStatusBadge slide={page} scope="description" />
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit2, ImageOff, Trash2 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { StatusBadge } from '@/components/shared';
+import { SlideStatusBadge } from '@/entities/slide/ui/SlideStatusBadge';
 import { Skeleton, useConfirm } from '@/shared/ui';
 import { getImageUrl } from '@/api/client';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
@@ -123,7 +123,7 @@ export const SlideCard: React.FC<SlideCardProps> = ({
         
         {/* 状态标签 */}
         <div className="absolute bottom-2 right-2">
-          <StatusBadge status={page.status} />
+          <SlideStatusBadge status={page.status} />
         </div>
       </div>
 

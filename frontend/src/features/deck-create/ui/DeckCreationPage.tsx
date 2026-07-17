@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, TextStyleSelector } from '@/components/shared';
+import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal } from '@/components/shared';
 import { Button, Card, useToast } from '@/shared/ui';
 import { AppFooter } from '@/widgets/app-footer/ui/AppFooter';
 import { CreationGuideDialog } from './CreationGuideDialog';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
 import { TemplateGallery } from '@/entities/template/ui/TemplateGallery';
+import { StylePromptEditor } from '@/features/deck-style/ui/StylePromptEditor';
 import {
   templateFileFromChoice,
   templateIdFromChoice,
@@ -49,8 +50,8 @@ export const DeckCreationPage: React.FC = () => {
   const [templateLibrary, setTemplateLibrary] = useState<UserTemplate[]>([]);
   const { createDeck, isCreating } = useDeckCreation(templateLibrary);
 
-  const [useTemplateStyle, setUseTemplateStyle] = useState(false);
-  const [templateStyle, setTemplateStyle] = useState('');
+  const [stylePromptEnabled, setStylePromptEnabled] = useState(false);
+  const [stylePrompt, setStylePrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [isAspectRatioOpen, setIsAspectRatioOpen] = useState(false);
   const [renovationFile, setRenovationFile] = useState<File | null>(null);
@@ -229,7 +230,7 @@ export const DeckCreationPage: React.FC = () => {
     }
 
     try {
-      const style = templateStyle.trim() || undefined;
+      const style = stylePromptEnabled ? stylePrompt.trim() || undefined : undefined;
       const result = creationMode === 'source-deck' && renovationFile
         ? await createDeck({
             kind: 'import',
@@ -670,9 +671,9 @@ export const DeckCreationPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type="checkbox"
-                    checked={useTemplateStyle}
+                    checked={stylePromptEnabled}
                     onChange={(e) => {
-                      setUseTemplateStyle(e.target.checked);
+                      setStylePromptEnabled(e.target.checked);
                       // 切换到无模板图模式时，清空模板选择
                       if (e.target.checked) {
                         setTemplateChoice(null);
@@ -687,11 +688,11 @@ export const DeckCreationPage: React.FC = () => {
             </div>
 
             {/* 根据模式显示不同的内容 */}
-            {useTemplateStyle ? (
-              <TextStyleSelector
-                value={templateStyle}
-                onChange={setTemplateStyle}
-                onToast={show}
+            {stylePromptEnabled ? (
+              <StylePromptEditor
+                description={stylePrompt}
+                onDescriptionChange={setStylePrompt}
+                onNotify={show}
               />
             ) : (
               <TemplateGallery

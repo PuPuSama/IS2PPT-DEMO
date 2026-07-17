@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { TextStyleSelector } from '@/components/shared';
 import { Button, Modal, useToast } from '@/shared/ui';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';
 import { loadTemplateAsset } from '@/entities/template/api/templateAssetRepository';
 import { TemplateGallery } from '@/entities/template/ui/TemplateGallery';
+import { StylePromptEditor } from '@/features/deck-style/ui/StylePromptEditor';
 import {
   templateFileFromChoice,
   templateIdFromChoice,
@@ -17,35 +17,35 @@ import type { DeckStyleMode } from '../model/deckStyleMode';
 
 interface DeckStyleDialogProps {
   isOpen: boolean;
-  currentTextStyle: string;
+  currentStylePrompt: string;
   initialMode: DeckStyleMode;
   onClose: () => void;
   onApplyImageTemplate: (file: File) => Promise<void>;
-  onApplyTextStyle: (style: string) => Promise<void>;
+  onApplyStylePrompt: (style: string) => Promise<void>;
 }
 
 export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
   isOpen,
-  currentTextStyle,
+  currentStylePrompt,
   initialMode,
   onClose,
   onApplyImageTemplate,
-  onApplyTextStyle,
+  onApplyStylePrompt,
 }) => {
   const t = useT(previewI18n);
   const { show, ToastContainer } = useToast();
-  const [useTextStyle, setUseTextStyle] = useState(false);
-  const [draftTextStyle, setDraftTextStyle] = useState('');
+  const [stylePromptEnabled, setStylePromptEnabled] = useState(false);
+  const [draftStylePrompt, setDraftStylePrompt] = useState('');
   const [templates, setTemplates] = useState<UserTemplate[]>([]);
   const [selection, setSelection] = useState<TemplateReference | null>(null);
   const [applyingImage, setApplyingImage] = useState(false);
-  const [applyingText, setApplyingText] = useState(false);
+  const [applyingStyle, setApplyingStyle] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
-    setDraftTextStyle(currentTextStyle);
-    setUseTextStyle(initialMode === 'text');
-  }, [currentTextStyle, initialMode, isOpen]);
+    setDraftStylePrompt(currentStylePrompt);
+    setStylePromptEnabled(initialMode === 'text');
+  }, [currentStylePrompt, initialMode, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -99,10 +99,10 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
     }
   };
 
-  const handleTextStyle = async () => {
-    setApplyingText(true);
+  const applyStylePrompt = async () => {
+    setApplyingStyle(true);
     try {
-      await onApplyTextStyle(draftTextStyle);
+      await onApplyStylePrompt(draftStylePrompt);
       show({ message: t('slidePreview.styleDescSaved'), type: 'success' });
       onClose();
     } catch (error: any) {
@@ -113,7 +113,7 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
         type: 'error',
       });
     } finally {
-      setApplyingText(false);
+      setApplyingStyle(false);
     }
   };
 
@@ -136,19 +136,19 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
             <span className="relative">
               <input
                 type="checkbox"
-                checked={useTextStyle}
-                onChange={(event) => setUseTextStyle(event.target.checked)}
+                checked={stylePromptEnabled}
+                onChange={(event) => setStylePromptEnabled(event.target.checked)}
                 className="sr-only peer"
               />
               <span className="block w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 dark:peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand" />
             </span>
           </label>
 
-          {useTextStyle ? (
-            <TextStyleSelector
-              value={draftTextStyle}
-              onChange={setDraftTextStyle}
-              onToast={show}
+          {stylePromptEnabled ? (
+            <StylePromptEditor
+              description={draftStylePrompt}
+              onDescriptionChange={setDraftStylePrompt}
+              onNotify={show}
             />
           ) : (
             <>
@@ -166,11 +166,11 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
           )}
 
           <div className="flex justify-end gap-3 pt-4 border-t">
-            {useTextStyle && (
+            {stylePromptEnabled && (
               <Button
                 variant="primary"
-                loading={applyingText}
-                onClick={() => void handleTextStyle()}
+                loading={applyingStyle}
+                onClick={() => void applyStylePrompt()}
               >
                 {t('preview.applyStyle')}
               </Button>
@@ -178,7 +178,7 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
             <Button
               variant="ghost"
               onClick={onClose}
-              disabled={applyingImage || applyingText}
+              disabled={applyingImage || applyingStyle}
             >
               {t('common.close')}
             </Button>

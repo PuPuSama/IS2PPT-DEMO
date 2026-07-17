@@ -496,11 +496,11 @@ export const DeckWorkspacePage: React.FC = () => {
       {projectId && (
         <DeckStyleDialog
           isOpen={isTemplateModalOpen}
-          currentTextStyle={templateStyle}
+          currentStylePrompt={templateStyle}
           initialMode={deckStyleInitialMode}
           onClose={() => setIsTemplateModalOpen(false)}
           onApplyImageTemplate={handleApplyImageTemplate}
-          onApplyTextStyle={applyTemplateStyle}
+          onApplyStylePrompt={applyTemplateStyle}
         />
       )}
       {projectId && (

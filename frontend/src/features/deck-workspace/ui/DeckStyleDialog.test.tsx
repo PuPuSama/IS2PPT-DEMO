@@ -41,11 +41,11 @@ describe('DeckStyleDialog', () => {
     render(
       <DeckStyleDialog
         isOpen
-        currentTextStyle=""
+        currentStylePrompt=""
         initialMode="image"
         onClose={onClose}
         onApplyImageTemplate={onApplyImageTemplate}
-        onApplyTextStyle={vi.fn().mockResolvedValue(undefined)}
+        onApplyStylePrompt={vi.fn().mockResolvedValue(undefined)}
       />,
     );
 

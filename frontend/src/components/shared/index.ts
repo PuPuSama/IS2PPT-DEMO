@@ -15,5 +15,4 @@ export { CreationGuideDialog as HelpModal } from '@/features/deck-create/ui/Crea
 export { DeckSettingsDialog as ProjectSettingsModal } from '@/features/deck-workspace/ui/DeckSettingsDialog';
 export { ExportActivityPanel as ExportJobsPanel } from '@/entities/export/ui/ExportActivityPanel';
 export { AccessGate as AccessCodeGuard } from '@/app/AccessGate';
-export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from '@/shared/ui';

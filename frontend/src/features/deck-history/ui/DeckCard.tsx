@@ -12,7 +12,7 @@ import {
 import type { Deck } from '@/entities/deck/model/types';
 import { formatDate } from '@/utils/projectUtils';
 
-// History card copy stays local until the history feature locale is consolidated.
+// Card-specific copy remains local to keep this item independently reusable.
 const deckCardI18n = {
   zh: {
     deckCard: {

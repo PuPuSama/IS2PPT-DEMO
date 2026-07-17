@@ -45,7 +45,7 @@ Progress snapshot (2026-07-16):
   `useExportJobsStore`, and resumable polling. `SlidePreview` and
   `ExportJobsPanel` consume that boundary; the old export task store and the
   duplicate export methods in `useProjectStore` have been removed.
-- Phase 5 is in progress. `Home.tsx` is now a thin route over the public
+- Phase 5 is complete. `Home.tsx` is now a thin route over the public
   `features/deck-create` entry point. Reference-document selection, validation,
   upload, parsing, and deduplication are owned by the feature model with focused
   tests instead of the route component. Standard deck creation and source-deck
@@ -64,8 +64,8 @@ Progress snapshot (2026-07-16):
   and import persistence, AI refinement, generation-preference mapping, field
   catalog storage, and backend job normalization. Its UI no longer imports API
   or storage modules or reads legacy project DTO fields directly. `SlidePreview`
-  is now a thin route over the new `features/deck-workspace` entry point. The
-  workspace rebuild is still in progress; its first extracted submodule is an
+  is now a thin route over the new `features/deck-workspace` entry point. Its
+  first extracted submodule is an
   independently tested slide navigator that owns thumbnail selection,
   multi-select controls, generation entry, and legacy slide-card adaptation.
   A tested `DeckWorkspaceSnapshot` now normalizes render mode, slide lists,
@@ -84,8 +84,7 @@ Progress snapshot (2026-07-16):
   dismissal storage, deferred commands, and warning presentation no longer
   live in the workspace page. `DeckWorkspaceHeader` now owns responsive
   navigation, export-job visibility, and export-format menus behind tested
-  command callbacks. This completes the workspace UI decomposition milestone;
-  remaining Phase 5 work is focused on project command and store boundaries.
+  command callbacks. This completes the workspace UI decomposition milestone.
   The tested `useDeckWorkspaceProject` port now owns the global project store,
   deck settings API, template replacement, and slide-version API. The
   workspace UI consumes deck commands and no longer imports those legacy
@@ -103,7 +102,9 @@ Progress snapshot (2026-07-16):
   overwrite confirmation, duplicate-job checks, and render commands without
   embedding UI messages in the model layer. `useDeckWorkspaceExport` now maps
   selected slides and PPTX options into export commands, then separates direct
-  downloads, background jobs, and failures through UI callbacks.
+  downloads, background jobs, and failures through UI callbacks. History is now
+  a four-line route over `features/deck-history`, which owns its page, deck card,
+  and local locale payload. All workflow route files are thin feature entries.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.
@@ -115,9 +116,9 @@ The repository currently contains:
 - Flask backend under `backend/`.
 - Python CLI under `cli/is2ppt_cli/`.
 - Docker, docs, skills, tests, migrations, and deployment scripts.
-- Frontend business logic concentrated in large files:
-  - `frontend/src/pages/SlidePreview.tsx`
-  - `frontend/src/store/useProjectStore.ts`
+- Remaining frontend compatibility logic is concentrated in
+  `frontend/src/store/useProjectStore.ts`; route-level workflow logic now lives
+  behind feature entry points.
 - Frontend DTO compatibility types now live at the API/domain boundary, while
   migrated UI code uses `Deck` and `Slide` terminology.
 - Backend logic organized around `controllers/`, `services/`, `models/`, and

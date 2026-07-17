@@ -14,10 +14,8 @@ import {
 } from '../model/deckWorkspaceSnapshot';
 import { deckWorkspaceErrorMessage } from '../model/deckWorkspaceError';
 import type { DeckStyleMode } from '../model/deckStyleSelection';
-import {
-  useDeckWorkspaceJobs,
-  type DeckExportFormat,
-} from '../model/useDeckWorkspaceJobs';
+import { useDeckWorkspaceExport } from '../model/useDeckWorkspaceExport';
+import { useDeckWorkspaceJobs } from '../model/useDeckWorkspaceJobs';
 import {
   useDeckWorkspacePreferences,
   type DeckPreferenceKey,
@@ -162,7 +160,6 @@ export const DeckWorkspacePage: React.FC = () => {
     toggleSlideSelection,
     selectAllSlides,
     clearSlideSelection,
-    selectedSlideIdsForCommand,
     imageVersions,
     versionMenuOpen: showVersionMenu,
     toggleVersionMenu,
@@ -299,40 +296,27 @@ export const DeckWorkspacePage: React.FC = () => {
     });
   }, [reviseSlide]);
 
-  const handleExport = async (
-    format: DeckExportFormat,
-    options?: {
-      pptxTransitionEnabled?: boolean;
-      pptxTransitionEffects?: PptxTransitionEffect[];
-    },
-  ) => {
-    if (!projectId) return;
-
-    const slideIds = selectedSlideIdsForCommand();
-    try {
-      const job = await startDeckExport({
-        deckId: projectId,
-        format,
-        slideIds,
-        transitionEnabled: options?.pptxTransitionEnabled,
-        transitionEffects: options?.pptxTransitionEffects,
-      });
-
-      if (job.status === 'ready' && job.downloadUrl) {
-        window.open(job.downloadUrl, '_blank');
-      } else if (job.status === 'running') {
-        show({
-          message: t('slidePreview.exportStarted'),
-          type: 'success',
-        });
-      }
-    } catch (error) {
-      show({
-        message: deckWorkspaceErrorMessage(error, t('preview.messages.exportFailed')),
-        type: 'error',
-      });
-    }
-  };
+  const handleExportDownload = useCallback((url: string) => {
+    window.open(url, '_blank');
+  }, []);
+  const handleExportStarted = useCallback(() => {
+    show({ message: t('slidePreview.exportStarted'), type: 'success' });
+  }, [show, t]);
+  const handleExportError = useCallback((error: unknown) => {
+    show({
+      message: deckWorkspaceErrorMessage(error, t('preview.messages.exportFailed')),
+      type: 'error',
+    });
+  }, [show, t]);
+  const { exportDeck: handleExport } = useDeckWorkspaceExport({
+    deckId: projectId,
+    selectedSlideIds,
+    multiSelectEnabled: isMultiSelectMode,
+    startDeckExport,
+    onDownloadReady: handleExportDownload,
+    onExportStarted: handleExportStarted,
+    onExportError: handleExportError,
+  });
 
   const handleRefresh = useCallback(async () => {
     const targetProjectId = projectId || deckSource?.id;
@@ -442,8 +426,8 @@ export const DeckWorkspacePage: React.FC = () => {
         onStartPptx={(options) => {
           setShowPptxExportDialog(false);
           void handleExport('pptx', {
-            pptxTransitionEnabled: options.transitionEnabled,
-            pptxTransitionEffects: options.transitionEffects,
+            transitionEnabled: options.transitionEnabled,
+            transitionEffects: options.transitionEffects,
           });
         }}
         onStartEditablePptx={() => {

@@ -101,7 +101,9 @@ Progress snapshot (2026-07-16):
   now normalizes backend and runtime failures, while
   `useDeckWorkspaceRendering` coordinates style readiness, quality gates,
   overwrite confirmation, duplicate-job checks, and render commands without
-  embedding UI messages in the model layer.
+  embedding UI messages in the model layer. `useDeckWorkspaceExport` now maps
+  selected slides and PPTX options into export commands, then separates direct
+  downloads, background jobs, and failures through UI callbacks.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

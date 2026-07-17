@@ -7,15 +7,20 @@ import { Button, Card, useToast } from '@/shared/ui';
 import { AppFooter } from '@/widgets/app-footer/ui/AppFooter';
 import { CreationGuideDialog } from './CreationGuideDialog';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
-import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
+import { TemplateGallery } from '@/entities/template/ui/TemplateGallery';
+import {
+  templateFileFromChoice,
+  templateIdFromChoice,
+  templateReferenceFromChoice,
+  type TemplateChoice,
+} from '@/entities/template/model/templateSelection';
 import { useTheme } from '@/hooks/useTheme';
 import { useImagePaste } from '@/hooks/useImagePaste';
 import { useT } from '@/hooks/useT';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { homeI18n } from '@/config/homeI18n';
 import { homeDraftStore, type HomeDraftMode } from '@/shared/storage/homeDraft';
-import { projectSession } from '@/shared/storage/projectSession';
 import { uiDismissals } from '@/shared/storage/uiDismissals';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 import { useCreationReferences } from '../model/useCreationReferences';
@@ -38,12 +43,9 @@ export const DeckCreationPage: React.FC = () => {
 
   const [creationMode, setCreationMode] = useState<CreationMode>(() => homeDraftStore.getTab());
   const [brief, setBrief] = useState(() => homeDraftStore.getContent());
-  const [directTemplateFile, setDirectTemplateFile] = useState<File | null>(null);
-  const [libraryTemplateId, setLibraryTemplateId] = useState<string | null>(null);
-  const [presetTemplateId, setPresetTemplateId] = useState<string | null>(null);
+  const [templateChoice, setTemplateChoice] = useState<TemplateChoice | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const [activeDeckId, setActiveDeckId] = useState<string | null>(null);
   const [templateLibrary, setTemplateLibrary] = useState<UserTemplate[]>([]);
   const { createDeck, isCreating } = useDeckCreation(templateLibrary);
 
@@ -82,12 +84,8 @@ export const DeckCreationPage: React.FC = () => {
   }, [creationMode]);
 
 
-  // 检查是否有当前项目 & 加载用户模板
+  // Load the template records needed to resolve an existing library choice.
   useEffect(() => {
-    const projectId = projectSession.getActiveProjectId();
-    setActiveDeckId(projectId);
-
-    // 加载用户模板列表（用于按需获取File）
     const loadTemplates = async () => {
       try {
         const response = await listUserTemplates();
@@ -208,34 +206,6 @@ export const DeckCreationPage: React.FC = () => {
     },
   };
 
-  const handleTemplateSelect = async (templateFile: File | null, templateId?: string) => {
-    // 总是设置文件（如果提供）
-    if (templateFile) {
-      setDirectTemplateFile(templateFile);
-    }
-
-    // 处理模板 ID
-    if (templateId) {
-      // 判断是用户模板还是预设模板
-      // 预设模板 ID 通常是 '1', '2', '3' 等短字符串
-      // 用户模板 ID 通常较长（UUID 格式）
-      if (templateId.length <= 3 && /^\d+$/.test(templateId)) {
-        // 预设模板
-        setPresetTemplateId(templateId);
-        setLibraryTemplateId(null);
-      } else {
-        // 用户模板
-        setLibraryTemplateId(templateId);
-        setPresetTemplateId(null);
-      }
-    } else {
-      // 如果没有 templateId，可能是直接上传的文件
-      // 清空所有选择状态
-      setLibraryTemplateId(null);
-      setPresetTemplateId(null);
-    }
-  };
-
   const handleSubmit = async () => {
     // Source-deck mode validates an upload instead of a text brief.
     if (creationMode === 'source-deck') {
@@ -271,8 +241,8 @@ export const DeckCreationPage: React.FC = () => {
             kind: 'generate',
             mode: creationMode as 'idea' | 'outline' | 'description',
             brief,
-            templateFile: directTemplateFile || undefined,
-            templateId: libraryTemplateId || presetTemplateId || undefined,
+            templateFile: templateFileFromChoice(templateChoice),
+            templateId: templateIdFromChoice(templateChoice),
             style,
             readyReferenceIds: completedReferenceIds(references),
             additionalReferenceIds: references
@@ -705,9 +675,7 @@ export const DeckCreationPage: React.FC = () => {
                       setUseTemplateStyle(e.target.checked);
                       // 切换到无模板图模式时，清空模板选择
                       if (e.target.checked) {
-                        setDirectTemplateFile(null);
-                        setLibraryTemplateId(null);
-                        setPresetTemplateId(null);
+                        setTemplateChoice(null);
                       }
                       // 不再清空风格描述，允许用户保留已输入的内容
                     }}
@@ -726,12 +694,10 @@ export const DeckCreationPage: React.FC = () => {
                 onToast={show}
               />
             ) : (
-              <TemplateSelector
-                onSelect={handleTemplateSelect}
-                selectedTemplateId={libraryTemplateId}
-                selectedPresetTemplateId={presetTemplateId}
-                showUpload={true} // 在主页上传的模板保存到用户模板库
-                projectId={activeDeckId}
+              <TemplateGallery
+                onChoose={setTemplateChoice}
+                selectedTemplate={templateReferenceFromChoice(templateChoice)}
+                uploadPolicy="library"
               />
             )}
           </div>

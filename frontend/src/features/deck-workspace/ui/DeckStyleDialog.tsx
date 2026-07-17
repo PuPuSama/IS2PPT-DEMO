@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { TextStyleSelector } from '@/components/shared';
 import { Button, Modal, useToast } from '@/shared/ui';
-import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';
 import { loadTemplateAsset } from '@/entities/template/api/templateAssetRepository';
-import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
+import { TemplateGallery } from '@/entities/template/ui/TemplateGallery';
 import {
-  deckStyleSelectionForTemplate,
-  type DeckStyleMode,
-  type DeckStyleSelection,
-} from '../model/deckStyleSelection';
+  templateFileFromChoice,
+  templateIdFromChoice,
+  templateReferenceFromChoice,
+  type TemplateChoice,
+  type TemplateReference,
+} from '@/entities/template/model/templateSelection';
+import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
+import type { DeckStyleMode } from '../model/deckStyleMode';
 
 interface DeckStyleDialogProps {
   isOpen: boolean;
-  projectId: string;
   currentTextStyle: string;
   initialMode: DeckStyleMode;
   onClose: () => void;
@@ -22,14 +24,8 @@ interface DeckStyleDialogProps {
   onApplyTextStyle: (style: string) => Promise<void>;
 }
 
-const EMPTY_SELECTION: DeckStyleSelection = {
-  libraryTemplateId: null,
-  presetTemplateId: null,
-};
-
 export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
   isOpen,
-  projectId,
   currentTextStyle,
   initialMode,
   onClose,
@@ -41,7 +37,7 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
   const [useTextStyle, setUseTextStyle] = useState(false);
   const [draftTextStyle, setDraftTextStyle] = useState('');
   const [templates, setTemplates] = useState<UserTemplate[]>([]);
-  const [selection, setSelection] = useState<DeckStyleSelection>(EMPTY_SELECTION);
+  const [selection, setSelection] = useState<TemplateReference | null>(null);
   const [applyingImage, setApplyingImage] = useState(false);
   const [applyingText, setApplyingText] = useState(false);
 
@@ -72,23 +68,23 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
     };
   }, [isOpen]);
 
-  const handleImageTemplate = async (templateFile: File | null, templateId?: string) => {
-    let file = templateFile;
+  const handleImageTemplate = async (choice: TemplateChoice) => {
+    let file = templateFileFromChoice(choice);
+    const templateId = templateIdFromChoice(choice);
     if (templateId && !file) {
-      file = await loadTemplateAsset(templateId, templates);
-      if (!file) {
+      const resolvedFile = await loadTemplateAsset(templateId, templates);
+      if (!resolvedFile) {
         show({ message: t('slidePreview.loadTemplateFailed'), type: 'error' });
         return;
       }
+      file = resolvedFile;
     }
     if (!file) return;
 
     setApplyingImage(true);
     try {
       await onApplyImageTemplate(file);
-      if (templateId) {
-        setSelection(deckStyleSelectionForTemplate(templateId));
-      }
+      setSelection(templateReferenceFromChoice(choice));
       show({ message: t('slidePreview.templateChanged'), type: 'success' });
       onClose();
     } catch (error: any) {
@@ -156,12 +152,10 @@ export const DeckStyleDialog: React.FC<DeckStyleDialogProps> = ({
             />
           ) : (
             <>
-              <TemplateSelector
-                onSelect={handleImageTemplate}
-                selectedTemplateId={selection.libraryTemplateId}
-                selectedPresetTemplateId={selection.presetTemplateId}
-                showUpload={false}
-                projectId={projectId}
+              <TemplateGallery
+                onChoose={handleImageTemplate}
+                selectedTemplate={selection}
+                uploadPolicy="optional"
               />
               {applyingImage && (
                 <div className="text-center py-2 text-sm text-gray-500 dark:text-foreground-tertiary">

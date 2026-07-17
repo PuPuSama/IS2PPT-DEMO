@@ -1,11 +1,6 @@
 import { getImageUrl } from '@/api/client';
 import type { UserTemplate } from '@/api/templatesApi';
-
-const PRESET_TEMPLATE_ASSETS: Record<string, string> = {
-  '1': '/templates/template_y.png',
-  '2': '/templates/template_vector_illustration.png',
-  '3': '/templates/template_glass.png',
-};
+import { findPresetTemplate } from '../model/templateCatalog';
 
 const fetchImageAsset = async (url: string, filename: string): Promise<File> => {
   const response = await fetch(url);
@@ -29,12 +24,12 @@ export const loadTemplateAsset = async (
   templateId: string,
   userTemplates: UserTemplate[],
 ): Promise<File | null> => {
-  const presetAsset = PRESET_TEMPLATE_ASSETS[templateId];
-  if (presetAsset) {
+  const presetTemplate = findPresetTemplate(templateId);
+  if (presetTemplate) {
     try {
       return await fetchImageAsset(
-        presetAsset,
-        presetAsset.split('/').pop() || 'template.png',
+        presetTemplate.imageUrl,
+        presetTemplate.imageUrl.split('/').pop() || 'template.png',
       );
     } catch (error) {
       console.error('Failed to load preset template:', error);

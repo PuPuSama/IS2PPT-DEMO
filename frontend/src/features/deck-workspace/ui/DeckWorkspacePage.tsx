@@ -13,7 +13,7 @@ import {
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
 import { deckWorkspaceErrorMessage } from '../model/deckWorkspaceError';
-import type { DeckStyleMode } from '../model/deckStyleSelection';
+import type { DeckStyleMode } from '../model/deckStyleMode';
 import { useDeckWorkspaceExport } from '../model/useDeckWorkspaceExport';
 import { useDeckWorkspaceJobs } from '../model/useDeckWorkspaceJobs';
 import {
@@ -496,7 +496,6 @@ export const DeckWorkspacePage: React.FC = () => {
       {projectId && (
         <DeckStyleDialog
           isOpen={isTemplateModalOpen}
-          projectId={projectId}
           currentTextStyle={templateStyle}
           initialMode={deckStyleInitialMode}
           onClose={() => setIsTemplateModalOpen(false)}

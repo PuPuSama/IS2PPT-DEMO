@@ -18,9 +18,16 @@ vi.mock('@/entities/template/api/templateAssetRepository', () => ({
   )),
 }));
 
-vi.mock('@/components/shared/TemplateSelector', () => ({
-  TemplateSelector: ({ onSelect }: { onSelect: (file: File | null, id?: string) => Promise<void> }) => (
-    <button type="button" onClick={() => void onSelect(null, '12')}>
+vi.mock('@/entities/template/ui/TemplateGallery', () => ({
+  TemplateGallery: ({
+    onChoose,
+  }: {
+    onChoose: (choice: { kind: 'preset'; templateId: string }) => Promise<void>;
+  }) => (
+    <button
+      type="button"
+      onClick={() => void onChoose({ kind: 'preset', templateId: '12' })}
+    >
       choose-template
     </button>
   ),
@@ -34,7 +41,6 @@ describe('DeckStyleDialog', () => {
     render(
       <DeckStyleDialog
         isOpen
-        projectId="deck-1"
         currentTextStyle=""
         initialMode="image"
         onClose={onClose}

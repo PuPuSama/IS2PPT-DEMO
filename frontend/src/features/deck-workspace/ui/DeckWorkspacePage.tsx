@@ -3,7 +3,6 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useT } from '@/hooks/useT';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import type { PptxTransitionEffect } from '@/config/slideExportOptions';
-import { devLog } from '@/utils/logger';
 import { Loading, useToast, useConfirm, ProjectSettingsModal } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
 import type { Page } from '@/types';
@@ -13,6 +12,7 @@ import {
   exportRangeFromWorkspace,
   exportSelectionFromWorkspace,
 } from '../model/deckWorkspaceSnapshot';
+import { deckWorkspaceErrorMessage } from '../model/deckWorkspaceError';
 import type { DeckStyleMode } from '../model/deckStyleSelection';
 import {
   useDeckWorkspaceJobs,
@@ -23,6 +23,10 @@ import {
   type DeckPreferenceKey,
 } from '../model/useDeckWorkspacePreferences';
 import { useDeckWorkspaceProject } from '../model/useDeckWorkspaceProject';
+import {
+  useDeckWorkspaceRendering,
+  type DeckOverwriteRequest,
+} from '../model/useDeckWorkspaceRendering';
 import { useDeckWorkspaceSlides } from '../model/useDeckWorkspaceSlides';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
@@ -210,12 +214,11 @@ export const DeckWorkspacePage: React.FC = () => {
       try {
         await applyTemplateStyle(draftStyle);
         return true;
-      } catch (error: any) {
-        const respData = error?.response?.data;
-        const errorMessage = normalizeErrorMessage(
-          respData?.error?.message || respData?.message || error?.message
-        );
-        show({ message: errorMessage, type: 'error' });
+      } catch (error) {
+        show({
+          message: deckWorkspaceErrorMessage(error, t('preview.generationFailed')),
+          type: 'error',
+        });
         return false;
       }
     }
@@ -227,124 +230,48 @@ export const DeckWorkspacePage: React.FC = () => {
       type: 'error',
     });
     return false;
-  }, [applyTemplateStyle, deckSource, projectId, show, templateStyle, workspace]);
+  }, [applyTemplateStyle, deckSource, projectId, show, t, templateStyle, workspace]);
 
-  const handleGenerateAll = async () => {
-    if (!(await ensureImageGenerationStyleSource())) return;
-
-    // 先检查分辨率，如果是1K则显示警告
-    await requestGenerationExecution(async () => {
-      const slideIds = selectedSlideIdsForCommand();
-      const isPartialGenerate = isMultiSelectMode && selectedSlideIds.size > 0;
-
-      // 检查要生成的页面中是否有已有图片的
-      const slidesToGenerate = workspace
-        ? exportSelectionFromWorkspace(workspace, selectedSlideIds, isPartialGenerate).slides
-        : [];
-      const selectedSlidesHaveImages = slidesToGenerate.some((slide) => slide.generated_image_path);
-
-      const executeGenerate = async () => {
-        try {
-          await renderSlides(slideIds);
-        } catch (error: any) {
-          console.error('批量生成错误:', error);
-          console.error('错误响应:', error?.response?.data);
-
-          // 提取后端返回的更具体错误信息
-          let errorMessage = t('preview.generationFailed');
-          const respData = error?.response?.data;
-
-          if (respData) {
-            if (respData.error?.message) {
-              errorMessage = respData.error.message;
-            } else if (respData.message) {
-              errorMessage = respData.message;
-            } else if (respData.error) {
-              errorMessage =
-                typeof respData.error === 'string'
-                  ? respData.error
-                  : respData.error.message || errorMessage;
-            }
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-
-          devLog('提取的错误消息:', errorMessage);
-
-          // 使用统一的错误消息规范化函数
-          errorMessage = normalizeErrorMessage(errorMessage);
-
-          devLog('规范化后的错误消息:', errorMessage);
-
-          show({
-            message: errorMessage,
-            type: 'error',
-          });
-        }
-      };
-
-      if (selectedSlidesHaveImages) {
-        const message = isPartialGenerate
-          ? t('preview.confirmRegenerateSelected', { count: selectedSlideIds.size })
-          : t('preview.confirmRegenerateAll');
-        confirm(
-          message,
-          executeGenerate,
-          { title: t('preview.confirmRegenerateTitle'), variant: 'warning' }
-        );
-      } else {
-        await executeGenerate();
-      }
+  const handleOverwriteRequired = useCallback((request: DeckOverwriteRequest) => {
+    const message = request.target === 'selection'
+      ? t('preview.confirmRegenerateSelected', { count: request.selectedCount })
+      : t('preview.confirmRegenerateAll');
+    confirm(
+      message,
+      () => void request.execute(),
+      { title: t('preview.confirmRegenerateTitle'), variant: 'warning' },
+    );
+  }, [confirm, t]);
+  const handleSlideBusy = useCallback(() => {
+    show({ message: t('slidePreview.pageGenerating'), type: 'info' });
+  }, [show, t]);
+  const handleSlideRenderStarted = useCallback(() => {
+    show({ message: t('slidePreview.generationStarted'), type: 'success' });
+  }, [show, t]);
+  const handleRenderError = useCallback((error: unknown) => {
+    show({
+      message: deckWorkspaceErrorMessage(error, t('preview.generationFailed')),
+      type: 'error',
     });
-  };
-
-  const handleRegeneratePage = useCallback(async () => {
-    const slideId = selectedSlide?.id;
-    if (!slideId) return;
-
-    // 如果该页面正在生成，不重复提交
-    if (slideJobs[slideId]) {
-      show({ message: t('slidePreview.pageGenerating'), type: 'info' });
-      return;
-    }
-
-    if (!(await ensureImageGenerationStyleSource())) return;
-
-    // 先检查分辨率，如果是1K则显示警告
-    await requestGenerationExecution(async () => {
-      try {
-        await renderSlide(slideId, true);
-        show({ message: t('slidePreview.generationStarted'), type: 'success' });
-      } catch (error: any) {
-        // 提取后端返回的更具体错误信息
-        let errorMessage = '生成失败';
-        const respData = error?.response?.data;
-
-        if (respData) {
-          if (respData.error?.message) {
-            errorMessage = respData.error.message;
-          } else if (respData.message) {
-            errorMessage = respData.message;
-          } else if (respData.error) {
-            errorMessage =
-              typeof respData.error === 'string'
-                ? respData.error
-                : respData.error.message || errorMessage;
-          }
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-
-        // 使用统一的错误消息规范化函数
-        errorMessage = normalizeErrorMessage(errorMessage);
-
-        show({
-          message: errorMessage,
-          type: 'error',
-        });
-      }
-    });
-  }, [ensureImageGenerationStyleSource, renderSlide, requestGenerationExecution, selectedSlide, show, slideJobs]);
+  }, [show, t]);
+  const {
+    renderDeck: handleGenerateAll,
+    renderCurrentSlide: handleRegeneratePage,
+  } = useDeckWorkspaceRendering({
+    workspace,
+    selectedSlide,
+    selectedSlideIds,
+    multiSelectEnabled: isMultiSelectMode,
+    jobsBySlideId: slideJobs,
+    ensureStyleSource: ensureImageGenerationStyleSource,
+    requestExecution: requestGenerationExecution,
+    renderSlides,
+    renderSlide,
+    onOverwriteRequired: handleOverwriteRequired,
+    onSlideBusy: handleSlideBusy,
+    onSlideRenderStarted: handleSlideRenderStarted,
+    onRenderError: handleRenderError,
+  });
 
   const openSlideEditor = (targetIndex = selectedIndex) => {
     selectSlide(targetIndex);
@@ -399,28 +326,11 @@ export const DeckWorkspacePage: React.FC = () => {
           type: 'success',
         });
       }
-    } catch (error: any) {
-      let errorMessage = t('preview.messages.exportFailed');
-      const respData = error?.response?.data;
-
-      if (respData) {
-        if (respData.error?.message) {
-          errorMessage = respData.error.message;
-        } else if (respData.message) {
-          errorMessage = respData.message;
-        } else if (respData.error) {
-          errorMessage =
-            typeof respData.error === 'string'
-              ? respData.error
-              : respData.error.message || errorMessage;
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      const normalizedErrorMessage = normalizeErrorMessage(errorMessage);
-
-      show({ message: normalizedErrorMessage, type: 'error' });
+    } catch (error) {
+      show({
+        message: deckWorkspaceErrorMessage(error, t('preview.messages.exportFailed')),
+        type: 'error',
+      });
     }
   };
 

@@ -97,7 +97,11 @@ Progress snapshot (2026-07-16):
   longer duplicates preference state or persistence handlers. The tested
   `useDeckWorkspaceSlides` session now owns navigation, generated-slide
   multi-selection, version loading and switching, stale-request protection,
-  and selection cleanup when the deck changes.
+  and selection cleanup when the deck changes. A tested workspace error parser
+  now normalizes backend and runtime failures, while
+  `useDeckWorkspaceRendering` coordinates style readiness, quality gates,
+  overwrite confirmation, duplicate-job checks, and render commands without
+  embedding UI messages in the model layer.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

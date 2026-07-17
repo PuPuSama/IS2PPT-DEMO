@@ -16,6 +16,6 @@ export { ProjectResourcesList } from './ProjectResourcesList';
 export { HelpModal } from './HelpModal';
 export { DeckSettingsDialog as ProjectSettingsModal } from '@/features/deck-workspace/ui/DeckSettingsDialog';
 export { ExportActivityPanel as ExportJobsPanel } from '@/entities/export/ui/ExportActivityPanel';
-export { AccessCodeGuard } from './AccessCodeGuard';
+export { AccessGate as AccessCodeGuard } from '@/app/AccessGate';
 export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from '@/shared/ui';

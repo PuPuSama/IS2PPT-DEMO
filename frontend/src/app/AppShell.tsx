@@ -1,7 +1,8 @@
 import { BrowserRouter } from 'react-router-dom';
 
-import { AccessCodeGuard, useToast } from '@/components/shared';
+import { useToast } from '@/shared/ui';
 
+import { AccessGate } from './AccessGate';
 import { AppRoutes } from './routes';
 import { useGlobalErrorToast } from './useGlobalErrorToast';
 import { useResumeProjectSession } from './useResumeProjectSession';
@@ -13,11 +14,11 @@ export const AppShell = () => {
   useGlobalErrorToast(show);
 
   return (
-    <AccessCodeGuard>
+    <AccessGate>
       <BrowserRouter>
         <AppRoutes />
         <ToastContainer />
       </BrowserRouter>
-    </AccessCodeGuard>
+    </AccessGate>
   );
 };

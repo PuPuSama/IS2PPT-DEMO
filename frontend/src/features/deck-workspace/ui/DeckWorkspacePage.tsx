@@ -6,7 +6,7 @@ import type { PptxTransitionEffect } from '@/config/slideExportOptions';
 import { devLog } from '@/utils/logger';
 import { Loading, useToast, useConfirm, ProjectSettingsModal } from '@/components/shared';
 import SvgSlideEditor from '@/components/preview/SvgSlideEditor';
-import type { ImageVersion, Page } from '@/types';
+import type { Page } from '@/types';
 import { normalizeErrorMessage } from '@/utils';
 import {
   deckWorkspaceSnapshotFromProject,
@@ -23,6 +23,7 @@ import {
   type DeckPreferenceKey,
 } from '../model/useDeckWorkspacePreferences';
 import { useDeckWorkspaceProject } from '../model/useDeckWorkspaceProject';
+import { useDeckWorkspaceSlides } from '../model/useDeckWorkspaceSlides';
 import { useGenerationQualityGate } from '../model/useGenerationQualityGate';
 import { DeckExportDialogs } from './DeckExportDialogs';
 import { DeckStyleDialog } from './DeckStyleDialog';
@@ -63,7 +64,6 @@ export const DeckWorkspacePage: React.FC = () => {
     startDeckExport,
   } = useDeckWorkspaceJobs(projectId);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [deckStyleInitialMode, setDeckStyleInitialMode] = useState<DeckStyleMode>('image');
@@ -71,13 +71,8 @@ export const DeckWorkspacePage: React.FC = () => {
   const [showEditablePptxDialog, setShowEditablePptxDialog] = useState(false);
   const [pptxTransitionsEnabled, setPptxTransitionsEnabled] = useState(false);
   const [pptxTransitionEffects, setPptxTransitionEffects] = useState<PptxTransitionEffect[]>(['fade']);
-  // 多选导出相关状态
-  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
-  const [selectedSlideIds, setSelectedSlideIds] = useState<Set<string>>(new Set());
   const [svgEditorOpen, setSvgEditorOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [imageVersions, setImageVersions] = useState<ImageVersion[]>([]);
-  const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const { show, ToastContainer } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -142,7 +137,41 @@ export const DeckWorkspacePage: React.FC = () => {
   const workspaceSlides = workspace?.slides ?? EMPTY_SLIDES;
   const slidesWithImages = workspace?.slidesWithImages ?? EMPTY_SLIDES;
   const hasImages = workspace?.hasImages ?? false;
-  const selectedSlide = workspaceSlides[selectedIndex];
+  const handleVersionSelected = useCallback(() => {
+    show({ message: t('slidePreview.versionSwitched'), type: 'success' });
+  }, [show, t]);
+  const handleVersionSelectError = useCallback((error: unknown) => {
+    const errorMessage = (error as { message?: string })?.message
+      || t('slidePreview.unknownError');
+    show({
+      message: t('slidePreview.versionSwitchFailed', { error: errorMessage }),
+      type: 'error',
+    });
+  }, [show, t]);
+  const {
+    selectedIndex,
+    selectedSlide,
+    selectSlide,
+    multiSelectEnabled: isMultiSelectMode,
+    selectedSlideIds,
+    toggleMultiSelect: toggleMultiSelectMode,
+    toggleSlideSelection,
+    selectAllSlides,
+    clearSlideSelection,
+    selectedSlideIdsForCommand,
+    imageVersions,
+    versionMenuOpen: showVersionMenu,
+    toggleVersionMenu,
+    switchVersion: handleSwitchVersion,
+  } = useDeckWorkspaceSlides({
+    deckId: projectId,
+    slides: workspaceSlides,
+    slidesWithImages,
+    listSlideVersions,
+    selectSlideVersion,
+    onVersionSelected: handleVersionSelected,
+    onVersionSelectError: handleVersionSelectError,
+  });
 
   // 加载项目数据
   useEffect(() => {
@@ -165,26 +194,6 @@ export const DeckWorkspacePage: React.FC = () => {
       lastWarningRef.current = null;
     }
   }, [generationWarning, show]);
-
-  // 加载当前页面的历史版本
-  useEffect(() => {
-    const loadVersions = async () => {
-      if (!projectId || !selectedSlide?.id) {
-        setImageVersions([]);
-        setShowVersionMenu(false);
-        return;
-      }
-
-      try {
-        setImageVersions(await listSlideVersions(projectId, selectedSlide.id));
-      } catch (error) {
-        console.error('Failed to load image versions:', error);
-        setImageVersions([]);
-      }
-    };
-
-    loadVersions();
-  }, [listSlideVersions, projectId, selectedSlide?.id]);
 
   const ensureImageGenerationStyleSource = useCallback(async () => {
     if (!deckSource || !workspace || !projectId) return false;
@@ -337,23 +346,8 @@ export const DeckWorkspacePage: React.FC = () => {
     });
   }, [ensureImageGenerationStyleSource, renderSlide, requestGenerationExecution, selectedSlide, show, slideJobs]);
 
-  const handleSwitchVersion = async (versionId: string) => {
-    if (!selectedSlide?.id || !projectId) return;
-
-    try {
-      await selectSlideVersion(projectId, selectedSlide.id, versionId);
-      setShowVersionMenu(false);
-      show({ message: t('slidePreview.versionSwitched'), type: 'success' });
-    } catch (error: any) {
-      show({
-        message: t('slidePreview.versionSwitchFailed', { error: error.message || t('slidePreview.unknownError') }),
-        type: 'error'
-      });
-    }
-  };
-
   const openSlideEditor = (targetIndex = selectedIndex) => {
-    setSelectedIndex(targetIndex);
+    selectSlide(targetIndex);
     setIsEditModalOpen(true);
   };
 
@@ -377,46 +371,6 @@ export const DeckWorkspacePage: React.FC = () => {
         : undefined,
     });
   }, [reviseSlide]);
-
-  // 多选相关函数
-  const toggleSlideSelection = (slideId: string) => {
-    setSelectedSlideIds(prev => {
-      const next = new Set(prev);
-      if (next.has(slideId)) {
-        next.delete(slideId);
-      } else {
-        next.add(slideId);
-      }
-      return next;
-    });
-  };
-
-  const selectAllSlides = () => {
-    const allSlideIds = slidesWithImages.map((slide) => slide.id!);
-    setSelectedSlideIds(new Set(allSlideIds));
-  };
-
-  const clearSlideSelection = () => {
-    setSelectedSlideIds(new Set());
-  };
-
-  const toggleMultiSelectMode = () => {
-    setIsMultiSelectMode(prev => {
-      if (prev) {
-        // 退出多选模式时清空选择
-        setSelectedSlideIds(new Set());
-      }
-      return !prev;
-    });
-  };
-
-  // 获取有图片的选中页面ID列表
-  const selectedSlideIdsForCommand = (): string[] | undefined => {
-    if (!isMultiSelectMode || selectedSlideIds.size === 0) {
-      return undefined; // 导出全部
-    }
-    return Array.from(selectedSlideIds);
-  };
 
   const handleExport = async (
     format: DeckExportFormat,
@@ -602,7 +556,7 @@ export const DeckWorkspacePage: React.FC = () => {
           onSelectAll={selectAllSlides}
           onClearSelection={clearSlideSelection}
           onToggleSlide={toggleSlideSelection}
-          onSelectSlide={setSelectedIndex}
+          onSelectSlide={selectSlide}
           onEditSlide={openSlideEditor}
           onDeleteSlide={removeSlide}
         />
@@ -616,14 +570,14 @@ export const DeckWorkspacePage: React.FC = () => {
           versionMenuOpen={showVersionMenu}
           refreshing={isRefreshing}
           onBackToPlan={() => navigate(`/project/${projectId}/outline`)}
-          onSelectSlide={setSelectedIndex}
+          onSelectSlide={selectSlide}
           onGenerateSlide={handleRegeneratePage}
           onOpenTemplate={() => {
             setDeckStyleInitialMode(templateStyle.trim() ? 'text' : 'image');
             setIsTemplateModalOpen(true);
           }}
           onRefresh={handleRefresh}
-          onToggleVersionMenu={() => setShowVersionMenu(!showVersionMenu)}
+          onToggleVersionMenu={toggleVersionMenu}
           onSwitchVersion={handleSwitchVersion}
           onEditSlide={() => openSlideEditor()}
           onRegenerateSlide={handleRegeneratePage}

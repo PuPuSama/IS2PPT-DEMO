@@ -94,7 +94,10 @@ Progress snapshot (2026-07-16):
   options to the export entity contract. `useDeckWorkspacePreferences` now
   owns editable deck-setting drafts, server synchronization rules, per-setting
   save state, and normalized aspect-ratio presentation. The workspace page no
-  longer duplicates preference state or persistence handlers.
+  longer duplicates preference state or persistence handlers. The tested
+  `useDeckWorkspaceSlides` session now owns navigation, generated-slide
+  multi-selection, version loading and switching, stale-request protection,
+  and selection cleanup when the deck changes.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
   source.

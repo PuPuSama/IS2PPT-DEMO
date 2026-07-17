@@ -6,7 +6,7 @@ export { ReferenceFileCard } from './ReferenceFileCard';
 export { ReferenceFileSelector } from './ReferenceFileSelector';
 export { FilePreviewModal } from './FilePreviewModal';
 export { ReferenceFileList } from './ReferenceFileList';
-export { Footer } from './Footer';
+export { AppFooter as Footer } from '@/widgets/app-footer/ui/AppFooter';
 export { Markdown } from '@/shared/ui';
 export { AiRefineInput } from './AiRefineInput';
 export { ShimmerOverlay } from '@/shared/ui';

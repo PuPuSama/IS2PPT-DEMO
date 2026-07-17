@@ -1,31 +1,27 @@
-import React from 'react';
 import { Github } from 'lucide-react';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
-export const Footer: React.FC = () => {
+export const AppFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full py-6 px-4 mt-auto">
+    <footer className="relative mt-auto w-full px-4 py-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-gray-500 dark:text-foreground-tertiary">
-          {/* Copyright */}
           <div className="flex items-center gap-1.5">
             <span>© {currentYear}</span>
-            <span className="font-medium bg-gradient-to-r from-brand-600 to-orange-500 bg-clip-text text-transparent">
+            <span className="font-semibold text-gray-700 dark:text-foreground-secondary">
               {APP_IDENTITY.displayName}
             </span>
           </div>
 
-          {/* Divider - 仅在大屏显示 */}
           <span className="hidden sm:inline text-gray-300 dark:text-border-primary">·</span>
 
-          {/* GitHub Link */}
           <a
             href={APP_IDENTITY.repositoryUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5"
+            className="inline-flex items-center gap-1.5 hover:text-gray-700 dark:hover:text-foreground-secondary"
           >
             <Github size={16} />
             <span>GitHub</span>

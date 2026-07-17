@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, TextStyleSelector } from '@/components/shared';
+import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, TextStyleSelector } from '@/components/shared';
 import { Button, Card, useToast } from '@/shared/ui';
+import { AppFooter } from '@/widgets/app-footer/ui/AppFooter';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/templatesApi';
@@ -754,8 +755,7 @@ export const DeckCreationPage: React.FC = () => {
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
       />
-      {/* Footer */}
-      <Footer />
+      <AppFooter />
     </div>
   );
 };

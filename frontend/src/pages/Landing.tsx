@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, MessageSquare, Download, ChevronRight, Github, ChevronLeft } from 'lucide-react';
-import { Button, Footer } from '@/components/shared';
+import { Button } from '@/shared/ui';
+import { AppFooter } from '@/widgets/app-footer/ui/AppFooter';
 import { useT } from '@/hooks/useT';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';
 
@@ -281,7 +282,7 @@ export const Landing: React.FC = () => {
         ))}
       </div>
 
-      <Footer />
+      <AppFooter />
     </div>
   );
 };

@@ -7,8 +7,6 @@ export { ReferenceFileSelector } from './ReferenceFileSelector';
 export { FilePreviewModal } from './FilePreviewModal';
 export { ReferenceFileList } from './ReferenceFileList';
 export { Footer } from './Footer';
-export { GithubBadge } from './GithubBadge';
-export { GithubRepoCard } from './GithubRepoCard';
 export { Markdown } from '@/shared/ui';
 export { AiRefineInput } from './AiRefineInput';
 export { ShimmerOverlay } from '@/shared/ui';

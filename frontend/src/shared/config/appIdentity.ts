@@ -8,6 +8,3 @@ export const APP_IDENTITY = {
   repositoryIssuesUrl: 'https://github.com/is2ppt/is2ppt/issues',
   repositoryShowcasesUrl: 'https://github.com/is2ppt/is2ppt/issues',
 } as const;
-
-export const getRepositoryApiUrl = () =>
-  `https://api.github.com/repos/${APP_IDENTITY.repository}`;

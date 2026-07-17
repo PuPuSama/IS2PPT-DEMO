@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, FileEdit, Paperclip, Palette, Lightbulb, Search, Settings, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
+import { ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, TextStyleSelector } from '@/components/shared';
 import { Button, Card, useToast } from '@/shared/ui';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector } from '@/components/shared/TemplateSelector';
@@ -406,11 +406,6 @@ export const DeckCreationPage: React.FC = () => {
                 </>
               )}
             </div>
-            {/* 分隔线 */}
-            <div className="h-5 w-px bg-gray-300 dark:bg-border-primary mx-1" />
-            {/* GitHub 仓库卡片 */}
-            <GithubRepoCard />
-            {/* 分隔线 */}
           </div>
         </div>
       </nav>

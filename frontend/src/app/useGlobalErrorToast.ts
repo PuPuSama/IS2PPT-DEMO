@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { useToast } from '@/components/shared';
+import { useToast } from '@/shared/ui';
 import { useProjectStore } from '@/store/useProjectStore';
 
 type ShowToast = ReturnType<typeof useToast>['show'];

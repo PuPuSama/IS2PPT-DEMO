@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FileText, Upload, X, Loader2, CheckCircle2, XCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { Button, useToast, Modal } from '@/components/shared';
+import { Button, Modal, useToast } from '@/shared/ui';
 
 // ReferenceFileSelector 组件自包含翻译
 const referenceFileSelectorI18n = {

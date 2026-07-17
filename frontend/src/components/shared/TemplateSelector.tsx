@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/components/shared';
+import { useToast } from '@/shared/ui';
 import { useT } from '@/hooks/useT';
 import { getImageUrl } from '@/api/client';
 import { listUserTemplates, uploadUserTemplate, deleteUserTemplate, type UserTemplate } from '@/api/templatesApi';

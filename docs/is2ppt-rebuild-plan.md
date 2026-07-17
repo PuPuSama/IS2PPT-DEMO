@@ -122,7 +122,9 @@ Progress snapshot (2026-07-16):
   browser cache have been removed from the product UI.
   Application access bootstrapping now lives in `app/AccessGate` with explicit
   checking, challenge, granted, and offline states. Branded page footers now use
-  the `widgets/app-footer` entry instead of the shared component barrel.
+  the `widgets/app-footer` entry instead of the shared component barrel. Unused
+  image-preview and project-resource components have been deleted, and remaining
+  shared components no longer import their own barrel.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

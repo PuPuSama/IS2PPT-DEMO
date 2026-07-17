@@ -41,4 +41,3 @@ export const ShimmerOverlay: React.FC<ShimmerOverlayProps> = ({
     </div>
   );
 };
-

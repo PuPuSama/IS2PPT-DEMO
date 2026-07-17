@@ -107,11 +107,13 @@ Progress snapshot (2026-07-16):
   and local locale payload. All workflow route files are thin feature entries.
 - Phase 6 is in progress. Settings and several locale payloads have been split,
   and the remaining legacy banana visual marks have been removed from frontend
-  source. Eight business-independent primitives (`Button`, `Input`, `Textarea`,
-  `Card`, `Modal`, `Loading`, `Toast`, and `ConfirmDialog`) now live behind the
-  `shared/ui` public entry. Feature modules and settings controls consume that
-  entry directly, while `components/shared` temporarily re-exports the same API
-  for compatibility with unmigrated business components.
+  source. Business-independent primitives (`Button`, `Input`, `Textarea`,
+  `Card`, `Modal`, `Loading`, `Toast`, `ConfirmDialog`, `Pagination`,
+  `ShimmerOverlay`, and `Markdown`) now live behind the `shared/ui` public
+  entry. Feature modules and settings controls consume that entry directly,
+  while `components/shared` temporarily re-exports the same API for
+  compatibility with unmigrated business components. Slide-aware status badges
+  remain outside the generic layer because they still depend on legacy DTOs.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

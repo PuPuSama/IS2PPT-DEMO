@@ -6,3 +6,6 @@ export { Modal } from './Modal';
 export { Loading, Skeleton } from './Loading';
 export { Toast, useToast } from './Toast';
 export { ConfirmDialog, useConfirm } from './ConfirmDialog';
+export { Pagination } from './Pagination';
+export { ShimmerOverlay } from './ShimmerOverlay';
+export { Markdown } from './Markdown';

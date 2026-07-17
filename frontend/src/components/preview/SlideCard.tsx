@@ -1,7 +1,8 @@
 import React from 'react';
 import { Edit2, ImageOff, Trash2 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { StatusBadge, Skeleton, useConfirm } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
+import { Skeleton, useConfirm } from '@/shared/ui';
 import { getImageUrl } from '@/api/client';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import type { Page } from '@/types';

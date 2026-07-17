@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Markdown, Loading, useToast } from '@/components/shared';
+import { Modal, Markdown, Loading, useToast } from '@/shared/ui';
 import { useT } from '@/hooks/useT';
 import { getReferenceFile, type ReferenceFile } from '@/api/referenceFilesApi';
 

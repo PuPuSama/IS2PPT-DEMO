@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Markdown } from '@/components/shared/Markdown'
+import { Markdown } from '@/shared/ui'
 
 describe('Markdown Component', () => {
   it('renders plain text', () => {

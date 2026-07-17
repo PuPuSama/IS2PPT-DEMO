@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, TextStyleSelector, useToast } from '@/components/shared';
+import { TextStyleSelector } from '@/components/shared';
+import { Button, Modal, useToast } from '@/shared/ui';
 import { TemplateSelector } from '@/components/shared/TemplateSelector';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';

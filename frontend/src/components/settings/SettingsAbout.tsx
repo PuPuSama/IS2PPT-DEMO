@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowUp, CheckCircle, Info, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/shared/Button';
-import { Modal } from '@/components/shared/Modal';
+import { Button, Modal } from '@/shared/ui';
 import { checkForUpdates, type UpdateCheckInfo } from '@/api/settingsApi';
 import type { useT } from '@/hooks/useT';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';

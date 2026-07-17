@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useT } from '@/hooks/useT';
-import { Modal } from '@/components/shared/Modal';
+import { Modal } from '@/shared/ui';
 import {
   presetCapsuleStore,
   type PresetCapsule,

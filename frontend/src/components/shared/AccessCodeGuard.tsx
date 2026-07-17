@@ -2,8 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { checkAccessCode, verifyAccessCode } from '@/api/accessCodeApi';
 import { useT } from '@/hooks/useT';
 import { accessCodeSession } from '@/shared/auth/accessCodeSession';
-import { Button } from './Button';
-import { Input } from './Input';
+import { Button, Input } from '@/shared/ui';
 
 const translations = {
   zh: {

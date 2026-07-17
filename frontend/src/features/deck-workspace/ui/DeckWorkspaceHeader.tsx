@@ -10,7 +10,8 @@ import {
   Settings,
   Upload,
 } from 'lucide-react';
-import { Button, ExportJobsPanel } from '@/components/shared';
+import { ExportJobsPanel } from '@/components/shared';
+import { Button } from '@/shared/ui';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';
 import type { Page } from '@/types';

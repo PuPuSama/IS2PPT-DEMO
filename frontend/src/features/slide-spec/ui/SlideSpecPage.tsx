@@ -16,7 +16,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
+import { AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
+import { Button, Loading, useToast, useConfirm } from '@/shared/ui';
 import { DescriptionCard as LegacySlideSpecCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import {

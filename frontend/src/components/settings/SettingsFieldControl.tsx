@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Input } from '@/components/shared/Input';
+import { Input } from '@/shared/ui';
 import type { SettingsFormData } from '@/config/settingsFormData';
 import type { useT } from '@/hooks/useT';
 import type { Settings as SettingsType } from '@/types';

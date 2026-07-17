@@ -7,7 +7,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { Button, Modal, Textarea, useToast } from '@/components/shared';
+import { Button, Modal, Textarea, useToast } from '@/shared/ui';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';

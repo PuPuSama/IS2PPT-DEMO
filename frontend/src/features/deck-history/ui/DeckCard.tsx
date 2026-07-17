@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, FileText, ChevronRight, Trash2 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { Card } from '@/components/shared';
+import { Card } from '@/shared/ui';
 import { getImageUrl } from '@/api/client';
 import {
   getDeckCoverImage,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, CheckSquare, Sparkles, Square } from 'lucide-react';
-import { Button } from '@/components/shared';
+import { Button } from '@/shared/ui';
 import { SlideCard as LegacySlideCard } from '@/components/preview/SlideCard';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';

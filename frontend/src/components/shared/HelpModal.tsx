@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, FileText, Palette, MessageSquare, Download, ChevronLeft, ChevronRight, ExternalLink, Settings, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Modal } from './Modal';
-import { Button } from './Button';
+import { Button, Modal } from '@/shared/ui';
 import { useT } from '@/hooks/useT';
 import { useTranslation } from 'react-i18next';
 import { APP_IDENTITY } from '@/shared/config/appIdentity';

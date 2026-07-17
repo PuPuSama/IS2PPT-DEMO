@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ImagePlus, Loader2, Save, X } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { Textarea } from './Textarea';
+import { Textarea } from '@/shared/ui';
 import { PRESET_STYLES } from '@/config/presetStyles';
 import { presetStylesI18n } from '@/config/presetStylesI18n';
 import {

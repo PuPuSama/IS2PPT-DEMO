@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { Button, Modal } from '@/components/shared';
+import { Button, Modal } from '@/shared/ui';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';
 

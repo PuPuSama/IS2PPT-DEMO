@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { FileText } from 'lucide-react';
-import { Button } from '@/components/shared/Button';
+import { Button } from '@/shared/ui';
 import type { useT } from '@/hooks/useT';
 import type { ServiceTestState, SettingsServiceTestItem } from '@/types/settingsPage';
 

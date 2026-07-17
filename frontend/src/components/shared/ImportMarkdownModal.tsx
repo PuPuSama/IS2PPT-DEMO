@@ -1,8 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { FileText, Upload } from 'lucide-react';
-import { Button } from './Button';
-import { Modal } from './Modal';
-import { Textarea } from './Textarea';
+import { Button, Modal, Textarea } from '@/shared/ui';
 
 interface ImportMarkdownModalProps {
   isOpen: boolean;

@@ -1,13 +1,7 @@
-export { Button } from './Button';
-export { Input } from './Input';
-export { Textarea } from './Textarea';
-export { Card } from './Card';
-export { Modal } from './Modal';
-export { Loading, Skeleton } from './Loading';
-export { Toast, useToast } from './Toast';
+export { Button, Input, Textarea, Card, Modal, Loading, Skeleton, Toast, useToast } from '@/shared/ui';
 export { StatusBadge } from './StatusBadge';
 export { ContextualStatusBadge } from './ContextualStatusBadge';
-export { ConfirmDialog, useConfirm } from './ConfirmDialog';
+export { ConfirmDialog, useConfirm } from '@/shared/ui';
 export { ReferenceFileCard } from './ReferenceFileCard';
 export { ReferenceFileSelector } from './ReferenceFileSelector';
 export { FilePreviewModal } from './FilePreviewModal';

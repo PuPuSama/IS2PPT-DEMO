@@ -11,7 +11,7 @@ import { isExportJobActive, isExportJobFinished } from '@/entities/export/model/
 import { listDeckExports } from '@/entities/export/api/exportRepository';
 import { useT } from '@/hooks/useT';
 import type { Page } from '@/types';
-import { Button } from './Button';
+import { Button } from '@/shared/ui';
 import { cn } from '@/utils';
 import { exportJobsPanelI18n } from '@/config/exportJobsPanelI18n';
 

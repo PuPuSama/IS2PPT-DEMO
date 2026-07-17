@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ImageOff, RefreshCw, Upload } from 'lucide-react';
-import { Button } from '@/components/shared';
+import { Button } from '@/shared/ui';
 import InlineSvgImage from '@/components/preview/InlineSvgImage';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';

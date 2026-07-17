@@ -22,7 +22,8 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
+import { AiRefineInput, FilePreviewModal, ReferenceFileList, ImportMarkdownModal } from '@/components/shared';
+import { Button, Loading, useConfirm, useToast } from '@/shared/ui';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { OutlineCard } from '@/components/outline/OutlineCard';
 import { useProjectStore } from '@/store/useProjectStore';

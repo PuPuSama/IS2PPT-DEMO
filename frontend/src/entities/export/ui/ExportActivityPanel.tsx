@@ -1,52 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Trash2, FileText, Clock, CheckCircle, XCircle, Loader2, AlertTriangle, HelpCircle, Settings, FileSpreadsheet, Image } from 'lucide-react';
-import { useExportJobsStore } from '@/entities/export/model/useExportJobsStore';
+import { useExportJobsStore } from '../model/useExportJobsStore';
 import type {
   ExportFormat,
   ExportJob,
   ExportedFile,
   ExportWarningDetails,
-} from '@/entities/export/model/types';
-import { isExportJobActive, isExportJobFinished } from '@/entities/export/model/types';
-import { listDeckExports } from '@/entities/export/api/exportRepository';
+} from '../model/types';
+import { isExportJobActive, isExportJobFinished } from '../model/types';
+import { listDeckExports } from '../api/exportRepository';
+import {
+  describeExportSelection,
+  type ExportSlideReference,
+} from '../model/exportSelectionLabel';
 import { useT } from '@/hooks/useT';
-import type { Page } from '@/types';
 import { Button } from '@/shared/ui';
 import { cn } from '@/utils';
-import { exportJobsPanelI18n } from '@/config/exportJobsPanelI18n';
+import { exportActivityI18n } from './exportActivityI18n';
 
-const getPageRangeText = (pageIds: string[] | undefined, pages: Page[], t: (key: string, options?: any) => string): string => {
-  if (!pageIds || pageIds.length === 0) {
-    return t('export.allPages');
-  }
-  
-  const indices: number[] = [];
-  pageIds.forEach(pageId => {
-    const index = pages.findIndex(p => (p.id || p.page_id) === pageId);
-    if (index >= 0) {
-      indices.push(index);
-    }
-  });
-  
-  if (indices.length === 0) {
-    return t('export.pagesCount', { count: pageIds.length });
-  }
-  
-  indices.sort((a, b) => a - b);
-  const minIndex = indices[0];
-  const maxIndex = indices[indices.length - 1];
-  
-  if (indices.length === maxIndex - minIndex + 1) {
-    if (minIndex === maxIndex) {
-      return t('export.singlePage', { num: minIndex + 1 });
-    }
-    return t('export.pageRange', { start: minIndex + 1, end: maxIndex + 1 });
-  } else {
-    return t('export.pagesCount', { count: pageIds.length });
-  }
-};
-
-const ExportStatusIcon: React.FC<{ status: ExportJob['status'] }> = ({ status }) => {
+const ExportStateIcon: React.FC<{ status: ExportJob['status'] }> = ({ status }) => {
   switch (status) {
     case 'queued':
       return <Clock size={16} className="text-gray-400" />;
@@ -61,13 +33,13 @@ const ExportStatusIcon: React.FC<{ status: ExportJob['status'] }> = ({ status })
   }
 };
 
-const WarningsModal: React.FC<{
+const ExportWarningsDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   warnings: string[];
   warningDetails?: ExportWarningDetails;
 }> = ({ isOpen, onClose, warnings, warningDetails }) => {
-  const t = useT(exportJobsPanelI18n);
+  const t = useT(exportActivityI18n);
   const styleFailures = warningDetails?.styleExtractionFailed ?? [];
   const textFailures = warningDetails?.textRenderFailed ?? [];
   
@@ -161,9 +133,13 @@ const WarningsModal: React.FC<{
   );
 };
 
-const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => void }> = ({ job, pages, onRemove }) => {
-  const t = useT(exportJobsPanelI18n);
-  const [showWarningsModal, setShowWarningsModal] = useState(false);
+const ExportJobRow: React.FC<{
+  job: ExportJob;
+  slides: ExportSlideReference[];
+  onRemove: () => void;
+}> = ({ job, slides, onRemove }) => {
+  const t = useT(exportActivityI18n);
+  const [warningsOpen, setWarningsOpen] = useState(false);
   
   const formatLabels: Record<ExportFormat, string> = {
     'pptx': t('export.exportPptx'),
@@ -177,7 +153,8 @@ const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => v
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const pageRangeText = getPageRangeText(job.slideIds, pages, t);
+  const selectionLabel = describeExportSelection(job.slideIds, slides);
+  const pageRangeText = t(selectionLabel.key, selectionLabel.values);
 
   const getProgressPercent = () => {
     if (!job.progress) return 0;
@@ -196,7 +173,7 @@ const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => v
   return (
     <div className="flex items-start gap-3 py-2.5 px-3 hover:bg-gray-50 dark:hover:bg-background-hover rounded-lg transition-colors">
       <div className="mt-0.5">
-        <ExportStatusIcon status={job.status} />
+        <ExportStateIcon status={job.status} />
       </div>
       
       <div className="flex-1 min-w-0">
@@ -297,7 +274,7 @@ const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => v
         {hasWarnings && (
           <>
             <button
-              onClick={() => setShowWarningsModal(true)}
+              onClick={() => setWarningsOpen(true)}
               className="mt-1.5 w-full text-left px-2 py-1.5 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
             >
               <div className="flex items-center gap-1.5">
@@ -311,9 +288,9 @@ const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => v
               </div>
             </button>
             
-            <WarningsModal
-              isOpen={showWarningsModal}
-              onClose={() => setShowWarningsModal(false)}
+            <ExportWarningsDialog
+              isOpen={warningsOpen}
+              onClose={() => setWarningsOpen(false)}
               warnings={job.progress?.warnings ?? []}
               warningDetails={job.progress?.warningDetails}
             />
@@ -353,13 +330,15 @@ const ExportJobItem: React.FC<{ job: ExportJob; pages: Page[]; onRemove: () => v
   );
 };
 
-interface ExportJobsPanelProps {
+interface ExportActivityPanelProps {
   deckId?: string;
-  pages?: Page[];
+  slides?: ExportSlideReference[];
+  /** Compatibility input for callers that have not adopted slide terminology yet. */
+  pages?: ExportSlideReference[];
   className?: string;
 }
 
-const FileTypeIcon: React.FC<{ type: string }> = ({ type }) => {
+const ExportFileIcon: React.FC<{ type: string }> = ({ type }) => {
   switch (type) {
     case 'pptx': return <FileSpreadsheet size={14} className="text-orange-500" />;
     case 'pdf': return <FileText size={14} className="text-blue-500" />;
@@ -368,14 +347,20 @@ const FileTypeIcon: React.FC<{ type: string }> = ({ type }) => {
   }
 };
 
-const formatFileSize = (bytes: number): string => {
+const formatBytes = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages = [], className }) => {
-  const t = useT(exportJobsPanelI18n);
+export const ExportActivityPanel: React.FC<ExportActivityPanelProps> = ({
+  deckId,
+  slides,
+  pages,
+  className,
+}) => {
+  const t = useT(exportActivityI18n);
+  const deckSlides = slides ?? pages ?? [];
   const [isExpanded, setIsExpanded] = useState(true);
   const { jobs, removeJob, clearFinished, restoreActiveJobs } = useExportJobsStore();
   const [exportedFiles, setExportedFiles] = useState<ExportedFile[]>([]);
@@ -391,7 +376,7 @@ export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages 
     restoreActiveJobs();
   }, [restoreActiveJobs]);
 
-  // 从服务端加载已导出文件列表
+  // Refresh server files whenever a job reaches a terminal state.
   useEffect(() => {
     if (!deckId) return;
     listDeckExports(deckId)
@@ -405,7 +390,7 @@ export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages 
     }
   }, [activeJobs.length, isExpanded]);
 
-  // 同时没有任务也没有文件时隐藏面板
+  // Keep the workspace header clean until there is export activity to show.
   if (filteredJobs.length === 0 && exportedFiles.length === 0) {
     return null;
   }
@@ -437,10 +422,10 @@ export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages 
           {activeJobs.length > 0 && (
             <div className="p-2 border-b border-gray-100 dark:border-border-primary">
               {activeJobs.map((job) => (
-                <ExportJobItem
+                <ExportJobRow
                   key={job.id}
                   job={job}
-                  pages={pages}
+                  slides={deckSlides}
                   onRemove={() => removeJob(job.id)}
                 />
               ))}
@@ -460,17 +445,17 @@ export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages 
                 </button>
               </div>
               {finishedJobs.map((job) => (
-                <ExportJobItem
+                <ExportJobRow
                   key={job.id}
                   job={job}
-                  pages={pages}
+                  slides={deckSlides}
                   onRemove={() => removeJob(job.id)}
                 />
               ))}
             </div>
           )}
 
-          {/* 服务端已导出文件 */}
+          {/* Files already available on the server */}
           {exportedFiles.length > 0 && (
             <div className="p-2 border-t border-gray-100 dark:border-border-primary">
               <div className="px-3 py-1 mb-1">
@@ -478,13 +463,13 @@ export const ExportJobsPanel: React.FC<ExportJobsPanelProps> = ({ deckId, pages 
               </div>
               {exportedFiles.map(file => (
                 <div key={file.filename} className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 dark:hover:bg-background-hover rounded-lg transition-colors">
-                    <FileTypeIcon type={file.format} />
+                    <ExportFileIcon type={file.format} />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-gray-700 dark:text-foreground-secondary truncate" title={file.filename}>
                       {file.filename}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {formatFileSize(file.size)} · {new Date(file.modifiedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {formatBytes(file.size)} · {new Date(file.modifiedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
                   <Button

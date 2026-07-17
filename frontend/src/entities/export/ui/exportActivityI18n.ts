@@ -1,4 +1,4 @@
-export const exportJobsPanelI18n = {
+export const exportActivityI18n = {
   zh: {
     export: {
       jobs: "导出任务", inProgress: "{{count}} 进行中", clearHistory: "清除",

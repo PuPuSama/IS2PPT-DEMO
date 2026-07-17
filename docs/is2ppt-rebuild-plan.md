@@ -114,7 +114,9 @@ Progress snapshot (2026-07-16):
   while `components/shared` temporarily re-exports the same API for
   compatibility with unmigrated business components. Slide-aware status badges
   and their context policy now live under `entities/slide`; the old shared barrel
-  only keeps temporary aliases for compatibility.
+  only keeps temporary aliases for compatibility. Export activity UI and its
+  selection-label policy now live under `entities/export`, including stale and
+  duplicate slide-id handling.
 - Phase 7 and Phase 8 backend package/domain restructuring have not started.
 
 The repository currently contains:

@@ -10,7 +10,7 @@ import {
   Settings,
   Upload,
 } from 'lucide-react';
-import { ExportJobsPanel } from '@/components/shared';
+import { ExportActivityPanel } from '@/entities/export/ui/ExportActivityPanel';
 import { Button } from '@/shared/ui';
 import { previewI18n } from '@/config/slidePreviewI18n';
 import { useT } from '@/hooks/useT';
@@ -173,9 +173,9 @@ export const DeckWorkspaceHeader: React.FC<DeckWorkspaceHeaderProps> = ({
           </Button>
           {jobsPanelOpen && (
             <div className="absolute right-0 mt-2 z-20">
-              <ExportJobsPanel
+              <ExportActivityPanel
                 deckId={projectId}
-                pages={slides}
+                slides={slides}
                 className="w-96 max-h-[28rem] shadow-lg"
               />
             </div>

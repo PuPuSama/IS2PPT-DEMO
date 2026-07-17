@@ -17,7 +17,7 @@ export { ImportMarkdownModal } from './ImportMarkdownModal';
 export { ProjectResourcesList } from './ProjectResourcesList';
 export { HelpModal } from './HelpModal';
 export { ProjectSettingsModal } from './ProjectSettingsModal';
-export { ExportJobsPanel } from './ExportJobsPanel';
+export { ExportActivityPanel as ExportJobsPanel } from '@/entities/export/ui/ExportActivityPanel';
 export { AccessCodeGuard } from './AccessCodeGuard';
 export { TextStyleSelector } from './TextStyleSelector';
 export { Pagination } from '@/shared/ui';
